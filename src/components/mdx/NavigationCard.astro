@@ -1,0 +1,126 @@
+---      
+export interface NavigationCardProps {      
+  name: string;      
+  avatar: string;      
+  description: string;      
+  url: string;      
+  category: string;      
+  id?: string;
+  badge?: string;
+  badgeIcon?: string;
+  badgeColor?: string;
+}      
+      
+const { name, avatar, description, url, category, id, badge, badgeIcon, badgeColor } = Astro.props as NavigationCardProps;      
+      
+import { Image } from "astro:assets";      
+import { Icon } from "astro-icon/components";      
+
+// 基于名称生成固定的随机索引，用于显示随机的可爱标签
+const getHash = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+};
+
+const cuteTags = [
+  { icon: "lucide:sparkles", text: "宝藏资源", color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+  { icon: "lucide:heart", text: "超级好用", color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20" },
+  { icon: "lucide:thumbs-up", text: "值得一试", color: "text-sky-500", bg: "bg-sky-500/10", border: "border-sky-500/20" },
+  { icon: "lucide:zap", text: "效率神器", color: "text-violet-500", bg: "bg-violet-500/10", border: "border-violet-500/20" },
+  { icon: "lucide:party-popper", text: "发现惊喜", color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+  { icon: "lucide:star", text: "五星推荐", color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" },
+];
+
+let tag: { icon: string; text: string; className: string; style?: any };
+
+if (badge) {
+  // 如果提供了自定义 badge，使用自定义内容
+  // 如果提供了 badgeColor，则使用对应的颜色样式，否则默认使用 primary
+  const color = badgeColor || "primary";
+  
+  // 检查是否是 CSS 颜色值 (Hex, RGB, HSL 等)
+  const isCssColor = /^[#]|rgb|hsl|var/.test(color);
+
+  if (isCssColor) {
+    tag = {
+      icon: badgeIcon || "lucide:award",
+      text: badge,
+      className: "",
+      style: {
+        color: color,
+        backgroundColor: `color-mix(in srgb, ${color}, transparent 90%)`,
+        borderColor: `color-mix(in srgb, ${color}, transparent 80%)`
+      }
+    };
+  } else {
+    const isPrimary = color === "primary";
+    tag = { 
+      icon: badgeIcon || "lucide:award", 
+      text: badge, 
+      className: `${isPrimary ? "text-primary" : `text-${color}-500`} ${isPrimary ? "bg-primary/10" : `bg-${color}-500/10`} ${isPrimary ? "border-primary/20" : `border-${color}-500/20`}`
+    };
+  }
+} else {
+  // 否则使用随机标签
+  const tagIndex = getHash(name) % cuteTags.length;
+  const t = cuteTags[tagIndex];
+  tag = {
+    icon: t.icon,
+    text: t.text,
+    className: `${t.color} ${t.bg} ${t.border}`
+  };
+}
+---      
+      
+<a href={url} target="_blank" rel="noopener noreferrer" class="group block h-full">
+  <div class="relative h-full bg-base-100 rounded-[2rem] overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-base-200 hover:border-primary/20">
+    
+    <div class="relative p-6 flex flex-col h-full">
+      <!-- 头部区域 -->
+      <div class="flex items-start gap-4 mb-4">
+        <div class="relative shrink-0">
+          <!-- Logo -->
+          <div class="w-12 h-12 rounded-2xl overflow-hidden bg-base-100 p-1 shadow-sm ring-1 ring-base-200">
+            <Image src={avatar} width={48} height={48} format="webp" alt={name} loading="lazy" class="w-full h-full object-cover rounded-xl" />
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-bold text-lg text-base-content group-hover:text-primary transition-colors duration-300 line-clamp-1">{name}</h3>
+          <div class="text-xs text-base-content/40 truncate font-mono mt-0.5">
+            {new URL(url).hostname}
+          </div>
+        </div>
+      </div>
+
+      <!-- 趣味标签展示 -->
+      <div class="flex items-center gap-3 mb-3">
+        <div class={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-xl border transition-colors ${tag.className}`} style={tag.style}>
+          <Icon name={tag.icon} class="w-3.5 h-3.5" />
+          <span>{tag.text}</span>
+        </div>
+      </div>
+
+      <!-- 标签 -->
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span class="px-3 py-1 text-xs font-medium rounded-full bg-base-200/50 text-base-content/60">
+          {category}
+        </span>
+        {id && (
+          <span class="px-3 py-1 text-xs font-medium rounded-full bg-base-200/50 text-base-content/60">
+            {id}
+          </span>
+        )}
+      </div>
+
+      <!-- 描述文本 -->
+      <p class="text-sm text-base-content/70 leading-relaxed line-clamp-3 flex-grow">
+        {description}
+      </p>
+    </div>
+  </div>
+</a>

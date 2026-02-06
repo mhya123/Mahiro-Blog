@@ -1,0 +1,72 @@
+---    
+import type { CollectionEntry } from "astro:content";    
+import { Icon } from "astro-icon/components";  
+    
+interface Props {    
+  prevPost?: CollectionEntry<"blog">;    
+  nextPost?: CollectionEntry<"blog">;    
+}    
+    
+const { prevPost, nextPost } = Astro.props;    
+---    
+    
+<div class="post-navigation">    
+  <!-- 上一篇 -->    
+  {prevPost ? (    
+    <a href={`/blog/${prevPost.slug}`} class="nav-card prev group" data-pagefind-ignore>    
+      <div class="nav-arrow">  
+        <Icon name="tabler:chevron-left" class="text-2xl transition-transform group-hover:-translate-x-1" />
+      </div>  
+          
+      <div class="nav-content text-left">
+        <div class="nav-label text-xs opacity-60 mb-1">Previous Post</div>
+        <div class="nav-title font-medium line-clamp-2 group-hover:text-primary transition-colors">{prevPost.data.title}</div>    
+      </div>    
+    </a>    
+  ) : (
+    <div class="nav-card empty"></div>
+  )}    
+    
+  <!-- 下一篇 -->    
+  {nextPost ? (    
+    <a href={`/blog/${nextPost.slug}`} class="nav-card next group" data-pagefind-ignore>    
+      <div class="nav-content text-right">    
+        <div class="nav-label text-xs opacity-60 mb-1">Next Post</div>
+        <div class="nav-title font-medium line-clamp-2 group-hover:text-primary transition-colors">{nextPost.data.title}</div>    
+      </div>    
+      <div class="nav-arrow">  
+        <Icon name="tabler:chevron-right" class="text-2xl transition-transform group-hover:translate-x-1" />
+      </div>  
+    </a>    
+  ) : (
+    <div class="nav-card empty"></div>
+  )}    
+</div>    
+    
+<style>    
+  .post-navigation {    
+    @apply flex flex-col md:flex-row gap-4 my-8 w-full;
+  }    
+    
+  .nav-card {    
+    @apply flex-1 flex items-center gap-4 p-4 rounded-xl border border-base-300 bg-base-100/50 transition-all duration-300;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .nav-card:not(.empty):hover {
+    @apply border-primary/50 bg-base-200/80 shadow-lg;
+  }
+
+  .nav-card.empty {
+    @apply hidden md:block border-none bg-transparent;
+  }
+    
+  .nav-arrow {    
+    @apply flex-shrink-0 text-base-content/70;
+  }    
+    
+  .nav-content {    
+    @apply flex-1 min-w-0;
+  }    
+</style>

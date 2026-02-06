@@ -1,0 +1,414 @@
+---
+import {
+  BANNER_CONFIG,
+  BANNER_HEIGHT,
+  SITE_PAGES,
+  TYPEWRITER_TEXTS,
+} from "@config";
+
+// 统一所有页面都只用配置文件 SITE_PAGES
+const currentPath = Astro.url.pathname;
+let pageKey = "home";
+if (currentPath === "/") {
+  pageKey = "home";
+} else if (currentPath === "/about") {
+  pageKey = "about";
+} else if (
+  currentPath.startsWith("/blog/") &&
+  !currentPath.includes("/blog/page/") &&
+  currentPath !== "/blog" &&
+  !currentPath.includes("/blog/tag/") &&
+  !currentPath.includes("/blog/category/")
+) {
+  pageKey = "home"; // 博客详情页也用 home 配置
+} else {
+  // 其它页面如 /anime、/friend、/project、/navigation 等
+  pageKey = currentPath.replace(/^\//, "");
+}
+
+const cleanPageKey = pageKey.replace(/\/$/, "");
+const pageConfig =
+  SITE_PAGES[cleanPageKey] ?? SITE_PAGES[pageKey] ?? SITE_PAGES["home"];
+const useLargeFont =
+  pageKey === "home" ||
+  (currentPath.startsWith("/blog/") &&
+    !currentPath.includes("/blog/page/") &&
+    currentPath !== "/blog" &&
+    !currentPath.includes("/blog/tag/") &&
+    !currentPath.includes("/blog/category/"));
+const useTypewriter =
+  pageKey === "home" ||
+  (currentPath.startsWith("/blog/") &&
+    !currentPath.includes("/blog/page/") &&
+    currentPath !== "/blog" &&
+    !currentPath.includes("/blog/tag/") &&
+    !currentPath.includes("/blog/category/"));
+const displayTitle = pageConfig.title || "";
+const displaySubtitle = pageConfig.subtitle || "";
+const hasTitle = displayTitle !== undefined && displayTitle !== "";
+const hasSubtitle = displaySubtitle !== undefined && displaySubtitle !== "";
+
+const bannerHeight = BANNER_HEIGHT;
+
+// 随机图 API 配置
+const RANDOM_API_URL = BANNER_CONFIG?.randomUrl;
+// 首屏图片：服务端生成一个随机种子，确保每次刷新（或构建）时有一张初始图
+const initialRandomImage = `${RANDOM_API_URL}?t=${Date.now()}`;
+---
+
+<div id="banner" class="banner">
+  <div class="banner-inner h-full w-full relative overflow-hidden">
+    <!-- 背景层：当前显示的图片 -->
+    <div 
+      id="banner-bg-current"
+      class="absolute left-0 top-0 h-full w-full bg-cover bg-center bg-no-repeat z-0 transition-opacity duration-1000"
+      style={{ backgroundImage: `url(${initialRandomImage})` }}
+    ></div>
+
+    <!-- 背景层：下一张预加载的图片 (初始隐藏) -->
+    <div 
+      id="banner-bg-next"
+      class="absolute left-0 top-0 h-full w-full bg-cover bg-center bg-no-repeat z-0 opacity-0 transition-opacity duration-1000"
+    ></div>
+
+    <!-- 遮罩层 -->
+    <div class="absolute left-0 top-0 z-10 h-full w-full transition-colors duration-300 bg-black/40"></div>
+
+    <!-- 显示标题和副标题 -->
+    {
+      (hasTitle || hasSubtitle) && (
+        <div class="relative z-20 h-[95%] w-full pointer-events-none">
+          <div class="absolute left-1/2 top-1/2 w-4/5 -translate-x-1/2 -translate-y-1/2 lg:w-3/4">
+            <div class="flex flex-col pointer-events-auto">
+              {hasTitle && (
+                <div
+                  class={`title font-banner ${useLargeFont ? "text-4xl md:text-6xl lg:text-8xl" : "text-3xl md:text-4xl lg:text-6xl"}`}
+                  data-pagefind-ignore
+                >
+                  {displayTitle}
+                </div>
+              )}
+              {hasSubtitle && (
+                <div
+                  class={`subtitle font-banner ${useLargeFont ? "text-xl md:text-2xl lg:text-4xl" : "text-base md:text-lg lg:text-2xl"}`}
+                  data-pagefind-ignore
+                >
+                  {useTypewriter ? (
+                    <span id="typewriter-text" data-pagefind-ignore>{displaySubtitle}</span>
+                  ) : (
+                    displaySubtitle
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    }
+  </div>
+
+  <!-- 波浪动画效果 -->
+  <div class="waves">
+    <svg
+      class="waves"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      viewBox="0 24 150 28"
+      preserveAspectRatio="none"
+      shape-rendering="auto"
+    >
+      <defs>
+        <path
+          id="gentle-wave"
+          d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
+        ></path>
+      </defs>
+      <g class="parallax">
+        <use
+          xlink:href="#gentle-wave"
+          x="48"
+          y="0"
+          class="opacity-25"
+          style={{ animationDelay: "-2s", animationDuration: "7s" }}></use>
+        <use
+          xlink:href="#gentle-wave"
+          x="48"
+          y="3"
+          class="opacity-50"
+          style={{ animationDelay: "-3s", animationDuration: "10s" }}></use>
+        <use
+          xlink:href="#gentle-wave"
+          x="48"
+          y="5"
+          class="opacity-75"
+          style={{ animationDelay: "-4s", animationDuration: "13s" }}></use>
+        <use
+          xlink:href="#gentle-wave"
+          x="48"
+          y="7"
+          style={{ animationDelay: "-5s", animationDuration: "20s" }}></use>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- 打字机效果脚本 -->
+<script define:vars={{ TYPEWRITER_TEXTS, useTypewriter }} is:inline>
+  document.addEventListener("astro:page-load", () => {
+    if (!useTypewriter || !TYPEWRITER_TEXTS || TYPEWRITER_TEXTS.length === 0) {
+      return;
+    }
+
+    const typewriterElement = document.getElementById("typewriter-text");
+    if (!typewriterElement) return;
+
+    let currentTextIndex = 0;
+    let currentCharIndex = 0;
+    let isDeleting = false;
+    let typeSpeed = 150;
+    let deleteSpeed = 50;
+    let pauseTime = 2500;
+
+    function typeWriter() {
+      const currentText = TYPEWRITER_TEXTS[currentTextIndex];
+
+      if (isDeleting) {
+        typewriterElement.textContent = currentText.substring(
+          0,
+          currentCharIndex - 1,
+        );
+        currentCharIndex--;
+
+        if (currentCharIndex === 0) {
+          isDeleting = false;
+          currentTextIndex = (currentTextIndex + 1) % TYPEWRITER_TEXTS.length;
+          setTimeout(typeWriter, 300);
+          return;
+        }
+
+        setTimeout(typeWriter, deleteSpeed);
+      } else {
+        typewriterElement.textContent = currentText.substring(
+          0,
+          currentCharIndex + 1,
+        );
+        currentCharIndex++;
+
+        if (currentCharIndex === currentText.length) {
+          setTimeout(() => {
+            isDeleting = true;
+            typeWriter();
+          }, pauseTime);
+          return;
+        }
+
+        setTimeout(typeWriter, typeSpeed);
+      }
+    }
+
+    setTimeout(typeWriter, 500);
+  });
+</script>
+
+<!-- 随机图轮播脚本 -->
+<script define:vars={{ RANDOM_API_URL }} is:inline>
+  document.addEventListener("astro:page-load", () => {
+    const bgCurrent = document.getElementById("banner-bg-current");
+    const bgNext = document.getElementById("banner-bg-next");
+    const banner = document.getElementById("banner");
+    
+    if (!bgCurrent || !bgNext || !banner) return;
+
+    // 配置参数
+    const INTERVAL_TIME = 6000; // 轮播间隔 (ms)
+    const TRANSITION_DURATION = 1000; // 切换动画时长 (ms)
+    
+    let timer = null;
+    let isAnimating = false;
+
+    // 生成带随机参数的 URL
+    const getRandomUrl = () => `${RANDOM_API_URL}?t=${Date.now()}`;
+
+    // 预加载图片
+    const preloadImage = (url) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(url);
+        img.onerror = reject;
+        img.src = url;
+      });
+    };
+
+    // 切换图片逻辑
+    const switchImage = async () => {
+      if (isAnimating) return;
+      
+      // 检查页面可见性，如果不可见则跳过本次切换
+      if (document.hidden) return;
+
+      // 检查元素是否在视口内
+      const isBackgroundMode = document.documentElement.getAttribute("data-banner-mode") === "background";
+      const rect = banner.getBoundingClientRect();
+      if (!isBackgroundMode && (rect.bottom < 0 || rect.top > window.innerHeight)) return;
+
+      try {
+        const nextUrl = getRandomUrl();
+        // 开始预加载下一张图
+        await preloadImage(nextUrl);
+
+        isAnimating = true;
+
+        // 1. 设置下一张图
+        bgNext.style.backgroundImage = `url(${nextUrl})`;
+        
+        // 2. 淡入下一张图
+        bgNext.classList.remove("opacity-0");
+        
+        // 3. 移除缩放效果，保持纯淡入淡出
+        // bgNext.style.transform = "scale(1.05)";
+        // bgCurrent.style.transform = "scale(1)";
+
+        // 4. 等待过渡结束
+        setTimeout(() => {
+          // 5. 将当前图更新为新图，并重置状态
+          bgCurrent.style.backgroundImage = `url(${nextUrl})`;
+          document.documentElement.style.setProperty('--banner-image-url', `url(${nextUrl})`);
+          
+          // 6. 瞬间隐藏 next 层，为下一次做准备
+          // 需要先移除 transition 以避免闪烁，重置后再加回来
+          bgNext.style.transition = "none";
+          bgNext.classList.add("opacity-0");
+          // bgNext.style.transform = "scale(1)";
+          
+          // 强制重绘
+          bgNext.offsetHeight; 
+          
+          // 恢复 transition
+          bgNext.style.transition = "";
+          
+          isAnimating = false;
+        }, TRANSITION_DURATION);
+
+      } catch (error) {
+        console.error("Failed to load next banner image:", error);
+        isAnimating = false;
+      }
+    };
+
+    // 启动轮播
+    const startCarousel = () => {
+      if (timer) clearInterval(timer);
+      timer = setInterval(switchImage, INTERVAL_TIME);
+    };
+
+    // 初始化 CSS 变量
+    if (bgCurrent.style.backgroundImage) {
+      document.documentElement.style.setProperty('--banner-image-url', bgCurrent.style.backgroundImage);
+    }
+
+    // 停止轮播
+    const stopCarousel = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    // 监听可见性变化
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const isBackgroundMode = document.documentElement.getAttribute("data-banner-mode") === "background";
+        if (entry.isIntersecting || isBackgroundMode) {
+          startCarousel();
+        } else {
+          stopCarousel();
+        }
+      });
+    });
+    
+    observer.observe(banner);
+
+    // 监听 Banner 模式变化
+    const modeObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes" && mutation.attributeName === "data-banner-mode") {
+          const isBackgroundMode = document.documentElement.getAttribute("data-banner-mode") === "background";
+          // 如果切换到 background 模式，强制启动轮播
+          if (isBackgroundMode) {
+            startCarousel();
+          } else {
+            // 如果切换出 background 模式，重新检查可见性
+            // 这里简单处理：如果不在视口内（例如页面滚动到底部），IntersectionObserver 会处理
+            // 但如果 Banner 变为可见，IntersectionObserver 也会触发
+            // 所以这里主要处理从 background -> hidden 的情况
+             const isHidden = document.documentElement.getAttribute("data-banner-mode") === "hidden";
+             if (isHidden) {
+               stopCarousel();
+             }
+          }
+        }
+      });
+    });
+
+    modeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-banner-mode"]
+    });
+
+    // 页面卸载时清理
+    document.addEventListener("astro:before-swap", () => {
+      stopCarousel();
+      observer.disconnect();
+      modeObserver.disconnect();
+    }, { once: true });
+  });
+</script>
+
+<style define:vars={{ bannerHeight }}>
+  .banner {
+    @apply relative opacity-100;
+    height: 40vh;
+  }
+
+  @media (min-width: 768px) {
+    .banner {
+      height: var(--bannerHeight);
+    }
+  }
+
+  .title {
+    @apply mt-8 text-center font-bold drop-shadow-lg lg:mt-1 text-white;
+    font-family: var(--title-font);
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    @apply text-center drop-shadow-md text-white;
+    font-family: var(--subtitle-font);
+    white-space: pre-line;
+    line-height: 1.3;
+    min-height: 6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .waves {
+    @apply absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full z-10;
+    @apply md:h-[15vh];
+  }
+
+  .waves > .parallax use {
+    fill: var(--banner-wave-bg);
+    animation: wave 25s cubic-bezier(0.5, 0.5, 0.45, 0.5) infinite;
+  }
+
+  @keyframes wave {
+    0% {
+      transform: translate3d(-90px, 0, 0);
+    }
+    100% {
+      transform: translate3d(85px, 0, 0);
+    }
+  }
+</style>

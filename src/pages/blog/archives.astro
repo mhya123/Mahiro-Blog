@@ -1,0 +1,28 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { t } from "@config";
+import { getAllPosts, sortPostsByDate } from "@utils/blogUtils";
+import ArchiveList from "@components/ArchiveList";
+import { DATE_FORMAT } from "@config";
+
+// 获取所有博客文章
+const allPosts = await getAllPosts();
+
+// 按日期排序
+const sortedPosts = sortPostsByDate(allPosts);
+
+// 准备标签
+const labels = {
+  archivePage: t("label.archivePage"),
+  post: t("label.post"),
+  posts: t("label.posts"),
+  backToBlog: t("label.backToBlog"),
+  archivePageDescription: t("label.archivesPageDescription"),
+  noPosts: t("label.noPosts"),
+  months: Array.from({ length: 12 }, (_, i) => t(`months.${i + 1}`))
+};
+---
+
+<BaseLayout title={t("label.archivePage")} isIndexed={false}>
+  <ArchiveList client:load posts={sortedPosts} labels={labels} dateFormat={DATE_FORMAT} />
+</BaseLayout>

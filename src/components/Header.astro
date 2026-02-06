@@ -1,0 +1,46 @@
+---
+import "../styles/global.scss";
+import "/node_modules/katex/dist/katex.min.css";
+import type { HeaderProps } from "@interfaces/data";
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const { title, description, favicon, image } = Astro.props as HeaderProps;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Favicon for all browsers -->
+<link rel="icon" type="image/x-icon" href={favicon} />
+<link rel="shortcut icon" href={favicon} />
+
+<!-- Apple Touch Icon for iOS devices (using existing favicon) -->
+<link rel="apple-touch-icon" href={favicon} />
+<link rel="apple-touch-icon-precomposed" href={favicon} />
+<meta name="generator" content={Astro.generator} />
+
+<meta name="description" content={description} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:title" content={title || "RyuChan"} />
+<meta property="og:description" content={description} />
+{image && <meta property="og:image" content={new URL(image, Astro.url)} />}
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={canonicalURL} />
+<meta property="twitter:title" content={title || "RyuChan"} />
+<meta property="twitter:description" content={description} />
+{image && <meta property="twitter:image" content={new URL(image, Astro.url)} />}
+
+<link rel="canonical" href={canonicalURL.toString()} />
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Nunito:wght@400;600;700&family=ZCOOL+KuaiLe&display=swap"
+  rel="stylesheet"
+/>

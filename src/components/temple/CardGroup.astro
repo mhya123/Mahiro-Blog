@@ -1,0 +1,48 @@
+---
+import type { CardGroupProps } from "@interfaces/data";
+
+const {
+  class: className = "",
+  cols = "2", // Default 2 columns
+} = Astro.props as CardGroupProps;
+---
+
+<div class={`card-group ${className}`}>
+  <slot />
+</div>
+
+<style define:vars={{ cols }}>
+  .card-group {
+    width: 100%;
+    position: relative;
+  }
+
+  /* Desktop layout shows grid with gaps */
+  @media (min-width: 768px) {
+    .card-group {
+      display: grid;
+      gap: 1rem; /* Adjust gap as needed */
+      grid-template-columns: repeat(var(--cols), 1fr);
+    }
+  }
+
+  /* Mobile layout shows stacked cards with spacing */
+  @media (max-width: 767px) {
+    .card-group {
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 0.75rem; /* space between cards on mobile */
+    }
+
+    /* Support for 2 columns on mobile if specified */
+    .card-group.grid-cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+
+    /* Preserve individual card rounding and spacing */
+    :global(.card-group > *) {
+      margin: 0; /* reset margins inside group */
+    }
+  }
+</style>

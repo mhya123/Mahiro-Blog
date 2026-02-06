@@ -1,0 +1,19 @@
+---
+import { Icon } from "astro-icon/components";
+import { umamiConfig } from "@config";
+
+const { url, layout = 'default' } = Astro.props;
+const slug = url ? url.split('/').filter(Boolean).pop() : undefined;
+---
+{slug && umamiConfig.enable && (
+    <div class="flex items-center gap-x-3 gap-y-1 text-[10px] sm:text-sm text-base-content/70">
+        <div class="flex items-center gap-1">  
+          <Icon name="lucide:eye" class="h-4 w-4 flex-shrink-0 text-primary" />  
+          <span class="truncate" id={`page-views-${slug}-${layout}`}>-</span>  
+        </div>
+        <div class="flex items-center gap-1">  
+          <Icon name="lucide:user" class="h-4 w-4 flex-shrink-0 text-primary" />  
+          <span class="truncate" id={`page-visitors-${slug}-${layout}`}>-</span>  
+        </div>
+    </div>
+)}

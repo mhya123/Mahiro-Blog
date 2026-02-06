@@ -1,0 +1,420 @@
+---  
+import { USER_AVATAR, USER_SIDEBAR_SOCIAL_ICONS, umamiConfig, USER_DESCRIPTION, USER_NAME } from "../../config";  
+import { Icon } from "astro-icon/components";   
+import { Image } from "astro:assets";  
+import { getAllPosts, getCategoriesWithPosts, getTagsWithCount } from "@utils/blogUtils";  
+  
+// 获取所有博客文章和分类信息  
+const allPosts = await getAllPosts();  
+const categoryMap = getCategoriesWithPosts(allPosts);  
+const categoryEntries = Array.from(categoryMap.entries());  
+  
+// 修改分类排序：按文章数量从高到低排序  
+categoryEntries.sort((a, b) => b[1].length - a[1].length);
+  
+// 分类名称映射：英文到中文  
+const categoryNameMap = {  
+  "Course": "教程",  
+  "Anime": "动漫",   
+  "TV": "电视剧",  
+  "Documentation": "文档",  
+  "Examples": "示例",  
+  "Tutorial": "教程",  
+  "Tech": "技术",  
+  "Life": "生活",  
+  "Blog": "博客",  
+  "Project": "项目",  
+  "Note": "笔记",  
+  "Review": "评测"  
+}; 
+
+// 获取标签信息  
+const tagMap = getTagsWithCount(allPosts);  
+const tagEntries = Array.from(tagMap.entries());  
+tagEntries.sort((a, b) => b[1] - a[1]); // 按使用频率排序
+  
+// 获取中文分类名称的函数  
+const getCategoryDisplayName = (category: string): string => {  
+  return (categoryNameMap as Record<string, string>)[category] || category;  
+}; 
+---  
+  
+<!-- 第一个盒子：用户信息 -->  
+<div class="card-base p-3 mb-4">  
+  <!-- 头像区域 -->  
+  <a   
+    aria-label="Go to About Page"   
+    href="/about/"   
+    class="group block relative mx-auto mt-1 lg:mx-0 lg:mt-0 mb-3 max-w-[12rem] lg:max-w-none overflow-hidden rounded-2xl active:scale-95"  
+  >  
+    <!-- 悬停遮罩层 -->  
+    <div class="absolute transition pointer-events-none group-hover:bg-black/30 group-active:bg-black/50 w-full h-full z-50 flex items-center justify-center">  
+      <Icon   
+        name="material-symbols:person-outline"   
+        class="transition opacity-0 scale-90 group-hover:scale-100 group-hover:opacity-100 text-white text-5xl"   
+      />  
+    </div>  
+      
+    <!-- 头像图片容器 -->  
+    <div class="mx-auto lg:w-full h-full lg:mt-0 overflow-hidden relative image-wrapper">  
+      <!-- 加载条 -->  
+      <div class="loading-bar absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-1 bg-gray-200 dark:bg-gray-700 z-10 rounded-full overflow-hidden" style="opacity: 0;">  
+        <div class="loading-progress h-full w-8 bg-primary animate-pulse rounded-full"></div>  
+      </div>  
+        
+      <!-- 图片遮罩 -->  
+      <div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>  
+        
+      <!-- 头像图片 -->  
+      <Image  
+        src={USER_AVATAR}  
+        alt="Profile Image of the Author"  
+        class="w-full h-full object-cover image-content opacity-0 transition-opacity duration-500"  
+        style="object-position: center center; opacity: 1;"  
+        width={250}  
+        height={250}  
+        format="webp"  
+        loading="eager"  
+        onload="this.style.opacity='1'; this.parentElement.querySelector('.loading-bar').style.opacity='0';"  
+      />  
+    </div>  
+  </a>  
+    
+  <!-- 用户信息区域 -->  
+  <div class="px-2">  
+    <!-- 用户名 -->  
+    <div class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition">  
+      {USER_NAME}  
+    </div>  
+      
+    <!-- 装饰线条 -->  
+    <div class="h-1 w-5 bg-primary mx-auto rounded-full mb-2 transition"></div>  
+      
+    <!-- 个人描述 -->  
+    <!-- <div class="text-center text-base-content/60 mb-2.5 transition">  
+      欲买桂花同载酒~✨  
+    </div>   -->
+    <!-- 个人描述 -->       
+    <div class="text-center mb-2.5 transition font-bold tracking-wide bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent hover:scale-105 hover:from-purple-400 hover:to-pink-400">      
+     {USER_DESCRIPTION}    
+    </div>
+      
+    <!-- 社交图标 - 恢复原始样式 -->  
+    <div class="mt-4 pt-3 border-t border-base-content/20">  
+      <div class="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-2 justify-items-center">  
+        {USER_SIDEBAR_SOCIAL_ICONS.map((icon) => {
+          let href = icon.href;
+          if ((icon.svg.includes('mail') || (icon.svg.includes('at-line') && !icon.svg.includes('wechat'))) && !href.startsWith('mailto:')) {
+            href = `mailto:${href}`;
+          } else if (icon.svg.includes('qq') && /^\d+$/.test(href)) {
+            href = `tencent://message/?uin=${href}&Site=&Menu=yes`;
+          }
+          return (
+          <div class="tooltip tooltip-bottom" data-tip={icon.title}>  
+            <a  
+              tabindex="0"  
+              href={href}  
+              aria-label={icon.ariaLabel}  
+              target="_blank"  
+              class="btn btn-circle btn-ghost"  
+            >  
+              <Icon name={icon.svg} class="text-xl" />  
+            </a>  
+          </div>  
+        )})}  
+      </div>  
+    </div>  
+      
+    <!-- 全站访问量统计 -->  
+    {umamiConfig.enable && (
+      <div class="grid grid-cols-2 mt-3 pt-3 border-t border-base-content/20">
+          <div class="text-center">
+              <div class="text-xs text-base-content/50 mb-1 flex items-center justify-center gap-1">
+                  <Icon name="material-symbols:visibility-outline" class="text-base text-primary"></Icon>
+                  <span class="text-xs">访问量</span>
+              </div>
+              <div id="site-views" class="font-bold text-lg text-base-content">-</div>
+          </div>
+          <div class="text-center border-l border-base-content/20">
+              <div class="text-xs text-base-content/50 mb-1 flex items-center justify-center gap-1">
+                  <Icon name="material-symbols:person" class="text-base text-primary"></Icon>
+                  <span class="text-xs">访客数</span>
+              </div>
+              <div id="site-visitors" class="font-bold text-lg text-base-content">-</div>
+          </div>
+      </div>
+    )}
+  </div>  
+</div>  
+  
+<!-- 第二个盒子：分类列表 -->  
+<div class="card-base p-3 mb-4">  
+  <div class="font-bold transition text-lg text-base-content relative ml-4 mb-2 before:w-1 before:h-4 before:rounded-md before:bg-primary before:absolute before:left-[-16px] before:top-[5.5px]">  
+    分类  
+  </div>  
+    
+  <div id="categories" class="collapse-wrapper px-2 overflow-hidden" style="--collapsedHeight: 7.5rem;" data-pagefind-ignore>  
+    {categoryEntries.slice(0, 3).map(([category, posts]) => (  
+      <a href={`/blog/category/${category}`} aria-label={`View all posts in the ${category} category`}>  
+        <button class="w-full h-10 rounded-lg bg-none hover:bg-base-200 active:bg-base-300 transition-all pl-2 hover:pl-3 text-base-content hover:text-primary">  
+          <div class="flex items-center justify-between relative mr-2">  
+            <div class="overflow-hidden text-left whitespace-nowrap overflow-ellipsis">  
+              {getCategoryDisplayName(category)}  
+            </div>  
+            <div class="transition px-2 h-7 ml-4 min-w-[2rem] rounded-lg text-sm font-bold text-base-content bg-base-200 flex items-center justify-center">  
+              {posts.length}  
+            </div>  
+          </div>  
+        </button>  
+      </a>  
+    ))}  
+      
+    {categoryEntries.length > 3 && (  
+      <div class="hidden-categories" style="display: none;">  
+        {categoryEntries.slice(3).map(([category, posts]) => (  
+          <a href={`/blog/category/${category}`} aria-label={`View all posts in the ${category} category`}>  
+            <button class="w-full h-10 rounded-lg bg-none hover:bg-base-200 active:bg-base-300 transition-all pl-2 hover:pl-3 text-base-content hover:text-primary">  
+              <div class="flex items-center justify-between relative mr-2">  
+                <div class="overflow-hidden text-left whitespace-nowrap overflow-ellipsis">  
+                  {getCategoryDisplayName(category)}  
+                </div>  
+                <div class="transition px-2 h-7 ml-4 min-w-[2rem] rounded-lg text-sm font-bold text-base-content bg-base-200 flex items-center justify-center">  
+                  {posts.length}  
+                </div>  
+              </div>  
+            </button>  
+          </a>  
+        ))}  
+      </div>  
+    )}  
+  </div>  
+    
+  <!-- 分类展开按钮 -->  
+  {categoryEntries.length > 3 && (  
+    <div class="expand-btn px-2 -mb-2">  
+      <button class="btn btn-ghost rounded-lg w-full h-9" id="expand-categories">  
+        <div class="text-primary flex items-center justify-center" id="categories-more">  
+          <Icon name="lucide:chevron-down" class="w-5 h-5 mr-1" /> 更多  
+        </div>
+        <div class="text-primary flex items-center justify-center hidden" id="categories-collapse" style="display: none;">  
+          <Icon name="lucide:chevron-up" class="w-5 h-5 mr-1" /> 收起  
+        </div>  
+      </button>  
+    </div>  
+  )}   
+</div> 
+
+<!-- 第三个盒子：标签列表 -->  
+<div class="card-base p-3">  
+  <div class="font-bold transition text-lg text-base-content relative ml-4 mb-2 before:w-1 before:h-4 before:rounded-md before:bg-primary before:absolute before:left-[-16px] before:top-[5.5px]">  
+    标签  
+  </div>  
+    
+  <div id="tags" class="collapse-wrapper px-2 overflow-hidden" style="--collapsedHeight: 7.5rem;" data-pagefind-ignore>  
+    <div class="flex gap-1 flex-wrap">  
+      {tagEntries.slice(0, 8).map(([tag]) => (  
+        <a href={`/blog/tag/${tag}`} aria-label={`View all posts with the ${tag} tag`} class="h-6 text-base px-2 rounded-md border border-secondary text-base-content hover:bg-secondary hover:text-secondary-content hover:scale-110 transition-all inline-flex items-center justify-center">  
+          {tag}  
+        </a>
+      ))}  
+    </div>  
+      
+    {tagEntries.length > 8 && (  
+      <div class="hidden-tags" style="display: none;">  
+        <div class="flex gap-1 flex-wrap mt-1">  
+          {tagEntries.slice(8).map(([tag, count]) => (  
+            <a href={`/blog/tag/${tag}`} aria-label={`View all posts with the ${tag} tag`} class="h-6 text-base px-2 rounded-md border border-secondary text-base-content hover:bg-secondary hover:text-secondary-content hover:scale-110 transition-all inline-flex items-center justify-center">  
+              {tag}  
+            </a>  
+          ))}  
+        </div>  
+      </div>  
+    )}  
+  </div>  
+    
+  {tagEntries.length > 8 && (  
+    <div class="expand-btn px-2 -mb-2">  
+      <button class="btn btn-ghost rounded-lg w-full h-9" id="expand-tags">  
+        <div class="text-primary flex items-center justify-center" id="tags-more">  
+          <Icon name="lucide:chevron-down" class="w-5 h-5 mr-1" /> 更多  
+        </div>
+        <div class="text-primary flex items-center justify-center hidden" id="tags-collapse" style="display: none;">  
+          <Icon name="lucide:chevron-up" class="w-5 h-5 mr-1" /> 收起  
+        </div>  
+      </button>  
+    </div>  
+  )}  
+</div>
+  
+<script is:inline define:vars={{ umamiConfig }}> 
+  // 使用 sessionStorage 来避免重复加载  
+  let statsData = null;  
+    
+  // 获取全站访问量统计  
+  async function loadSiteStats() {  
+    if (!umamiConfig.enable) {  
+      return;  
+    }
+    
+    const CACHE_KEY = 'ryuchan_site_stats_v4';
+    // 缓存时间：5 分钟 (300000 毫秒)
+    // 既能减少请求频率，又能保证数据相对新鲜
+    const CACHE_TTL = 300000; 
+
+    // 1. 尝试读取缓存
+    const cachedStr = sessionStorage.getItem(CACHE_KEY);
+    if (cachedStr) {
+      try {
+        const { data, timestamp } = JSON.parse(cachedStr);
+        // 如果缓存未过期，直接使用
+        if (Date.now() - timestamp < CACHE_TTL) {
+          statsData = data;
+          updateStatsDisplay();
+          return;
+        }
+      } catch (e) {
+        // 缓存解析失败，继续执行下面的获取逻辑
+      }
+    }
+          
+    // 2. 缓存不存在或已过期，发起新请求
+    const checkInterval = setInterval(async () => {
+      if (typeof window.fetchUmamiStats === 'function') {
+        clearInterval(checkInterval);
+        try {
+          const stats = await window.fetchUmamiStats(umamiConfig.baseUrl, umamiConfig.shareId, {
+            timezone: umamiConfig.timezone
+          });
+          
+          statsData = { 
+            pageviews: (typeof stats.pageviews === 'object' ? stats.pageviews.value : stats.pageviews) || 0, 
+            visitors: (typeof stats.visitors === 'object' ? stats.visitors.value : stats.visitors) || 0 
+          };
+
+          // 存入缓存，包含当前时间戳
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+            data: statsData,
+            timestamp: Date.now()
+          }));
+          
+          updateStatsDisplay();
+        } catch (error) {  
+          console.error('获取全站统计失败:', error);  
+          statsData = { error: true };  
+          updateStatsDisplay();  
+        }  
+      }
+    }, 100);
+
+    // Stop checking after 10 seconds
+    setTimeout(() => clearInterval(checkInterval), 10000);
+  }  
+    
+  // 更新统计显示  
+  function updateStatsDisplay() {  
+    const viewsElement = document.getElementById('site-views');
+    const visitorsElement = document.getElementById('site-visitors');
+    
+    if (statsData && !statsData.error) {  
+      if (viewsElement) viewsElement.textContent = statsData.pageviews;
+      if (visitorsElement) visitorsElement.textContent = statsData.visitors;
+    } else if (statsData && statsData.error) {
+       if (viewsElement) viewsElement.textContent = '-';
+       if (visitorsElement) visitorsElement.textContent = '-';
+    }
+  }  
+    
+  
+    
+  // 分类展开/折叠功能      
+function initCategoriesToggle() {      
+  const expandBtn = document.getElementById('expand-categories');      
+  const hiddenCategories = document.querySelector('.hidden-categories');      
+          
+  if (expandBtn && hiddenCategories) {      
+    let isExpanded = false;      
+    const moreDiv = expandBtn.querySelector('#categories-more');
+    const collapseDiv = expandBtn.querySelector('#categories-collapse');
+            
+    expandBtn.addEventListener('click', () => {      
+      if (isExpanded) {      
+        hiddenCategories.style.display = 'none';  
+        moreDiv.style.display = 'flex';
+        collapseDiv.style.display = 'none';
+      } else {      
+        hiddenCategories.style.display = 'block';  
+        moreDiv.style.display = 'none';
+        collapseDiv.style.display = 'flex';
+      }      
+      isExpanded = !isExpanded;      
+    });      
+  }      
+}
+  
+ // 标签展开/折叠功能      
+function initTagsToggle() {      
+  const expandBtn = document.getElementById('expand-tags');      
+  const hiddenTags = document.querySelector('.hidden-tags');      
+  
+  if (expandBtn && hiddenTags) {      
+    let isExpanded = false;      
+    const moreDiv = expandBtn.querySelector('#tags-more');
+    const collapseDiv = expandBtn.querySelector('#tags-collapse');
+    
+    expandBtn.addEventListener('click', () => {      
+      if (isExpanded) {      
+        hiddenTags.style.display = 'none';  
+        moreDiv.style.display = 'flex';
+        collapseDiv.style.display = 'none';
+      } else {      
+        hiddenTags.style.display = 'block';  
+        moreDiv.style.display = 'none';
+        collapseDiv.style.display = 'flex';
+      }      
+      isExpanded = !isExpanded;      
+    });      
+  }      
+}
+
+  // 初始化函数  
+  function init() {  
+    if (umamiConfig.enable) {
+      // 总是加载最新数据，以保持实时更新
+      loadSiteStats();  
+    }
+      
+    // 初始化分类切换功能  
+    initCategoriesToggle(); 
+    // 初始化标签切换功能  
+    initTagsToggle() 
+  }  
+    
+  // DOM 加载完成后初始化  
+  if (document.readyState === 'loading') {  
+    document.addEventListener('DOMContentLoaded', init);  
+  } else {  
+    init();  
+  }  
+    
+  // 监听 Astro 页面转换事件  
+  document.addEventListener('astro:page-load', () => {  
+    // 页面切换时重新初始化  
+    init();  
+  });  
+</script> 
+  
+<style>  
+.card-base {  
+  @apply bg-base-100 rounded-2xl shadow-lg border border-base-200;  
+}  
+  
+.loading-progress {  
+  animation: loading-progress 2s ease-in-out infinite;  
+}  
+  
+@keyframes loading-progress {  
+  0% { transform: translateX(-100%); }  
+  50% { transform: translateX(0%); }  
+  100% { transform: translateX(100%); }  
+}  
+</style>

@@ -1,0 +1,260 @@
+---
+import { Icon } from "astro-icon/components";
+import { SITE_THEME } from "@config";
+
+const themes = [
+  { name: "light", color: "#ffffff" },
+  { name: "dark", color: "#1d232a" },
+  { name: "cupcake", color: "#65c3c8" },
+  { name: "bumblebee", color: "#e0a82e" },
+  { name: "emerald", color: "#66cc8a" },
+  { name: "corporate", color: "#4b6bfb" },
+  { name: "synthwave", color: "#e779c1" },
+  { name: "retro", color: "#ef9995" },
+  { name: "cyberpunk", color: "#ff7598" },
+  { name: "valentine", color: "#e96d7b" },
+  { name: "halloween", color: "#f28c18" },
+  { name: "garden", color: "#fe0075" },
+  { name: "forest", color: "#1eb854" },
+  { name: "aqua", color: "#09ecf3" },
+  { name: "lofi", color: "#808080" },
+  { name: "pastel", color: "#d1c1d7" },
+  { name: "fantasy", color: "#6e0b75" },
+  { name: "wireframe", color: "#b8b8b8" },
+  { name: "black", color: "#000000" },
+  { name: "luxury", color: "#ffffff" },
+  { name: "dracula", color: "#ff79c6" },
+  { name: "cmyk", color: "#45AEEE" },
+  { name: "autumn", color: "#8C0327" },
+  { name: "business", color: "#1C4E80" },
+  { name: "acid", color: "#FF00F4" },
+  { name: "lemonade", color: "#519903" },
+  { name: "night", color: "#38bdf8" },
+  { name: "coffee", color: "#DB924B" },
+  { name: "winter", color: "#047AFF" },
+];
+---
+
+<div class="dropdown dropdown-end">
+  <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm hover:bg-transparent text-primary" title="Settings">
+    <Icon name="material-symbols:settings-outline" class="w-6 h-6" />
+  </div>
+  <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-200 rounded-box w-64 mt-4">
+    <!-- Dark/Light Toggle -->
+    <li>
+      <button id="mobile-theme-toggle" class="flex justify-between items-center gap-2 p-2 hover:bg-base-300 rounded-lg w-full">
+        <span class="font-medium">Dark/Light</span>
+        <div class="btn btn-ghost btn-circle btn-sm text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-300 pointer-events-none flex items-center justify-center">
+          <Icon name="line-md:moon-alt-to-sunny-outline-loop-transition" class="w-5 h-5 light-icon" />
+          <Icon name="line-md:sunny-outline-to-moon-alt-loop-transition" class="w-5 h-5 dark-icon hidden" />
+        </div>
+      </button>
+    </li>
+
+    <!-- Banner Mode Settings -->
+    <li>
+      <details>
+        <summary class="font-medium flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
+          <div class="flex items-center gap-2">
+            <Icon name="material-symbols:image-outline" class="w-5 h-5" />
+            Banner Mode
+          </div>
+        </summary>
+        <ul class="p-2 bg-base-100 rounded-box">
+          <li>
+            <button data-set-banner-mobile="normal" class="flex gap-2">
+              <Icon name="material-symbols:panorama-outline" class="w-5 h-5" />
+              Normal
+            </button>
+          </li>
+          <li>
+            <button data-set-banner-mobile="fullscreen" class="flex gap-2">
+              <Icon name="material-symbols:fullscreen" class="w-5 h-5" />
+              Fullscreen
+            </button>
+          </li>
+          <li>
+            <button data-set-banner-mobile="background" class="flex gap-2">
+              <Icon name="material-symbols:wallpaper" class="w-5 h-5" />
+              Background
+            </button>
+          </li>
+          <li>
+            <button data-set-banner-mobile="hidden" class="flex gap-2">
+              <Icon name="material-symbols:hide-image-outline" class="w-5 h-5" />
+              Hidden
+            </button>
+          </li>
+        </ul>
+      </details>
+    </li>
+
+    <!-- Config Button -->
+    <li>
+      <a href="/config" class="flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
+        <div class="flex items-center gap-2">
+          <Icon name="material-symbols:settings-outline" class="w-5 h-5" />
+          <span class="font-medium">站点配置</span>
+        </div>
+      </a>
+    </li>
+
+    <!-- Theme Selector -->
+    <li>
+      <details>
+        <summary class="font-medium flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
+          <div class="flex items-center gap-2">
+            <Icon name="material-symbols:palette-outline" class="w-5 h-5" />
+            Theme
+          </div>
+        </summary>
+        <ul class="p-2 bg-base-100 rounded-box max-h-60 overflow-y-auto flex-nowrap">
+          {themes.map((theme) => (
+            <li>
+              <button
+                class="flex gap-3 items-center"
+                data-set-theme-mobile={theme.name}
+                aria-label={`Change theme to ${theme.name}`}
+              >
+                <span class="w-4 h-4 rounded-full border border-base-content/20" style={`background-color: ${theme.color};`}></span>
+                <span class="capitalize">{theme.name}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </li>
+  </ul>
+</div>
+
+<script is:inline define:vars={{ SITE_THEME }}>
+  document.addEventListener("astro:page-load", () => {
+    // Dark/Light Toggle Logic
+    const mobileThemeToggle = document.getElementById("mobile-theme-toggle");
+    
+    const updateMobileThemeIcons = (isDark) => {
+      if (!mobileThemeToggle) return;
+      const lightIcon = mobileThemeToggle.querySelector(".light-icon");
+      const darkIcon = mobileThemeToggle.querySelector(".dark-icon");
+      
+      if (lightIcon && darkIcon) {
+        if (isDark) {
+          lightIcon.classList.add("hidden");
+          darkIcon.classList.remove("hidden");
+        } else {
+          lightIcon.classList.remove("hidden");
+          darkIcon.classList.add("hidden");
+        }
+      }
+    };
+
+    // Initialize icon state
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    updateMobileThemeIcons(currentTheme === SITE_THEME.dark);
+
+    if (mobileThemeToggle) {
+      mobileThemeToggle.addEventListener("click", () => {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === SITE_THEME.light ? SITE_THEME.dark : SITE_THEME.light;
+        
+        document.documentElement.setAttribute("data-theme", newTheme);
+        const themeType = newTheme === SITE_THEME.dark ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme-type", themeType);
+        localStorage.setItem("theme", newTheme);
+        
+        updateMobileThemeIcons(newTheme === SITE_THEME.dark);
+        
+        // Sync with other toggles if any
+        const allToggles = document.querySelectorAll("[data-theme-toggle]");
+        allToggles.forEach((toggle) => {
+           // Assuming other toggles have similar structure or logic, 
+           // but since we are in mobile settings, we might be the only one active or visible.
+           // If needed, dispatch a custom event or manually update them.
+           // For now, just updating the DOM attribute is enough for styles, 
+           // but icons on other toggles might need refresh if they are visible.
+        });
+      });
+    }
+
+    // Banner Mode Logic
+    const bannerButtons = document.querySelectorAll("[data-set-banner-mobile]");
+    
+    const updateActiveBannerButton = () => {
+      const currentMode = document.documentElement.getAttribute("data-banner-mode") || localStorage.getItem("banner-mode") || "normal";
+      bannerButtons.forEach(btn => {
+        if (btn.getAttribute("data-set-banner-mobile") === currentMode) {
+          btn.classList.add("bg-primary/10", "text-primary", "font-bold", "active");
+        } else {
+          btn.classList.remove("bg-primary/10", "text-primary", "font-bold", "active");
+        }
+      });
+    };
+
+    updateActiveBannerButton();
+
+    bannerButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const mode = btn.getAttribute("data-set-banner-mobile");
+        document.documentElement.setAttribute("data-banner-mode", mode);
+        localStorage.setItem("banner-mode", mode);
+        updateActiveBannerButton();
+      });
+    });
+
+    // Theme Selector Logic
+    const themeButtons = document.querySelectorAll('[data-set-theme-mobile]');
+
+    const updateActiveThemeButton = () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme") || localStorage.getItem("theme");
+      themeButtons.forEach(btn => {
+        if (btn.getAttribute('data-set-theme-mobile') === currentTheme) {
+            btn.classList.add("bg-primary/10", "text-primary", "font-bold", "active");
+        } else {
+            btn.classList.remove("bg-primary/10", "text-primary", "font-bold", "active");
+        }
+      });
+    };
+    
+    updateActiveThemeButton();
+    
+    themeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.getAttribute('data-set-theme-mobile');
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        const isDark = ['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee'].includes(theme);
+        document.documentElement.setAttribute('data-theme-type', isDark ? 'dark' : 'light');
+
+        updateMobileThemeIcons(isDark);
+        updateActiveThemeButton();
+      });
+    });
+
+    // Observer for external changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes') {
+          if (mutation.attributeName === 'data-theme') {
+             updateActiveThemeButton();
+             const currentTheme = document.documentElement.getAttribute("data-theme");
+             // Helper logic for updating icon if present in this scope or make generic
+             // Re-evaluating isDark roughly here for icons update if needed,
+             // or rely on the function defined above if accessible.
+             // Since updateMobileThemeIcons is defined in scope, we can use it.
+             const isDark = ['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee'].includes(currentTheme);
+             updateMobileThemeIcons(isDark);
+          }
+          if (mutation.attributeName === 'data-banner-mode') {
+             updateActiveBannerButton();
+          }
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-banner-mode']
+    });
+  });
+</script>

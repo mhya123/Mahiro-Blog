@@ -1,0 +1,183 @@
+site:
+  tab: RyuChan
+  title: RyuChan
+  description: 🌸 轻盈、优雅、纯净 —— 用文字与图片记录生活与创意
+  language: zh
+  favicon: /favicon.png
+  theme:
+    light: garden
+    dark: dracula
+    code: github-dark
+  date_format: ddd MMM DD YYYY
+  blog:
+    pageSize: 8
+  banner:
+    enableRandom: true
+    randomUrl: https://t.alcy.cc/ycy
+    randomCount: 5
+    height: 60vh
+    images:
+      - https://tc.alcy.cc/q/20250908/b2d656670551cb9ea6eda7b46b6c8ec0.webp
+  icp: 萌ICP备20261117号
+  icp_link: https://icp.gov.moe/?keyword=20261117
+  pages:
+    home:
+      title: RyuChan's Blog
+      subtitle: 欲买桂花同载酒，终不似，少年游！
+      typewriterTexts:
+        - 🌸 欲买桂花同载酒，终不似，少年游！
+        - 🌸 花有重开日，人无再少年！
+        - 🌿 记录生活的点滴，分享美好的瞬间！
+        - 📚 纸上得来终觉浅，绝知此事要躬行！
+    friend:
+      title: 友人帐
+      subtitle: 记录那些珍贵的友谊，分享彼此的故事
+    about:
+      title: About Me
+      subtitle: 一个热爱生活与技术的普通人！
+    navigation:
+      title: 网站导航
+      subtitle: 收藏的常用网站和工具链接
+    anime:
+      title: 追番
+      subtitle: 记录和分享我喜欢的动漫作品
+    project:
+      title: Projects
+      subtitle: 展示一些个人搭建的项目，搬运工！
+    music:
+      title: Cloud Music
+      subtitle: 沉浸式享受音乐时光
+  menu:
+    - id: home
+      text: 首页
+      href: /
+      svg: material-symbols:home-outline-rounded
+      target: _self
+    - id: write
+      text: 写作
+      href: /write
+      svg: material-symbols:edit-square-outline-rounded
+      target: _self
+    - id: navigation
+      text: 导航
+      href: /navigation
+      svg: material-symbols:explore-outline
+      target: _self
+    - id: entertainment
+      text: 娱乐
+      href: '#'
+      svg: material-symbols:play-circle-outline-rounded
+      target: _self
+      subItems:
+        - id: anime
+          text: 追番
+          href: /anime
+          svg: material-symbols:movie-outline
+          target: _self
+        - id: music
+          text: 音乐
+          href: /music
+          svg: material-symbols:music-note-rounded
+          target: _self
+    - id: project
+      text: 项目
+      href: /project
+      svg: material-symbols:code-blocks-outline
+      target: _self
+    - id: friend
+      text: 友人帐
+      href: /friend
+      svg: material-symbols:supervisor-account-outline-rounded
+      target: _self
+    - id: about
+      text: 关于
+      href: /about
+      svg: material-symbols:info-outline-rounded
+      target: _self
+anime:
+  bilibili:
+    uid: '1536411565'
+  tmdb:
+    apiKey: 08a6bef260044f70c150251c79f2e476
+    listId: '8556173'
+github:
+  owner: kobaridev
+  repo: RyuChan
+  branch: main
+  appId: 在部署端配置环境变量
+  encryptKey: wudishiduomejimo
+umami:
+  enable: true
+  baseUrl: https://umami.131714.xyz
+  shareId: jToXL5Z3hnA1gKUw
+  websiteId: 3f9afc6c-f0bd-4734-be15-6d053960d34d
+  timezone: Asia/Shanghai
+user:
+  name: KoBariDev
+  description: Ciallo～(∠・ω<)⌒★
+  site: https://hub.xiaozhangya.xin
+  avatar: /profile.png
+  sidebar:
+    social:
+      - href: https://github.com/kobaridev
+        ariaLabel: Github
+        title: Github
+        svg: ri:github-line
+      - href: https://space.bilibili.com/1536411565
+        ariaLabel: BiliBili
+        title: BiliBili
+        svg: ri:bilibili-line
+      - href: >-
+          https://www.douyin.com/user/MS4wLjABAAAAeO0sqJYUgh1a26GkVPtS2yv_IOODjeqvtl4KSjvsntg?from_tab_name=main
+        ariaLabel: Douyin
+        title: Douyin
+        svg: ri:tiktok-line
+      - href: https://weibo.com/u/7579913510
+        title: Weibo
+        ariaLabel: Weibo
+        svg: ri:weibo-fill
+  footer:
+    social:
+      - href: https://github.com/kobaridev
+        ariaLabel: Github
+        title: Github
+        svg: ri:github-line
+      - href: https://space.bilibili.com/1536411565
+        ariaLabel: BiliBili
+        title: BiliBili
+        svg: ri:bilibili-line
+      - href: https://x.com/xzz_ya
+        ariaLabel: X(twitter)
+        title: X(twitter)
+        svg: ri:twitter-line
+      - href: https://t.me/xzz_ya
+        ariaLabel: Telegram
+        title: Telegram
+        svg: ri:telegram-line
+comments:
+  enable: true
+  type: giscus
+  giscus:
+    repo: kobaridev/gsc
+    repoId: R_kgDOPTM-mA
+    category: General
+    categoryId: DIC_kwDOPTM-mM4CtcFq
+    mapping: pathname
+    lang: zh-CN
+    inputPosition: top
+    reactionsEnabled: '1'
+    emitMetadata: '0'
+    loading: lazy
+  waline:
+    serverURL: https://your-waline-server
+    lang: zh-CN
+    emoji:
+      - https://unpkg.com/@waline/emojis@1.1.0/weibo
+      - https://unpkg.com/@waline/emojis@1.1.0/bilibili
+    meta:
+      - nick
+      - mail
+      - link
+    requiredMeta: []
+    reaction: false
+    pageview: false

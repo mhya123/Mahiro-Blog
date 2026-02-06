@@ -1,0 +1,111 @@
+---
+import { Icon } from "astro-icon/components";
+
+const themes = [
+  { name: "light", color: "#ffffff" },
+  { name: "dark", color: "#1d232a" },
+  { name: "cupcake", color: "#65c3c8" },
+  { name: "bumblebee", color: "#e0a82e" },
+  { name: "emerald", color: "#66cc8a" },
+  { name: "corporate", color: "#4b6bfb" },
+  { name: "synthwave", color: "#e779c1" },
+  { name: "retro", color: "#ef9995" },
+  { name: "cyberpunk", color: "#ff7598" },
+  { name: "valentine", color: "#e96d7b" },
+  { name: "halloween", color: "#f28c18" },
+  { name: "garden", color: "#fe0075" },
+  { name: "forest", color: "#1eb854" },
+  { name: "aqua", color: "#09ecf3" },
+  { name: "lofi", color: "#808080" },
+  { name: "pastel", color: "#d1c1d7" },
+  { name: "fantasy", color: "#6e0b75" },
+  { name: "wireframe", color: "#b8b8b8" },
+  { name: "black", color: "#000000" },
+  { name: "luxury", color: "#ffffff" },
+  { name: "dracula", color: "#ff79c6" },
+  { name: "cmyk", color: "#45AEEE" },
+  { name: "autumn", color: "#8C0327" },
+  { name: "business", color: "#1C4E80" },
+  { name: "acid", color: "#FF00F4" },
+  { name: "lemonade", color: "#519903" },
+  { name: "night", color: "#38bdf8" },
+  { name: "coffee", color: "#DB924B" },
+  { name: "winter", color: "#047AFF" },
+];
+---
+
+<div class="dropdown dropdown-end">
+  <div tabindex="0" role="button" class="btn btn-ghost btn-circle hover:bg-white/10 text-primary" title="Change Theme">
+    <Icon name="material-symbols:palette-outline" class="w-5 h-5" />
+  </div>
+  <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-200 rounded-box w-48 max-h-96 overflow-y-auto flex-nowrap">
+    {themes.map((theme) => (
+      <li>
+        <button
+          class="flex gap-3 items-center"
+          data-set-theme={theme.name}
+          aria-label={`Change theme to ${theme.name}`}
+        >
+          <span class="w-4 h-4 rounded-full border border-base-content/20" style={`background-color: ${theme.color};`}></span>
+          <span class="capitalize">{theme.name}</span>
+        </button>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<script is:inline>
+  document.addEventListener("astro:page-load", () => {
+    const themeButtons = document.querySelectorAll('[data-set-theme]');
+    
+    // 更新选中状态的函数
+    const updateActiveTheme = () => {
+      // 获取当前主题，优先从 html 标签获取，其次 localStorage，默认为 garden
+      const currentTheme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('theme') || 'garden';
+      
+      themeButtons.forEach(btn => {
+        const theme = btn.getAttribute('data-set-theme');
+        if (theme === currentTheme) {
+          // 添加高亮样式
+          btn.classList.add('bg-primary/10', 'text-primary', 'font-bold', 'active-theme');
+        } else {
+          // 移除高亮样式
+          btn.classList.remove('bg-primary/10', 'text-primary', 'font-bold', 'active-theme');
+        }
+      });
+    };
+    
+    // 初始化时更新一次
+    updateActiveTheme();
+
+    // 监听按钮点击
+    themeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.getAttribute('data-set-theme');
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // Try to guess if it's dark or light for other components
+        const isDark = ['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee'].includes(theme);
+        document.documentElement.setAttribute('data-theme-type', isDark ? 'dark' : 'light');
+        
+        // 点击后立即更新状态（虽然 Observer 也会触发，但这样更直接）
+        updateActiveTheme();
+      });
+    });
+
+    // 使用 MutationObserver 监听 html 标签属性变化，以便响应其他组件（如 ThemeToggle）的主题切换
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          updateActiveTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+  });
+</script>

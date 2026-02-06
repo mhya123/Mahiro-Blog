@@ -1,0 +1,100 @@
+---  
+import { Icon } from "astro-icon/components";  
+import { t, umamiConfig } from "@config";  
+import type { PostData } from "@interfaces/data";  
+const { pubDate, badge, word, time, url, hideViews = false } = Astro.props as PostData & { url?: string, hideViews?: boolean };  
+  
+// 从 URL 中提取 slug  
+const slug = url ? url.split('/').filter(Boolean).pop() : undefined;  
+---  
+  
+<div class="flex flex-col sm:flex-row sm:justify-between gap-y-1 sm:gap-y-2 mb-2 sm:mb-4 text-[10px] sm:text-sm opacity-75">  
+  <div class="flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1 sm:gap-y-2">  
+    {  
+      pubDate && (  
+        <span class="flex items-center gap-1">  
+          <Icon name="lucide:calendar" class="h-4 w-4 flex-shrink-0" />  
+          <span class="truncate">{pubDate}</span>  
+        </span>  
+      )  
+    }  
+    {  
+      badge && (  
+        <span class="flex flex-wrap items-center gap-1">  
+          <Icon name="lucide:bookmark" class="h-4 w-4 flex-shrink-0" />  
+          <span class="truncate">{badge}</span>  
+        </span>  
+      )  
+    }  
+  </div>  
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-1">  
+    <div class="flex items-center gap-1">  
+      <Icon name="lucide:book-open" class="h-4 w-4 flex-shrink-0" />  
+      <span class="truncate">{word} {t("label.wordCount")} · {time} {t("label.readTime")}</span>  
+    </div>  
+    {!hideViews && slug && umamiConfig.enable && (  
+      <>
+        <div class="flex items-center gap-1">  
+          <Icon name="lucide:eye" class="h-4 w-4 flex-shrink-0 text-primary" />  
+          <span class="truncate" id={`page-views-${slug}`}>-</span>  
+        </div>
+        <div class="flex items-center gap-1">  
+          <Icon name="lucide:user" class="h-4 w-4 flex-shrink-0 text-primary" />  
+          <span class="truncate" id={`page-visitors-${slug}`}>-</span>  
+        </div>
+      </>
+    )}  
+  </div>  
+</div>  
+  
+{!hideViews && slug && umamiConfig.enable && (  
+  <script define:vars={{ slug, umamiConfig }} is:inline>
+    // 获取文章浏览量统计，支持 websiteId 或 shareId
+    async function fetchPostViews() {
+      if (!umamiConfig.enable) {
+        return;
+      }
+      
+      const checkInterval = setInterval(async () => {
+        if (typeof window.fetchUmamiStats === 'function') {
+          clearInterval(checkInterval);
+          try {
+            // RyuChan assumes blog posts are at /blog/slug
+            // Adjust this path if your URL structure is different
+            const queryPath = `/blog/${slug}`;
+            
+            const statsData = await window.fetchUmamiStats(umamiConfig.baseUrl, umamiConfig.shareId, {
+              timezone: umamiConfig.timezone,
+              path: queryPath
+            });
+            
+            const pageViews = (typeof statsData.pageviews === 'object' ? statsData.pageviews.value : statsData.pageviews) || 0;
+            const visits = (typeof statsData.visitors === 'object' ? statsData.visitors.value : statsData.visitors) || 0;
+            
+            const viewsElement = document.getElementById(`page-views-${slug}`);
+            const visitorsElement = document.getElementById(`page-visitors-${slug}`);
+            
+            if (viewsElement) viewsElement.textContent = `${pageViews} 次`;
+            if (visitorsElement) visitorsElement.textContent = `${visits} 人`;
+          } catch (error) {
+            console.error('Error fetching page views for', slug, ':', error);
+            const viewsElement = document.getElementById(`page-views-${slug}`);
+            const visitorsElement = document.getElementById(`page-visitors-${slug}`);
+            
+            if (viewsElement) viewsElement.textContent = '-';
+            if (visitorsElement) visitorsElement.textContent = '-';
+          }
+        }
+      }, 100);
+
+      // Stop checking after 10 seconds
+      setTimeout(() => clearInterval(checkInterval), 10000);
+    }
+    
+    // 页面加载完成后获取统计数据
+    document.addEventListener('astro:page-load', fetchPostViews);
+    // Initial run for direct loads (though astro:page-load covers it usually)
+    if (document.readyState === 'complete') fetchPostViews();
+    else document.addEventListener('DOMContentLoaded', fetchPostViews);
+  </script>
+)}

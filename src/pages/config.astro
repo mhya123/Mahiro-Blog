@@ -1,0 +1,8 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { ConfigPage } from '@/components/write/ConfigPage';
+---
+
+<BaseLayout title="站点配置" showSidebar={false} showBanner={false} isIndexed={false}>
+    <ConfigPage client:only="react" />
+</BaseLayout>

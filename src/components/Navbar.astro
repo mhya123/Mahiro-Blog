@@ -1,0 +1,220 @@
+---      
+import { Icon } from "astro-icon/components";      
+import ThemeToggle from "./widgets/ThemeToggle.astro";      
+import ThemeSelector from "./widgets/ThemeSelector.astro";
+import BannerSettings from "./widgets/BannerSettings.astro";
+import MobileSettings from "./widgets/MobileSettings.astro";
+import { SITE_TITLE, SITE_MENU, USER_AVATAR } from "../config";      
+      
+// Get current path to determine active link      
+const currentPath = Astro.url.pathname;      
+      
+// Type safely process SITE_MENU before rendering      
+type SubMenuItem = {      
+  id: string;      
+  text: string;      
+  href: string;      
+  svg: string;      
+  target?: string;      
+};      
+      
+type MenuItem = {      
+  id: string;      
+  text: string;      
+  href: string;      
+  svg: string;      
+  target?: string;      
+  subItems?: SubMenuItem[];      
+};      
+      
+// Ensure the menu is properly typed      
+const typedMenu = SITE_MENU as MenuItem[];      
+---      
+      
+<!-- 桌面端透明导航栏 -->      
+<nav class="fixed top-0 left-0 right-0 z-50 hidden md:block transition-opacity duration-500 opacity-100 pointer-events-auto" id="navbar-desktop">      
+  <div class="max-w-blog mx-auto px-4">      
+    <!-- 透明背景，添加毛玻璃效果 -->      
+    <div id="navbar-bg" class="bg-base-100/80 backdrop-blur-xl border border-white/20 px-6 py-3 rounded-full shadow-2xl transition-colors duration-300">      
+      <div class="flex items-center justify-between">      
+
+        <!-- 品牌标识 - 使用主题色 -->        
+        <a href="/" class="flex items-center space-x-2 hover:scale-105 transition-transform duration-300">        
+          <span class="text-3xl font-bold tracking-tight text-primary">{SITE_TITLE}</span>        
+        </a>      
+              
+        <!-- 桌面端水平菜单 - 响应主题颜色 -->      
+        <div class="flex items-center space-x-1">      
+          {typedMenu.map((item) => (      
+            item.subItems ? (      
+              <div class="dropdown dropdown-hover">      
+                <div tabindex="0" role="button" class="nav-item btn btn-ghost text-xl md:text-3xl lg:text-xl font-bold px-4 py-2 rounded-xl hover:bg-white/10 transition-all duration-200 text-base-content dark:text-white flex items-center gap-2">      
+                  <Icon name={item.svg} class="w-5 h-5" />
+                  <span>{item.text}</span>
+                </div>      
+                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl border border-base-200 w-52 mt-2 text-base-content">      
+                  {item.subItems.map((subItem) => (      
+                    <li>      
+                      <a       
+                        href={subItem.href}       
+                        target={subItem.target || "_self"}       
+                        class="px-4 py-2 hover:bg-base-200 rounded-xl text-base font-bold transition-all duration-200 flex items-center gap-2"      
+                      >      
+                        <Icon name={subItem.svg} class="w-4 h-4" />
+                        {subItem.text}      
+                      </a>      
+                    </li>      
+                  ))}      
+                </ul>      
+              </div>      
+            ) : (      
+              <a       
+                href={item.href}       
+                target={item.target || "_self"}       
+                class="nav-item btn btn-ghost text-lg font-bold px-4 py-2 rounded-xl hover:bg-white/10 transition-all duration-200 text-base-content dark:text-white flex items-center gap-2"      
+              >      
+                <Icon name={item.svg} class="w-5 h-5" />
+                {item.text}      
+              </a>      
+            )      
+          ))}      
+        </div>      
+              
+        <!-- 右侧工具栏 -->      
+        <div class="flex items-center space-x-2">      
+          <a href="/config" class="btn btn-ghost btn-circle hover:bg-white/10 text-primary" aria-label="Config">
+            <Icon name="material-symbols:settings-outline" class="w-5 h-5" />
+          </a>
+          <ThemeSelector />
+          <BannerSettings />
+          <!-- 主题切换 -->      
+          <ThemeToggle className="btn btn-ghost btn-circle hover:bg-white/10 text-primary" />      
+        </div>      
+      </div>      
+    </div>      
+  </div>      
+</nav>      
+      
+<!-- 移动端顶部悬浮导航栏 -->
+<nav id="navbar-mobile" class="fixed top-0 left-0 right-0 z-50 md:hidden transition-all duration-500 ease-in-out">
+  <div class="max-w-blog mx-auto px-2 pt-2">
+    <div class="flex items-center justify-between px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full">
+      {typedMenu.map((item) => {
+        const isChildActive = item.subItems?.some(sub => currentPath === sub.href || (sub.href !== '/' && currentPath.startsWith(sub.href)));
+        const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href)) || isChildActive;
+        const isHome = item.href === '/';
+
+        if (item.subItems) {
+            return (
+              <div class="dropdown dropdown-bottom dropdown-end">
+                <div tabindex="0" role="button" class:list={[
+                  "relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group",
+                  isActive ? "text-primary" : "text-base-content/60 hover:text-primary"
+                ]} aria-label={item.text}>
+                  {isActive && (
+                    <span class="absolute inset-0 bg-primary/10 rounded-full -z-10 scale-110"></span>
+                  )}
+                  <Icon name={item.svg} class="w-6 h-6" />
+                </div>
+                <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-100/95 backdrop-blur-xl rounded-2xl border border-white/10 w-32 mt-2">
+                  {item.subItems.map((subItem) => {
+                     const isSubActive = currentPath === subItem.href;
+                     return (
+                      <li>
+                        <a href={subItem.href} class:list={["flex items-center gap-2", isSubActive ? "text-primary font-bold bg-primary/10" : ""]}>
+                          <Icon name={subItem.svg} class="w-4 h-4" />
+                          <span>{subItem.text}</span>
+                        </a>
+                      </li>
+                     );
+                  })}
+                </ul>
+              </div>
+            );
+        }
+
+        return (
+          <a
+            href={item.href}
+            class:list={[
+              "relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group",
+              isActive && !isHome ? "text-primary" : "text-base-content/60 hover:text-primary"
+            ]}
+            aria-label={item.text}
+          >
+            {isActive && !isHome && (
+              <span class="absolute inset-0 bg-primary/10 rounded-full -z-10 scale-110"></span>
+            )}
+            {isHome ? (
+              <div class:list={["relative w-10 h-10 rounded-full overflow-hidden border-2 transition-colors duration-300", isActive ? "border-primary" : "border-transparent group-hover:border-primary/50"]}>
+                <img src={USER_AVATAR} alt={item.text} class="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <Icon name={item.svg} class="w-6 h-6" />
+            )}
+          </a>
+        );
+      })}
+
+      {/* 移动端设置菜单 */}
+      <div class="relative flex items-center justify-center w-10 h-10">
+          <MobileSettings />
+      </div>
+    </div>
+  </div>
+</nav>
+      
+<script>      
+  document.addEventListener("astro:page-load", () => {
+    // 导航栏淡入淡出逻辑
+    let lastScrollY = window.scrollY;
+    const navbarDesktop = document.getElementById("navbar-desktop");
+    const navbarMobile = document.getElementById("navbar-mobile");
+    const navbarBg = document.getElementById("navbar-bg");
+    const navItems = document.querySelectorAll(".nav-item");
+
+    function handleScroll() {
+      const currentScrollY = window.scrollY;
+      const isScrollingDown = currentScrollY > lastScrollY && currentScrollY > 50;
+      const isScrolledPastBanner = currentScrollY > 100; // 假设 Banner 高度至少 100px，或者根据实际情况调整
+
+      // 桌面端处理
+      if (navbarDesktop) {
+        if (isScrollingDown) {
+          navbarDesktop.classList.add("opacity-0", "pointer-events-none");
+          navbarDesktop.classList.remove("opacity-100", "pointer-events-auto");
+        } else {
+          navbarDesktop.classList.remove("opacity-0", "pointer-events-none");
+          navbarDesktop.classList.add("opacity-100", "pointer-events-auto");
+        }
+      }
+
+      // 移动端处理
+      if (navbarMobile) {
+        if (isScrollingDown) {
+          // 向下滑动隐藏：向上平移并透明
+          navbarMobile.classList.add("-translate-y-32", "opacity-0", "pointer-events-none");
+        } else {
+          // 向上滑动显示：恢复原位
+          navbarMobile.classList.remove("-translate-y-32", "opacity-0", "pointer-events-none");
+        }
+      }
+
+      lastScrollY = currentScrollY;
+    }
+
+    let ticking = false;
+    window.addEventListener("scroll", () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+    
+    // 初始化执行一次以设置正确状态
+    handleScroll();
+  });
+</script>

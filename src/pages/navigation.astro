@@ -1,0 +1,174 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import NavigationCard from "@components/mdx/NavigationCard.astro";
+import { Icon } from "astro-icon/components";
+import { NAV_DATA } from "../data/navData";
+
+// 扁平化所有数据以供搜索和"全部"分类使用
+const allItems = NAV_DATA.flatMap(category => category.items);
+---
+
+<BaseLayout title="导航" isIndexed={false}>
+  <div class="nav-container min-h-screen bg-base-200/30 -mt-8 pt-8 pb-20 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto space-y-10">
+      
+      <!-- 顶部搜索区域 -->
+      <div class="relative max-w-2xl mx-auto mt-10">
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Icon name="lucide:search" class="h-5 w-5 text-base-content/40 group-focus-within:text-primary transition-colors" />
+          </div>
+          <input
+            type="text"
+            id="search-input"
+            class="block w-full pl-11 pr-4 py-4 bg-base-100 border-none rounded-3xl text-base-content placeholder-base-content/40 focus:ring-2 focus:ring-primary/50 focus:bg-base-100 shadow-sm transition-all duration-300"
+            placeholder="搜索资源..."
+          />
+        </div>
+      </div>
+
+      <!-- 分类标签栏 -->
+      <div class="flex flex-wrap justify-center gap-3" id="category-filters">
+        <button
+          class="category-btn active px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 bg-primary text-primary-content shadow-md hover:shadow-lg hover:-translate-y-0.5"
+          data-category="all"
+        >
+          全部
+        </button>
+        {NAV_DATA.map((category) => (
+          <button
+            class="category-btn px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-base-100 text-base-content/60 hover:bg-base-200 hover:text-primary hover:shadow-md hover:-translate-y-0.5"
+            data-category={category.title}
+          >
+            {category.title}
+          </button>
+        ))}
+      </div>
+
+      <!-- 资源网格 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="resources-grid">
+        {NAV_DATA.flatMap(category => 
+          category.items.map(item => ({ ...item, parentCategory: category.title }))
+        ).map((item) => (
+          <div 
+            class="resource-item" 
+            data-category={item.category} 
+            data-parent-category={item.parentCategory}
+            data-name={item.name.toLowerCase()} 
+            data-desc={item.description.toLowerCase()}
+          >
+            <NavigationCard {...item} />
+          </div>
+        ))}
+      </div>
+
+      <!-- 无结果提示 -->
+      <div id="no-results" class="hidden text-center py-20">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-base-200 mb-4">
+          <Icon name="lucide:search-x" class="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">未找到相关资源</h3>
+        <p class="mt-2 text-gray-500 dark:text-gray-400">请尝试更换关键词或分类</p>
+      </div>
+
+      <div class="divider my-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+        <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // 简单的客户端搜索和过滤逻辑
+  document.addEventListener('astro:page-load', () => {
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const resourceItems = document.querySelectorAll('.resource-item');
+    const noResults = document.getElementById('no-results');
+    
+    let currentCategory = 'all';
+    let currentSearch = '';
+
+    function filterItems() {
+      let visibleCount = 0;
+
+      resourceItems.forEach(item => {
+        const itemCategory = (item as HTMLElement).dataset.category; // 这里其实是具体的子分类，我们需要匹配大分类
+        // 由于数据结构扁平化了，我们需要一种方式知道item属于哪个大分类。
+        // 简单起见，我们重新遍历数据或者在渲染时把大分类也加上。
+        // 让我们修改上面的渲染逻辑，把大分类加到 data-parent-category 属性中。
+      });
+    }
+  });
+</script>
+
+<!-- 重新实现带逻辑的脚本 -->
+<script is:inline define:vars={{ navData: NAV_DATA }}>
+  document.addEventListener('astro:page-load', () => {
+    const searchInput = document.getElementById('search-input');
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const resourceItems = document.querySelectorAll('.resource-item');
+    const noResults = document.getElementById('no-results');
+    
+    // 构建 item name -> parent category 的映射
+    const itemParentCategoryMap = {};
+    navData.forEach(cat => {
+      cat.items.forEach(item => {
+        itemParentCategoryMap[item.name] = cat.title;
+      });
+    });
+
+    let currentCategory = 'all';
+    let currentSearch = '';
+
+    function updateVisibility() {
+      let visibleCount = 0;
+      
+      resourceItems.forEach(item => {
+        const name = item.dataset.name;
+        const desc = item.dataset.desc;
+        // 获取该项目的父分类（大分类）
+        // 注意：这里我们通过 data-name 反查，或者更简单地，在渲染时直接把 parent category 写入 dom
+        const parentCategory = item.dataset.parentCategory;
+        
+        const matchesSearch = name.includes(currentSearch) || desc.includes(currentSearch);
+        const matchesCategory = currentCategory === 'all' || parentCategory === currentCategory;
+
+        if (matchesSearch && matchesCategory) {
+          item.style.display = '';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      if (noResults) {
+        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+    }
+
+    // 搜索事件
+    searchInput?.addEventListener('input', (e) => {
+      currentSearch = e.target.value.toLowerCase();
+      updateVisibility();
+    });
+
+    // 分类点击事件
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // 更新按钮状态
+        categoryBtns.forEach(b => {
+          b.classList.remove('bg-primary', 'text-primary-content', 'font-bold');
+          b.classList.add('bg-base-100', 'text-base-content/60', 'font-medium');
+        });
+        btn.classList.remove('bg-base-100', 'text-base-content/60', 'font-medium');
+        btn.classList.add('bg-primary', 'text-primary-content', 'font-bold');
+
+        currentCategory = btn.dataset.category;
+        updateVisibility();
+      });
+    });
+  });
+</script>
+

@@ -1,0 +1,12 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WritePage from '@/components/write/WritePage';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const categories = [...new Set(posts.flatMap(post => post.data.categories || []))].sort();
+---
+
+<BaseLayout title="写文章" showSidebar={false} showBanner={false} isIndexed={false}>
+    <WritePage client:only="react" categories={categories} />
+</BaseLayout>
