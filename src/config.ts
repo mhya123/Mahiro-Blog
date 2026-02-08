@@ -5,7 +5,7 @@ import * as path from "node:path";
 import yaml from "js-yaml";
 
 // 配置文件路径
-const configPath = path.resolve("ryuchan.config.yaml");
+const configPath = path.resolve("mahiro.config.yaml");
 // 翻译文件路径
 const translationsPath = path.resolve("src/i18n/translations.yaml");
 // 读取并解析 YAML 文件

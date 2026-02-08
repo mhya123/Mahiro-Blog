@@ -71,42 +71,6 @@ const sites = [
     </div>
   </div>
 
-  <!-- Sites Using Ryuchan Section -->
-  <div class="animate-fade-in-up" style="animation-delay: 0.2s;">
-    <div class="bg-base-100 rounded-3xl p-6 md:p-8 shadow-lg border border-base-200">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h2 class="text-2xl font-bold flex items-center gap-2 mb-2">
-            <Icon name="lucide:layout-template" class="w-6 h-6 text-secondary" />
-            <span>Sites Using Ryuchan</span>
-          </h2>
-          <p class="text-base-content/70">
-            这里展示了使用 Ryuchan 主题构建的网站。
-          </p>
-        </div>
-        <a
-          href="https://github.com/kobaridev/Ryuchan/edit/main/src/pages/friend.astro"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-primary btn-sm gap-2"
-        >
-          <Icon name="lucide:plus-circle" class="w-4 h-4" />
-          Add Your Site
-        </a>
-      </div>
-
-      <div class="flex flex-wrap gap-4">
-        {sites.map((site) => <Showcase name={site.name} url={site.url} />)}
-      </div>
-      
-      <div class="mt-6 p-4 bg-base-200/50 rounded-2xl text-sm text-base-content/60 flex gap-2 items-start">
-        <Icon name="lucide:info" class="w-5 h-5 flex-shrink-0 mt-0.5" />
-        <p>
-          想要将你的网站添加到这里吗？点击右上角的 "Add Your Site" 按钮，提交一个 Pull Request 来编辑此页面！
-        </p>
-      </div>
-    </div>
-  </div>
 
   <div class="divider my-6 animate-fade-in-up" style="animation-delay: 0.1s;">
     <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
