@@ -13,6 +13,17 @@ export async function getStaticPaths({ paginate }: { paginate: any }) {
   return getMainBlogPaginationPaths({ paginate });
 }
 
+if (typeof Astro !== "undefined" && Astro.request) {
+  try {
+    const reqPath = new URL(Astro.request.url).pathname;
+    if (/\.[^\/]+$/.test(reqPath)) {
+      throw new Response(null, { status: 404 });
+    }
+  } catch (e) {
+    // 忽略解析错误，继续正常渲染
+  }
+}
+
 const { page }: { page: Page } = Astro.props;
 const totalPages = Math.ceil(page.total / page.size);
 const pageLinks = generatePageLinks(totalPages);

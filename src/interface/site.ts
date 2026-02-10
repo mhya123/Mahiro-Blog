@@ -105,6 +105,9 @@ export interface SiteConfig {
   };
   icp?: string;
   icp_link?: string;
+  police_beian?: string;
+  police_beian_code?: string;
+  police_beian_link?: string;
 }
 
 export interface UserConfig {

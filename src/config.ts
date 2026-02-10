@@ -62,6 +62,9 @@ export const SITE_MENU = config.site.menu;
 // 备案信息
 export const SITE_ICP = config.site.icp || "";
 export const SITE_ICP_LINK = config.site.icp_link || "https://beian.miit.gov.cn/";
+export const SITE_POLICE_BEIAN = config.site.police_beian || "";
+export const SITE_POLICE_BEIAN_CODE = config.site.police_beian_code || "";
+export const SITE_POLICE_BEIAN_LINK = config.site.police_beian_link || "";
 
 // 多语言文本配置
 export const TRANSLATIONS = translationsConfig;

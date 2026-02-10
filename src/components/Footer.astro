@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import { USER_NAME, USER_SITE, USER_FOOTER_SOCIAL_ICONS, SITE_ICP, SITE_ICP_LINK } from "@config";
+import { USER_NAME, USER_SITE, USER_FOOTER_SOCIAL_ICONS, SITE_ICP, SITE_ICP_LINK, SITE_POLICE_BEIAN, SITE_POLICE_BEIAN_LINK } from "@config";
 ---
 
 <footer class="footer bg-base-100 py-2 px-4 md:p-10 rounded-xl shadow-lg gap-y-2 md:gap-4">
@@ -64,17 +64,30 @@ import { USER_NAME, USER_SITE, USER_FOOTER_SOCIAL_ICONS, SITE_ICP, SITE_ICP_LINK
     </div>
   </div>
 
-  {/* ICP 单独一行 */}
-  {SITE_ICP && (
-    <div class="mt-2 text-xs md:text-sm">
-      <a
-        href={SITE_ICP_LINK}
-        target="_blank"
-        rel="noopener"
-        class="font-bold"
-      >
-        {SITE_ICP}
-      </a>
+  {/* ICP 和公安备案信息 */}
+  {(SITE_ICP || SITE_POLICE_BEIAN) && (
+    <div class="mt-2 text-xs md:text-sm flex flex-col gap-1">
+      {SITE_ICP && (
+        <a
+          href={SITE_ICP_LINK}
+          target="_blank"
+          rel="noopener"
+          class="font-bold hover:text-primary transition-colors"
+        >
+          {SITE_ICP}
+        </a>
+      )}
+      {SITE_POLICE_BEIAN && (
+        <a
+          href={SITE_POLICE_BEIAN_LINK}
+          target="_blank"
+          rel="noopener"
+          class="font-bold hover:text-primary transition-colors flex items-center gap-1"
+        >
+          <Icon name="ri:shield-check-line" class="text-sm" />
+          {SITE_POLICE_BEIAN}
+        </a>
+      )}
     </div>
   )}
 </nav>

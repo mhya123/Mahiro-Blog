@@ -18,8 +18,12 @@ site:
     height: 60vh
     images:
       - https://t.alcy.cc/moez
-  icp: 蜀ICP备XXXXXXXXX
+  icp: 蜀ICP备2025178844号-2
   icp_link: https://beian.miit.gov.cn/
+  police_beian: 
+  police_beian_code: 11010802033243
+  police_beian_link: https://beian.mps.gov.cn/#/query/webSearch?code=11010802033243
+  
   pages:
     home:
       title: Mahiro's Blog
@@ -53,11 +57,11 @@ site:
       href: /
       svg: material-symbols:home-outline-rounded
       target: _self
-    - id: write
-      text: 写作
-      href: /write
-      svg: material-symbols:edit-square-outline-rounded
-      target: _self
+    # - id: write
+    #   text: 写作
+    #   href: /write
+    #   svg: material-symbols:edit-square-outline-rounded
+    #   target: _self
     - id: navigation
       text: 导航
       href: /navigation
@@ -158,10 +162,10 @@ comments:
   enable: true
   type: giscus
   giscus:
-    repo: kobaridev/gsc
-    repoId: R_kgDOPTM-mA
+    repo: mhya123/giscus
+    repoId: R_kgDORMm8IQ
     category: General
-    categoryId: DIC_kwDOPTM-mM4CtcFq
+    categoryId: DIC_kwDORMm8Ic4C2HoO
     mapping: pathname
     lang: zh-CN
     inputPosition: top
