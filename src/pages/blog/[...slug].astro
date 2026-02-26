@@ -52,8 +52,8 @@ const displayDate = blog.data.pubDate
 const url = new URL(`/blog/${blog.slug}`, Astro.url.origin);
 
 // 构建时获取 git 提交历史
-const owner = GITHUB_CONFIG.owner;
-const repo = GITHUB_CONFIG.repo;
+const owner = GITHUB_CONFIG?.owner || '';
+const repo = GITHUB_CONFIG?.repo || '';
 const commits = getFileCommits(`src/content/blog/${blog.id}`, owner, repo);
 ---
 

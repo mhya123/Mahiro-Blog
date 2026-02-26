@@ -26,6 +26,8 @@ site:
     enable: true
     content: "🎉 欢迎来到 Mahiro's Blog！网站持续建设中~"
     type: info  # info | success | warning | error
+    size: lg    # sm | md | lg
+    closable: false  # 是否可以关闭
   police_beian: 
   police_beian_code: 11010802033243
   police_beian_link: https://beian.mps.gov.cn/#/query/webSearch?code=11010802033243

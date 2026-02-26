@@ -113,6 +113,8 @@ export interface SiteConfig {
     enable: boolean;
     content: string;
     type?: string;
+    size?: string;
+    closable?: boolean;
   };
 }
 

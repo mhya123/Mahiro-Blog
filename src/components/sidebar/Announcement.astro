@@ -2,12 +2,12 @@
 /**
  * 公告组件 - 显示在文章列表上方
  * 使用当前主题的 base 颜色自适应
- * 支持通过关闭按钮隐藏（当前会话内记忆）
+ * 支持配置尺寸(sm/md/lg)和是否可关闭
  */
 import { ANNOUNCEMENT_CONFIG } from "@config";
 import { Icon } from "astro-icon/components";
 
-const { enable, content, type = 'info' } = ANNOUNCEMENT_CONFIG;
+const { enable, content, type = 'info', size = 'md', closable = true } = ANNOUNCEMENT_CONFIG;
 
 const iconMap: Record<string, string> = {
   info: 'lucide:megaphone',
@@ -15,54 +15,66 @@ const iconMap: Record<string, string> = {
   warning: 'lucide:alert-triangle',
   error: 'lucide:alert-circle',
 };
+
+const sizeClasses: Record<string, { padding: string; text: string; icon: string; iconBg: string }> = {
+  sm: { padding: 'px-3 py-2', text: 'text-xs', icon: 'w-3.5 h-3.5', iconBg: 'p-1.5' },
+  md: { padding: 'px-4 py-3', text: 'text-sm', icon: 'w-4 h-4', iconBg: 'p-2' },
+  lg: { padding: 'px-5 py-4', text: 'text-base', icon: 'w-5 h-5', iconBg: 'p-2.5' },
+};
+
+const s = sizeClasses[size] || sizeClasses.md;
 ---
 
 {enable && content && (
-  <div id="announcement-card" class="announcement-banner rounded-2xl shadow-sm border border-base-200 bg-base-100 px-4 py-3 mb-4 transition-all">
+  <div id="announcement-card" class={`announcement-banner rounded-2xl shadow-sm border border-base-200 bg-base-100 ${s.padding} mb-4 transition-all`}>
     <div class="flex items-center gap-3 w-full">
-      <div class="rounded-full bg-primary/10 p-2 shrink-0">
-        <Icon name={iconMap[type] || 'lucide:megaphone'} class="w-4 h-4 text-primary" />
+      <div class={`rounded-full bg-primary/10 ${s.iconBg} shrink-0`}>
+        <Icon name={iconMap[type] || 'lucide:megaphone'} class={`${s.icon} text-primary`} />
       </div>
-      <span class="flex-1 text-sm text-base-content/80 leading-relaxed">{content}</span>
-      <button
-        id="announcement-close-btn"
-        class="btn btn-ghost btn-xs btn-circle shrink-0 text-base-content/40 hover:text-base-content"
-        aria-label="关闭公告"
-      >
-        <Icon name="lucide:x" class="w-3.5 h-3.5" />
-      </button>
+      <span class={`flex-1 ${s.text} text-base-content/80 leading-relaxed`}>{content}</span>
+      {closable && (
+        <button
+          id="announcement-close-btn"
+          class="btn btn-ghost btn-xs btn-circle shrink-0 text-base-content/40 hover:text-base-content"
+          aria-label="关闭公告"
+        >
+          <Icon name="lucide:x" class="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   </div>
 )}
 
-<script is:inline>
-  (function() {
-    function initAnnouncement() {
-      var card = document.getElementById('announcement-card');
-      var btn = document.getElementById('announcement-close-btn');
-      if (!card || !btn) return;
+{closable && (
+  <script is:inline>
+    (function() {
+      function initAnnouncement() {
+        var card = document.getElementById('announcement-card');
+        var btn = document.getElementById('announcement-close-btn');
+        if (!card || !btn) return;
 
-      if (sessionStorage.getItem('announcement-dismissed')) {
-        card.style.display = 'none';
-        return;
+        if (sessionStorage.getItem('announcement-dismissed')) {
+          card.style.display = 'none';
+          return;
+        }
+
+        btn.addEventListener('click', function() {
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.98)';
+          card.style.transition = 'all 0.2s ease-out';
+          setTimeout(function() {
+            card.style.display = 'none';
+          }, 200);
+          sessionStorage.setItem('announcement-dismissed', '1');
+        });
       }
 
-      btn.addEventListener('click', function() {
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.98)';
-        card.style.transition = 'all 0.2s ease-out';
-        setTimeout(function() {
-          card.style.display = 'none';
-        }, 200);
-        sessionStorage.setItem('announcement-dismissed', '1');
-      });
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initAnnouncement);
-    } else {
-      initAnnouncement();
-    }
-    document.addEventListener('astro:page-load', initAnnouncement);
-  })();
-</script>
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAnnouncement);
+      } else {
+        initAnnouncement();
+      }
+      document.addEventListener('astro:page-load', initAnnouncement);
+    })();
+  </script>
+)}
