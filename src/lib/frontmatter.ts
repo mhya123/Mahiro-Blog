@@ -1,7 +1,9 @@
 import yaml from 'js-yaml'
 
 export function parseFrontmatter(text: string): { data: any, content: string } {
-    const match = text.match(/^---\n([\s\S]+?)\n---\n([\s\S]*)$/)
+    // Normalize CRLF to LF for consistent parsing across OS
+    const normalized = text.replace(/\r\n/g, '\n')
+    const match = normalized.match(/^---\n([\s\S]+?)\n---\n([\s\S]*)$/)
     if (match) {
         try {
             const data = yaml.load(match[1])
@@ -10,7 +12,7 @@ export function parseFrontmatter(text: string): { data: any, content: string } {
             console.error('Failed to parse frontmatter', e)
         }
     }
-    return { data: {}, content: text }
+    return { data: {}, content: normalized }
 }
 
 export function stringifyFrontmatter(data: any, content: string): string {
