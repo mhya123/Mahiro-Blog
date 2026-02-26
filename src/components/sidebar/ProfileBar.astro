@@ -101,7 +101,7 @@ const getCategoryDisplayName = (category: string): string => {
       
     <!-- 社交图标 - 恢复原始样式 -->  
     <div class="mt-4 pt-3 border-t border-base-content/20">  
-      <div class="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-2 justify-items-center">  
+      <div class="flex flex-wrap gap-2 justify-center">  
         {USER_SIDEBAR_SOCIAL_ICONS.map((icon) => {
           let href = icon.href;
           if ((icon.svg.includes('mail') || (icon.svg.includes('at-line') && !icon.svg.includes('wechat'))) && !href.startsWith('mailto:')) {

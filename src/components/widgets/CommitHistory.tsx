@@ -90,11 +90,11 @@ export default function CommitHistory({ filePath }: CommitHistoryProps) {
     }, [isOpen, filePath]);
 
     return (
-        <>
+        <div className="relative">
             <button
                 type="button"
                 className="btn btn-outline btn-sm font-normal text-base-content/70 hover:text-base-content relative overflow-hidden group"
-                onClick={() => setIsOpen(true)}
+                onClick={() => setIsOpen(!isOpen)}
                 aria-label="View Revision History"
             >
                 <div className="absolute inset-0 bg-base-content/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
@@ -105,8 +105,10 @@ export default function CommitHistory({ filePath }: CommitHistoryProps) {
             </button>
 
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 sm:p-6 transition-opacity">
-                    <div className="bg-base-100 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-base-200 outline-none">
+                <>
+                    {/* 点击外部关闭 */}
+                    <div className="fixed inset-0 z-[99]" onClick={() => setIsOpen(false)} />
+                    <div className="absolute right-0 top-full mt-2 z-[100] w-[90vw] sm:w-[480px] max-h-[70vh] flex flex-col overflow-hidden bg-base-100 rounded-2xl shadow-2xl border border-base-200 outline-none">
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-base-200 bg-base-100/50 backdrop-blur shrink-0">
                             <h3 className="font-bold text-lg flex items-center gap-2 text-base-content">
@@ -233,8 +235,8 @@ export default function CommitHistory({ filePath }: CommitHistoryProps) {
                             )}
                         </div>
                     </div>
-                </div>
+                </>
             )}
-        </>
+        </div>
     );
 }
