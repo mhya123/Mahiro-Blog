@@ -96,6 +96,7 @@ export interface SiteConfig {
   banner?: {
     images: string[];
     height: string;
+    defaultMode?: string;
     enableRandom?: boolean;
     randomUrl?: string;
     randomCount?: number;
@@ -108,6 +109,11 @@ export interface SiteConfig {
   police_beian?: string;
   police_beian_code?: string;
   police_beian_link?: string;
+  announcement?: {
+    enable: boolean;
+    content: string;
+    type?: string;
+  };
 }
 
 export interface UserConfig {

@@ -4,6 +4,7 @@ import PostCard from "@components/PostCard.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import Pagination from "@components/widgets/Pagination.astro";
 import CardGroup from "@components/temple/CardGroup.astro";
+import Announcement from "@components/sidebar/Announcement.astro";
 import { Icon } from "astro-icon/components";
 import { t } from "@config";
 import { generatePageLinks } from "@utils/blogUtils";
@@ -84,6 +85,9 @@ const pageLinks = generatePageLinks(totalPages);
       </div>
     </a>
   </CardGroup>
+
+  <!-- Announcement -->
+  <Announcement />
 
   <!-- Blog Post List -->
   <CardGroup cols="1">

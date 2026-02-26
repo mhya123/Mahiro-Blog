@@ -26,9 +26,13 @@ export const DATE_FORMAT = config.site.date_format;
 export const BANNER_CONFIG = config.site.banner;
 export const BANNER_IMAGES = config.site.banner?.images || [];
 export const BANNER_HEIGHT = config.site.banner?.height || "60vh";
+export const DEFAULT_BANNER_MODE = config.site.banner?.defaultMode || "normal";
 export const SITE_PAGES = config.site.pages || {};
 // 在现有导出后添加  
 export const TYPEWRITER_TEXTS = config.site.pages?.home?.typewriterTexts || [];
+
+// 公告配置
+export const ANNOUNCEMENT_CONFIG = config.site.announcement || { enable: false, content: '', type: 'info' };
 
 // 博客配置
 export const BLOG_CONFIG = config.site.blog;

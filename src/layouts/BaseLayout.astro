@@ -7,6 +7,7 @@ import {
   SITE_THEME,
   umamiConfig,
   SITE_PAGES,
+  DEFAULT_BANNER_MODE,
 } from "@config";
 import { ClientRouter } from "astro:transitions";
 import ElementCrossing from "astro-vtbot/components/ElementCrossing.astro";
@@ -91,10 +92,10 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     </script>
 
     <!-- 主题管理脚本 -->
-    <script define:vars={{ SITE_THEME }} is:inline>
+    <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>
       (function () {
         const storedTheme = localStorage.getItem("theme");
-        const storedBannerMode = localStorage.getItem("banner-mode") || "normal";
+        const storedBannerMode = localStorage.getItem("banner-mode") || DEFAULT_BANNER_MODE;
         const prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)",
         ).matches;
@@ -166,10 +167,10 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     <CookieConsent />
 
     <!-- 其余脚本保持不变 -->
-    <script define:vars={{ SITE_THEME }} is:inline>
+    <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>
       document.addEventListener("astro:after-swap", () => {
         const storedTheme = localStorage.getItem("theme");
-        const storedBannerMode = localStorage.getItem("banner-mode") || "normal";
+        const storedBannerMode = localStorage.getItem("banner-mode") || DEFAULT_BANNER_MODE;
         
         if (storedTheme) {
           document.documentElement.setAttribute("data-theme", storedTheme);
