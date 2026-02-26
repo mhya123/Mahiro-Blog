@@ -14,7 +14,7 @@ const initialSong = musicList[0] || {};
         <div id="mini-player-card" class="bg-neu-base/90 dark:bg-[#1a1a1a]/90 backdrop-blur-md p-4 rounded-3xl shadow-neu-out border border-white/20 dark:border-white/10 w-64 translate-y-4 opacity-0 scale-95 transition-all duration-300 origin-bottom-left pointer-events-auto">
             <div class="flex gap-4">
                 <div class="w-16 h-16 rounded-xl overflow-hidden shadow-md shrink-0">
-                    <img id="mini-cover" src={initialSong.cover || "/favicon.svg"} class="w-full h-full object-cover" alt="cover"/>
+                    <img id="mini-cover" src={initialSong.cover || "/favicon.ico"} class="w-full h-full object-cover" alt="cover"/>
                 </div>
                 <div class="flex flex-col justify-center min-w-0 flex-1">
                     <h3 id="mini-title" class="font-bold text-neu-text text-sm truncate">{initialSong.title || "RyuChan"}</h3>
@@ -38,7 +38,7 @@ const initialSong = musicList[0] || {};
         <!-- 悬浮圆形按钮 -->
         <button id="mini-fab" class="w-16 h-16 rounded-full bg-neu-base/90 dark:bg-[#1a1a1a]/90 backdrop-blur-md shadow-neu-out border border-white/20 dark:border-white/10 flex items-center justify-center relative overflow-hidden group pointer-events-auto transition-transform hover:scale-105 active:scale-95">
             <div class="absolute inset-0 rounded-full animate-spin-slow" id="mini-fab-spin" style="animation-play-state: paused;">
-                <img id="mini-fab-cover" src={initialSong.cover || "/favicon.svg"} class="w-full h-full object-cover opacity-60" alt="fab-cover"/>
+                <img id="mini-fab-cover" src={initialSong.cover || "/favicon.ico"} class="w-full h-full object-cover opacity-60" alt="fab-cover"/>
             </div>
             <!-- Center Icon -->
             <div class="relative z-10 w-9 h-9 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center text-white">
@@ -387,7 +387,7 @@ const initialSong = musicList[0] || {};
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: song.title || 'Unknown Title',
                     artist: song.artist || 'Unknown Artist',
-                    artwork: [{ src: song.cover || '/favicon.svg', sizes: '512x512', type: 'image/png' }]
+                    artwork: [{ src: song.cover || '/favicon.ico', sizes: '512x512', type: 'image/png' }]
                 });
             }
         }

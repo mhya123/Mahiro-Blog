@@ -10,6 +10,7 @@ import { DATE_FORMAT } from "@config";
 import MainCard from "@/components/MainCard.astro";
 import Giscus from "@components/comments/Giscus.astro";
 import Waline from "@components/comments/Waline.astro";
+import CommitHistory from "@components/widgets/CommitHistory";
 import { commentsConfig } from "@config";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 import { Icon } from "astro-icon/components";
@@ -63,9 +64,13 @@ const url = new URL(`/blog/${blog.slug}`, Astro.url.origin);
     image={blog.data.image}
     infoIcon="lucide:info"
   >
-    <div class="flex justify-end">
-      <a href={`/write?slug=${blog.slug}`} class="btn btn-primary btn-sm text-white" aria-label="Edit Article">
+    <div class="flex justify-end gap-2 mb-2">
+      <CommitHistory client:load filePath={blog.id} />
+      <a href={`/write?slug=${blog.slug}`} class="btn btn-outline btn-sm font-normal text-base-content/70 hover:text-base-content" aria-label="Edit Article">
         <Icon name="lucide:edit" class="w-4 h-4" />
+        <span class="hidden sm:inline">Edit</span>
+      </a>
+    </div>
         <span class="hidden sm:inline">Edit</span>
       </a>
     </div>

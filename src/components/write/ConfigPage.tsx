@@ -78,6 +78,31 @@ export function ConfigPage() {
     const loadConfig = async () => {
         try {
             setLoading(true)
+
+            // 尝试通过本地 API 获取最新配置（解决实时读取问题）
+            try {
+                const timestamp = new Date().getTime();
+                const res = await fetch(`/api/config.yaml?t=${timestamp}`);
+                if (res.ok) {
+                    const content = await res.text();
+                    if (isDirty) {
+                        toast.info('检测到本地未保存更改，已跳过线上配置覆盖');
+                    } else {
+                        setConfigContent(content);
+                        try {
+                            setParsedConfig(yaml.load(content));
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+                    setLastFetchedContent(content);
+                    return; // 成功从本地 API 获取则提前返回
+                }
+            } catch (err) {
+                console.warn('Failed to fetch local config:', err);
+            }
+
+            // Fallback: 如果没有本地 API 或出错，则尝试通过 GitHub API 访问
             let token: string | undefined
             try {
                 token = await getAuthToken()
@@ -91,7 +116,7 @@ export function ConfigPage() {
                 token,
                 GITHUB_CONFIG.OWNER,
                 GITHUB_CONFIG.REPO,
-                'ryuchan.config.yaml',
+                'mahiro.config.yaml',
                 GITHUB_CONFIG.BRANCH
             )
             if (content) {
@@ -249,7 +274,7 @@ export function ConfigPage() {
             toast.loading('正在创建配置文件 Blob...', { id: toastId })
             const { sha: configSha } = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, configBase64, 'base64')
             treeItems.push({
-                path: 'ryuchan.config.yaml',
+                path: 'mahiro.config.yaml',
                 mode: '100644',
                 type: 'blob',
                 sha: configSha
@@ -423,14 +448,14 @@ export function ConfigPage() {
                     <div className="flex h-64 items-center justify-center text-base-content/50">
                         <span className="loading loading-spinner loading-lg text-primary"></span>
                     </div>
-                ) : (!isAuth && !configContent) ? (
+                ) : (!isAuth) ? (
                     <div className="flex flex-col items-center justify-center h-full flex-1 p-12 text-center space-y-6">
                         <div className="w-24 h-24 bg-base-200 rounded-full flex items-center justify-center mb-4">
                             <span className="text-4xl">🔒</span>
                         </div>
                         <div className="space-y-2">
                             <h3 className="text-xl font-bold">需要身份验证</h3>
-                            <p className="text-base-content/60">请导入您的私钥以开始编辑配置</p>
+                            <p className="text-base-content/60">只有提交了授权密钥后才可以查看和修改此页面。</p>
                         </div>
                         <button onClick={handleImportKey} className="btn btn-primary btn-wide shadow-lg shadow-primary/20">
                             导入密钥 (.pem)

@@ -1,0 +1,128 @@
+---
+/**
+ * Cookie 同意弹窗组件
+ * 首次访问时在页面底部显示，用户接受或拒绝后存储到 localStorage，不再显示。
+ * 使用纯 Astro + 内联脚本，无需 React 水合。
+ */
+---
+
+<div
+  id="cookie-consent-banner"
+  class="fixed bottom-0 inset-x-0 z-[200] translate-y-full transition-transform duration-500 ease-out pointer-events-none"
+  aria-hidden="true"
+  role="dialog"
+  aria-label="Cookie consent"
+>
+  <div class="mx-auto max-w-3xl p-4 sm:p-6">
+    <div
+      class="rounded-2xl border border-base-200 bg-base-100/95 backdrop-blur-xl shadow-2xl p-5 sm:p-6 pointer-events-auto"
+    >
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <!-- Cookie Icon -->
+        <div
+          class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-primary"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"
+            ></path>
+            <path d="M8.5 8.5v.01"></path>
+            <path d="M16 15.5v.01"></path>
+            <path d="M12 12v.01"></path>
+            <path d="M11 17v.01"></path>
+            <path d="M7 14v.01"></path>
+          </svg>
+        </div>
+
+        <!-- Text -->
+        <div class="flex-1 min-w-0">
+          <h3 class="font-bold text-base-content text-sm sm:text-base mb-1">
+            🍪 Cookie 使用提示
+          </h3>
+          <p class="text-xs sm:text-sm text-base-content/60 leading-relaxed">
+            本站使用 Cookies
+            和本地存储来提升您的浏览体验、记住您的偏好设置并进行访问分析。点击「接受」即表示您同意我们的使用。
+          </p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-2 shrink-0 w-full sm:w-auto">
+          <button
+            id="cookie-decline-btn"
+            class="btn btn-ghost btn-sm flex-1 sm:flex-initial text-base-content/70 hover:text-base-content"
+          >
+            拒绝
+          </button>
+          <button
+            id="cookie-accept-btn"
+            class="btn btn-primary btn-sm flex-1 sm:flex-initial text-white shadow-md hover:shadow-lg transition-shadow"
+          >
+            接受
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var CONSENT_KEY = "cookie-consent";
+
+    function initCookieConsent() {
+      var consent = localStorage.getItem(CONSENT_KEY);
+      if (consent) return; // 用户已做出选择，不再显示
+
+      var banner = document.getElementById("cookie-consent-banner");
+      if (!banner) return;
+
+      // 延迟显示弹窗，避免页面加载时立即弹出
+      setTimeout(function () {
+        banner.classList.remove("translate-y-full");
+        banner.classList.add("translate-y-0");
+        banner.classList.remove("pointer-events-none");
+        banner.setAttribute("aria-hidden", "false");
+      }, 1500);
+
+      var acceptBtn = document.getElementById("cookie-accept-btn");
+      var declineBtn = document.getElementById("cookie-decline-btn");
+
+      function hideBanner() {
+        banner.classList.remove("translate-y-0");
+        banner.classList.add("translate-y-full");
+        banner.classList.add("pointer-events-none");
+        banner.setAttribute("aria-hidden", "true");
+      }
+
+      if (acceptBtn) {
+        acceptBtn.addEventListener("click", function () {
+          localStorage.setItem(CONSENT_KEY, "accepted");
+          hideBanner();
+        });
+      }
+
+      if (declineBtn) {
+        declineBtn.addEventListener("click", function () {
+          localStorage.setItem(CONSENT_KEY, "declined");
+          hideBanner();
+        });
+      }
+    }
+
+    // 支持 Astro 的页面导航
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initCookieConsent);
+    } else {
+      initCookieConsent();
+    }
+    document.addEventListener("astro:page-load", initCookieConsent);
+  })();
+</script>
