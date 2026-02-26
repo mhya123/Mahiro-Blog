@@ -105,8 +105,8 @@ anime:
     apiKey: 08a6bef260044f70c150251c79f2e476
     listId: '8556173'
 github:
-  owner: kobaridev
-  repo: RyuChan
+  owner: mhya123
+  repo: Mahiro-Blog
   branch: main
   appId: 在部署端配置环境变量
   encryptKey: wudishiduomejimo
