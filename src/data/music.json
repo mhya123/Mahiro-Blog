@@ -1,1 +1,26 @@
-[]
+[
+    {
+        "title": "Улетали птицами гордыми",
+        "artist": "NUANHAO / MINGYANG / Killer",
+        "cover": "https://api.qijieya.cn/meting/?server=netease&type=pic&id=109951164231706251",
+        "url": "https://api.qijieya.cn/meting/?server=netease&type=url&id=1377164042",
+        "lrc": "https://api.qijieya.cn/meting/?server=netease&type=lrc&id=1377164042",
+        "duration": "03:49"
+    },
+    {
+        "title": "Все так, як має бути",
+        "artist": "Один в каное",
+        "cover": "https://api.qijieya.cn/meting/?server=netease&type=pic&id=109951168087568498",
+        "url": "https://api.qijieya.cn/meting/?server=netease&type=url&id=1478156555",
+        "lrc": "https://api.qijieya.cn/meting/?server=netease&type=lrc&id=1478156555",
+        "duration": "01:34"
+    },
+    {
+        "title": "ilove urr girl",
+        "artist": "realdemmy",
+        "cover": "https://api.qijieya.cn/meting/?server=netease&type=pic&id=109951167972017640",
+        "url": "https://api.qijieya.cn/meting/?server=netease&type=url&id=1456653112",
+        "lrc": "https://api.qijieya.cn/meting/?server=netease&type=lrc&id=1456653112",
+        "duration": "01:56"
+    }
+]

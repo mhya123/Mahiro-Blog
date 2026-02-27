@@ -183,7 +183,7 @@ export interface Config {
   user: UserConfig;
   umami?: UmamiConfig;
   comments?: CommentsConfig;
-  anime?: AnimeConfig;
+
   github?: GithubConfig;
   music?: {
     api?: string;

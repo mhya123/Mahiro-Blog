@@ -1,8 +1,8 @@
 #!/bin/bash
-# Chinese (Simplified) Language File for Ryuchan Updater
+# Chinese (Simplified) Language File for Mahiro Updater
 
 # --- Header ---
-MSG_HEADER_TITLE="Ryuchan 项目更新辅助脚本"
+MSG_HEADER_TITLE="Mahiro 项目更新辅助脚本"
 
 # --- Warnings and Prompts ---
 MSG_WARNING_TITLE="⚠️  警告: 此脚本将从官方仓库拉取最新文件并覆盖您的本地文件。"
@@ -17,7 +17,7 @@ ERR_GIT_DIRTY_ADVICE="为了安全起见，请先提交您的修改，然后再�
 MSG_GIT_CLEAN="✅ 本地Git状态干净，准备开始更新。"
 
 # --- Steps ---
-MSG_STEP1_CLONE="\n${C_BLUE}第一步: 正在从 GitHub 克隆最新的 Ryuchan 仓库...${C_NC}"
+MSG_STEP1_CLONE="\n${C_BLUE}第一步: 正在从 GitHub 克隆最新的 Mahiro 仓库...${C_NC}"
 ERR_STEP1_CLONE_FAILED="❌ 克隆失败，请检查您的网络连接或 Git 配置。"
 MSG_STEP1_CLONE_SUCCESS="✅ 最新代码克隆成功！"
 

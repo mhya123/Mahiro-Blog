@@ -1,70 +1,84 @@
 ---
-import { getMusicList } from "@/data/music";
-// 构建时通过 Meting API 获取播放列表
-const musicList = await getMusicList();
+import musicJson from "@/data/music.json";
+// 初始化用本地歌单（不阻塞渲染），完整歌单由客户端异步加载
+const musicList = (musicJson as any[]) || [];
 const initialPlaylist = JSON.stringify(musicList);
 const initialSong = musicList[0] || {};
 ---
-<div transition:persist="ryuchan-global-audio-wrapper">
+<div transition:persist="mahiro-global-audio-wrapper">
     <!-- 全局音频元素，持久化 -->
     <audio id="global-audio-player"></audio>
 
     <!-- 迷你播放器容器，只在非音乐页面显示 -->
-    <div id="mini-player-container" class="fixed bottom-8 left-8 z-[999] flex flex-col items-start gap-4 pointer-events-none opacity-0 transition-opacity duration-300">
-        <!-- 展开的卡片 -->
-        <div id="mini-player-card" class="bg-neu-base/90 dark:bg-[#1a1a1a]/90 backdrop-blur-md p-4 rounded-3xl shadow-neu-out border border-white/20 dark:border-white/10 w-64 translate-y-4 opacity-0 scale-95 transition-all duration-300 origin-bottom-left pointer-events-auto">
-            <div class="flex gap-4">
-                <div class="w-16 h-16 rounded-xl overflow-hidden shadow-md shrink-0">
-                    <img id="mini-cover" src={initialSong.cover || "/favicon.ico"} class="w-full h-full object-cover" alt="cover"/>
+    <div id="mini-player-container" class="fixed bottom-6 left-6 z-[999] flex items-end gap-3 pointer-events-none opacity-0 transition-opacity duration-300">
+        
+        <!-- 悬浮圆形按钮 (FAB) -->
+        <div class="relative group pointer-events-auto">
+            <!-- 环形进度条背景 -->
+            <svg class="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)] -rotate-90 pointer-events-none opacity-50 transition-opacity group-hover:opacity-100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="4" class="text-base-300 dark:text-base-content/10" />
+                <circle id="mini-progress-ring" cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="301.59" stroke-dashoffset="301.59" class="text-primary transition-all duration-300 ease-linear" stroke-linecap="round" />
+            </svg>
+
+            <button id="mini-fab" class="w-14 h-14 rounded-full bg-base-100/90 dark:bg-base-300/90 backdrop-blur-xl shadow-lg border border-base-content/5 flex items-center justify-center relative overflow-hidden transition-transform duration-300 hover:scale-105 active:scale-95 z-10">
+                <div class="absolute inset-0 rounded-full animate-spin-slow" id="mini-fab-spin" style="animation-play-state: paused;">
+                    <img id="mini-fab-cover" src={initialSong.cover || "/favicon.ico"} class="w-full h-full object-cover opacity-80" alt="cover"/>
                 </div>
-                <div class="flex flex-col justify-center min-w-0 flex-1">
-                    <h3 id="mini-title" class="font-bold text-neu-text text-sm truncate">{initialSong.title || "RyuChan"}</h3>
-                    <p id="mini-artist" class="text-xs text-neu-text-muted truncate mt-1">{initialSong.artist || "Music"}</p>
+                <!-- 遮罩 & 图标 -->
+                <div class="absolute inset-0 bg-base-content/20 dark:bg-black/40 flex items-center justify-center backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <svg id="mini-fab-icon-play" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white fill-white ml-1"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <svg id="mini-fab-icon-pause" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white fill-white hidden"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                 </div>
+                <!-- 播放中时的跳动音轨动画 (鼠标移开时显示) -->
+                <div id="mini-fab-visualizer" class="absolute inset-0 flex items-center justify-center gap-0.5 bg-black/30 backdrop-blur-sm group-hover:hidden transition-opacity">
+                    <div class="w-0.5 bg-white h-2 rounded-full transition-all duration-300"></div>
+                    <div class="w-0.5 bg-white h-4 rounded-full transition-all duration-300"></div>
+                    <div class="w-0.5 bg-white h-2.5 rounded-full transition-all duration-300"></div>
+                    <div class="w-0.5 bg-white h-3.5 rounded-full transition-all duration-300"></div>
+                </div>
+            </button>
+        </div>
+
+        <!-- 展开的拉片框 (从 FAB 旁边滑出) -->
+        <div id="mini-player-card" class="bg-base-100/90 dark:bg-base-300/90 backdrop-blur-xl h-14 pl-3 pr-2 rounded-full shadow-lg border border-base-content/5 flex items-center gap-3 w-56 -translate-x-full opacity-0 pointer-events-none transition-all duration-500 ease-\[cubic-bezier(0.23\,1\,0.32\,1)\] absolute left-16 z-0">
+            <!-- 歌曲信息 -->
+            <div class="flex flex-col justify-center min-w-0 flex-1 py-1">
+                <a href="/music" class="font-bold text-base-content text-sm truncate leading-tight hover:text-primary transition-colors cursor-pointer" id="mini-title" title="Go to Music Page">{initialSong.title || "Mahiro"}</a>
+                <p id="mini-artist" class="text-[10px] text-base-content/60 truncate uppercase tracking-wider">{initialSong.artist || "Music"}</p>
             </div>
-            <div class="flex justify-between items-center mt-4 px-4">
-                <button id="mini-prev" class="text-neu-text-muted hover:text-neu-text transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></svg>
+            
+            <!-- 控制按钮 -->
+            <div class="flex items-center gap-1 shrink-0">
+                <button id="mini-prev" class="w-8 h-8 rounded-full flex items-center justify-center text-base-content/70 hover:text-primary hover:bg-primary/10 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5" stroke="currentColor" stroke-width="2"/></svg>
                 </button>
-                <button id="mini-play" class="w-14 h-14 rounded-full bg-neu-btn-bg text-neu-btn-text shadow-neu-out flex items-center justify-center hover:scale-105 transition-transform">
-                    <svg id="mini-icon-play" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 fill-current"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    <svg id="mini-icon-pause" class="hidden fill-current" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                </button>
-                <button id="mini-next" class="text-neu-text-muted hover:text-neu-text transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></svg>
+                <button id="mini-next" class="w-8 h-8 rounded-full flex items-center justify-center text-base-content/70 hover:text-primary hover:bg-primary/10 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19" stroke="currentColor" stroke-width="2"/></svg>
                 </button>
             </div>
         </div>
-
-        <!-- 悬浮圆形按钮 -->
-        <button id="mini-fab" class="w-16 h-16 rounded-full bg-neu-base/90 dark:bg-[#1a1a1a]/90 backdrop-blur-md shadow-neu-out border border-white/20 dark:border-white/10 flex items-center justify-center relative overflow-hidden group pointer-events-auto transition-transform hover:scale-105 active:scale-95">
-            <div class="absolute inset-0 rounded-full animate-spin-slow" id="mini-fab-spin" style="animation-play-state: paused;">
-                <img id="mini-fab-cover" src={initialSong.cover || "/favicon.ico"} class="w-full h-full object-cover opacity-60" alt="fab-cover"/>
-            </div>
-            <!-- Center Icon -->
-            <div class="relative z-10 w-9 h-9 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center text-white">
-                <div class="w-3.5 h-3.5 flex gap-0.5 items-end justify-center group-hover:hidden" id="mini-fab-visualizer">
-                    <div class="w-0.5 bg-white h-1.5 rounded-full transition-all duration-300"></div>
-                    <div class="w-0.5 bg-white h-3 rounded-full transition-all duration-300"></div>
-                    <div class="w-0.5 bg-white h-2 rounded-full transition-all duration-300"></div>
-                    <div class="w-0.5 bg-white h-2.5 rounded-full transition-all duration-300"></div>
-                </div>
-                <!-- Play/Pause Icons (Shown on Hover) -->
-                <div id="mini-fab-controls" class="hidden group-hover:flex items-center justify-center w-full h-full">
-                    <svg id="mini-fab-icon-play" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 fill-current ml-0.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    <svg id="mini-fab-icon-pause" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 fill-current hidden"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                </div>
-            </div>
-        </button>
     </div>
 </div>
 
 <script define:vars={{ initialPlaylist }} is:inline>
     class GlobalMusicPlayer {
         constructor() {
-            // First time init: assume elements are present
-            this.playlist = JSON.parse(initialPlaylist);
-            this.currentIndex = 0;
+            // Attempt to restore persistent playlist
+            let savedPlaylist = null;
+            try {
+                const stored = localStorage.getItem('mahiro_music_playlist');
+                if (stored) savedPlaylist = JSON.parse(stored);
+            } catch(e) { console.warn("Failed to parse saved playlist"); }
+
+            // Initial state
+            let savedIndex = 0;
+            try {
+                const storedIdx = localStorage.getItem('mahiro_music_current_index');
+                if (storedIdx !== null) savedIndex = parseInt(storedIdx, 10);
+            } catch(e) {}
+
+            this.playlist = (savedPlaylist && savedPlaylist.length > 0) ? savedPlaylist : JSON.parse(initialPlaylist);
+            this.currentIndex = (savedIndex >= 0 && savedIndex < this.playlist.length) ? savedIndex : 0;
             this.isPlaying = false;
             this.isShuffle = false;
             // 'all' = Loop All (Sequential), 'one' = Loop One, 'off' = No Loop (Stop at end)
@@ -362,10 +376,40 @@ const initialSong = musicList[0] || {};
              });
         }
 
+        generateShuffleOrder() {
+            this.shuffleOrder = Array.from({length: this.playlist.length}, (_, i) => i);
+            // Fisher-Yates shuffle
+            for (let i = this.shuffleOrder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [this.shuffleOrder[i], this.shuffleOrder[j]] = [this.shuffleOrder[j], this.shuffleOrder[i]];
+            }
+            
+            // 将当前播放的歌曲放到洗牌数组的第一个，确保洗牌后下一首不会马上重复当前这首
+            const currentIdxInShuffle = this.shuffleOrder.indexOf(this.currentIndex);
+            if (currentIdxInShuffle !== -1) {
+                [this.shuffleOrder[0], this.shuffleOrder[currentIdxInShuffle]] = [this.shuffleOrder[currentIdxInShuffle], this.shuffleOrder[0]];
+            }
+            this.shuffleIndex = 0;
+        }
+
         loadSong(index, autoPlay = true) {
             if(index < 0 || index >= this.playlist.length) return;
             
             this.currentIndex = index;
+
+            // Save to localStorage
+            try {
+                localStorage.setItem('mahiro_music_current_index', this.currentIndex.toString());
+            } catch(e) {}
+
+            // 如果处于随机播放模式，同步洗牌进度
+            if (this.isShuffle && this.shuffleOrder && this.shuffleOrder.length === this.playlist.length) {
+                const idx = this.shuffleOrder.indexOf(index);
+                if (idx !== -1) {
+                    this.shuffleIndex = idx;
+                }
+            }
+
             const song = this.playlist[index];
             
             if (this.audio.src !== song.url && this.audio.src !== new URL(song.url, document.baseURI).href) {
@@ -403,17 +447,15 @@ const initialSong = musicList[0] || {};
         
         prevSong() {
             let newIndex;
-            if (this.isShuffle) {
-                newIndex = Math.floor(Math.random() * this.playlist.length);
-                 if (this.playlist.length > 1) {
-                     while(newIndex === this.currentIndex) {
-                         newIndex = Math.floor(Math.random() * this.playlist.length);
-                     }
+            if (this.isShuffle && this.shuffleOrder && this.shuffleOrder.length === this.playlist.length) {
+                this.shuffleIndex--;
+                if (this.shuffleIndex < 0) {
+                    this.shuffleIndex = this.shuffleOrder.length - 1;
                 }
+                newIndex = this.shuffleOrder[this.shuffleIndex];
             } else {
                 newIndex = this.currentIndex - 1;
                 if(newIndex < 0) {
-                     // If loop is off, stop or wrap? Typically prev always wraps or goes to 0
                      newIndex = this.playlist.length - 1; 
                 }
             }
@@ -425,17 +467,25 @@ const initialSong = musicList[0] || {};
             if (this.repeatMode === 'one' && isAuto) {
                  newIndex = this.currentIndex;
             } else if (this.isShuffle) {
-                newIndex = Math.floor(Math.random() * this.playlist.length);
-                 if (this.playlist.length > 1) {
-                     while(newIndex === this.currentIndex) {
-                         newIndex = Math.floor(Math.random() * this.playlist.length);
-                     }
+                if (!this.shuffleOrder || this.shuffleOrder.length !== this.playlist.length) {
+                    this.generateShuffleOrder();
+                }
+                this.shuffleIndex++;
+                if (this.shuffleIndex >= this.shuffleOrder.length) {
+                    this.generateShuffleOrder(); // 一轮播完，重新洗牌
+                    this.shuffleIndex = 1; // 0是当前这首，所以播第1首
+                    if (this.shuffleOrder.length > 1) {
+                        newIndex = this.shuffleOrder[this.shuffleIndex];
+                    } else {
+                        newIndex = this.shuffleOrder[0];
+                    }
+                } else {
+                    newIndex = this.shuffleOrder[this.shuffleIndex];
                 }
             } else {
                 newIndex = this.currentIndex + 1;
                 if(newIndex >= this.playlist.length) {
                     if (this.repeatMode === 'off' && isAuto) {
-                         // Stop playback if mode is off and end of list reached automatically
                          this.isPlaying = false;
                          this.updateUI();
                          return; 
@@ -447,26 +497,23 @@ const initialSong = musicList[0] || {};
         }
         
         toggleShuffle() {
-            // Toggle Shuffle
             this.isShuffle = !this.isShuffle;
             
             if (this.isShuffle) {
-                // Shuffle ON: Visually disable repeat preference (technically internal logic handles skip)
+                this.generateShuffleOrder();
                 this.repeatMode = 'off';
             } else {
-                // Shuffle OFF: Restore to default Sequence Loop
                 this.repeatMode = 'all';
+                this.shuffleOrder = [];
             }
             this.updateUI();
         }
 
         toggleRepeat() {
              if (this.isShuffle) {
-                 // If dragging from Shuffle -> Turn off Shuffle, go to Sequence
                  this.isShuffle = false;
                  this.repeatMode = 'all'; 
              } else {
-                 // Cycle Modes
                  if (this.repeatMode === 'all') {
                      this.repeatMode = 'one';
                  } else if (this.repeatMode === 'one') {
@@ -489,21 +536,17 @@ const initialSong = musicList[0] || {};
 
         closeMiniPlayer() {
             this.isMiniOpen = false;
-            this.miniCard?.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-            this.miniCard?.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
-            this.miniFab?.classList.remove('opacity-0', 'pointer-events-none', 'scale-0');
+            // 新版滑回动画 (横向缩回)
+            this.miniCard?.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
+            this.miniCard?.classList.remove('translate-x-0', 'opacity-100', 'pointer-events-auto');
         }
 
         openMiniPlayer() {
             this.cancelCloseMiniPlayer();
             this.isMiniOpen = true;
-            this.miniCard?.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
-            this.miniCard?.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
-            // Do NOT hide FAB completely on hover open, otherwise we can't click it!
-            // But checking previous logic: hide if mini is open.
-            // If user wants hover effect, FAB must remain visible to be hovered.
-            // So we remove the "hide fab" logic.
-            // this.miniFab?.classList.add('opacity-0', 'pointer-events-none', 'scale-0');
+            // 新版滑出动画 (横向展开)
+            this.miniCard?.classList.remove('-translate-x-full', 'opacity-0', 'pointer-events-none');
+            this.miniCard?.classList.add('translate-x-0', 'opacity-100', 'pointer-events-auto');
         }
 
         scheduleCloseMiniPlayer() {
@@ -675,9 +718,17 @@ const initialSong = musicList[0] || {};
             if(this.currentTimeEl) this.currentTimeEl.textContent = this.formatTime(currentTime);
             if(this.totalTimeEl && duration) this.totalTimeEl.textContent = this.formatTime(duration);
             
-            if(this.progressBar && duration) {
+            if(duration) {
                 const percent = (currentTime / duration) * 100;
-                this.progressBar.style.width = `${percent}%`;
+                if(this.progressBar) this.progressBar.style.width = `${percent}%`;
+
+                // Update Mini Player SVG Progress Ring
+                const ring = document.getElementById('mini-progress-ring');
+                if (ring) {
+                    const circumference = 2 * Math.PI * 48; // r=48
+                    const offset = circumference - (percent / 100) * circumference;
+                    ring.style.strokeDashoffset = offset;
+                }
             }
 
             this.syncLyrics(currentTime);

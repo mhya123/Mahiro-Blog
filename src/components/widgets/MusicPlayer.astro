@@ -112,31 +112,27 @@ const playlistData = list ? JSON.stringify(list) : "[]";
             </div>
              <!-- Playlist Container -->
             <div id="playlist-container" class="absolute inset-0 overflow-y-auto custom-scrollbar p-4 hidden">
+                <div class="text-xs text-neu-text-muted font-mono mb-3 px-1">共 {list ? list.length : 0} 首</div>
                 <ul class="space-y-3" id="playlist-list">
-                    {list && list.map((item, index) => (
+                    {list && list.slice(0, 30).map((item, index) => (
                      <li class="playlist-item group flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 border border-transparent transition-all cursor-pointer" data-index={index}>
                         <span class="font-mono text-neu-text-muted text-sm font-bold w-6 text-center group-hover:text-neu-accent transition-colors">{(index + 1).toString().padStart(2, '0')}</span>
-                        <!-- Cover -->
                         <div class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-neu-border/50">
-                            <img src={item.cover || "https://music.apple.com/assets/product/1000/images/default-cover-icon-d36802.svg"} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="cover"/>
-                            <div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-[.active]:opacity-100 transition-opacity">
-                                 <div class="w-1.5 h-4 gap-0.5 flex items-end justify-center">
-                                    <div class="w-0.5 bg-white h-2 animate-pulse"></div>
-                                    <div class="w-0.5 bg-white h-3 animate-pulse delay-75"></div>
-                                    <div class="w-0.5 bg-white h-1 animate-pulse delay-150"></div>
-                                 </div>
-                            </div>
+                            <img src={item.cover || "https://music.apple.com/assets/product/1000/images/default-cover-icon-d36802.svg"} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="cover" loading="lazy"/>
                         </div>
-                        <!-- Info -->
                         <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
                             <h3 class="font-bold text-neu-text truncate text-sm leading-none group-[.active]:text-neu-accent transition-colors">{item.title || "Unknown Title"}</h3>
                             <p class="text-[11px] text-neu-text-muted truncate uppercase tracking-wider">{item.artist || "Unknown Artist"}</p>
                         </div>
-                        <!-- Duration -->
                         <div class="text-xs font-mono text-neu-text-muted font-bold playlist-duration">{item.duration || "--:--"}</div>
                      </li>
                     ))}
                 </ul>
+                {list && list.length > 30 && (
+                  <div id="playlist-load-more" class="text-center py-4">
+                    <button class="btn btn-ghost btn-sm text-xs text-neu-text-muted" id="load-more-btn">加载更多 ({list.length - 30} 首)</button>
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -223,4 +219,94 @@ const playlistData = list ? JSON.stringify(list) : "[]";
         text-shadow: 0 0 20px oklch(var(--p) / 0.6);
     }
   </style>
+
+  <script is:inline>
+    document.addEventListener("astro:page-load", () => {
+      function setupLoadMore() {
+        const widget = document.querySelector('.music-player-widget');
+        if (!widget) return;
+
+        let playlist = JSON.parse(widget.getAttribute('data-playlist') || '[]');
+        const playlistList = document.getElementById('playlist-list');
+        let loaded = Math.min(playlist.length, 30);
+        const BATCH = 50;
+
+        function createItem(item, index) {
+          const li = document.createElement('li');
+          li.className = 'playlist-item group flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 border border-transparent transition-all cursor-pointer';
+          li.setAttribute('data-index', index);
+          li.innerHTML = `
+            <span class="font-mono text-neu-text-muted text-sm font-bold w-6 text-center group-hover:text-neu-accent transition-colors">${String(index + 1).padStart(2, '0')}</span>
+            <div class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-neu-border/50">
+              <img src="${item.cover || ''}" class="w-full h-full object-cover" alt="cover" loading="lazy"/>
+            </div>
+            <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+              <h3 class="font-bold text-neu-text truncate text-sm leading-none">${item.title || 'Unknown'}</h3>
+              <p class="text-[11px] text-neu-text-muted truncate uppercase tracking-wider">${item.artist || 'Unknown'}</p>
+            </div>
+          `;
+          li.addEventListener('click', () => {
+            if (window.globalMusicPlayer) {
+              window.globalMusicPlayer.loadSong(index);
+            }
+          });
+          return li;
+        }
+
+        function createLoadMoreBtn() {
+          const oldBtn = document.getElementById('playlist-load-more');
+          if (oldBtn) oldBtn.remove();
+          
+          if (loaded >= playlist.length) return;
+
+          const div = document.createElement('div');
+          div.id = 'playlist-load-more';
+          div.className = 'text-center py-4';
+          
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-ghost btn-sm text-xs text-neu-text-muted';
+          btn.id = 'load-more-btn';
+          btn.textContent = `加载更多 (${playlist.length - loaded} 首)`;
+          
+          btn.addEventListener('click', () => {
+            const end = Math.min(loaded + BATCH, playlist.length);
+            for (let i = loaded; i < end; i++) {
+              playlistList.appendChild(createItem(playlist[i], i));
+            }
+            loaded = end;
+            if (loaded >= playlist.length) {
+              div.remove();
+            } else {
+              btn.textContent = `加载更多 (${playlist.length - loaded} 首)`;
+            }
+          });
+
+          div.appendChild(btn);
+          document.getElementById('playlist-container').appendChild(div);
+        }
+
+        createLoadMoreBtn();
+
+        // 监听来自 music.astro 的歌单切换事件
+        document.addEventListener('playlist-changed', (e) => {
+           playlist = JSON.parse(widget.getAttribute('data-playlist') || '[]');
+           loaded = Math.min(playlist.length, 30);
+           createLoadMoreBtn();
+        }, { once: true }); // 使用 once 避免每次切换都重复绑定
+      }
+
+      setupLoadMore();
+      
+      // 保证重复切换时事件依然生效，把监听绑定在更外层或者不需要once，
+      // 但为了避免闭包陷阱，最好的办法是每次切换都重新执行一遍逻辑
+      const container = document.getElementById('playlist-container');
+      if (container && !container.hasAttribute('data-listener-bound')) {
+          container.setAttribute('data-listener-bound', 'true');
+          document.addEventListener('playlist-changed', () => {
+             // 取消前一个闭包里的状态，重新初始化
+             setupLoadMore();
+          });
+      }
+    });
+  </script>
 </div>

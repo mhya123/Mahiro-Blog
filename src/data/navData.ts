@@ -42,7 +42,7 @@ export const NAV_DATA: NavCategory[] = [
                 name: "Vercel",
                 avatar: "https://img.xiaozhangya.xin/file/Logo/1753851435981_Vercel.png",
                 description: "现代化的前端部署平台",
-                url: "https://vercel.com/login?next=%2Fkobaridevs-projects",
+                url: "https://vercel.com/login?next=%2Fmhya123-projects",
                 category: "部署托管",
                 id: "DEV002"
             },

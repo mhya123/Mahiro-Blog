@@ -38,11 +38,6 @@ export const ANNOUNCEMENT_CONFIG = config.site.announcement || { enable: false, 
 export const BLOG_CONFIG = config.site.blog;
 export const BLOG_PAGE_SIZE = config.site.blog.pageSize;
 
-// TMDB 配置
-export const TMDB_CONFIG = config.anime?.tmdb;
-
-// Bilibili 配置
-export const BILIBILI_CONFIG = config.anime?.bilibili;
 
 // GitHub 配置
 export const GITHUB_CONFIG = config.github;

@@ -247,7 +247,7 @@ code {
   }
 }
 
-.ryuchan-heading {
+.mahiro-heading {
   @apply text-lg md:text-2xl leading-tight pt-0 font-bold text-base-content bg-clip-text bg-gradient-to-r from-primary to-secondary duration-300 hover:text-transparent;
 }
 
@@ -263,7 +263,7 @@ code {
   @apply px-1 text-base-content/80;
 }
 
-.ryuchan-code {
+.mahiro-code {
   @apply relative my-6 rounded-2xl border border-base-300/20 bg-transparent overflow-hidden;
 
   &-toolbar {

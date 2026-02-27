@@ -208,13 +208,13 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       document.addEventListener("astro:page-load", () => {
         document.querySelectorAll(".btn-copy").forEach((button) => {
           button.addEventListener("click", async () => {
-            const codeBlock = button.closest(".ryuchan-code");
+            const codeBlock = button.closest(".mahiro-code");
             const code = codeBlock.querySelector("code").textContent;
             const copyIcon = button.querySelector(
-              ".ryuchan-code-toolbar-copy-icon",
+              ".mahiro-code-toolbar-copy-icon",
             );
             const successIcon = button.querySelector(
-              ".ryuchan-code-toolbar-copy-success",
+              ".mahiro-code-toolbar-copy-success",
             );
             try {
               await navigator.clipboard.writeText(code);
@@ -242,7 +242,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       .copy-success {
         animation: pulse 0.5s ease-in-out;
       }
-  .ryuchan-code-toolbar-copy-success svg {
+  .mahiro-code-toolbar-copy-success svg {
         color: #10b981;
       }
       @keyframes pulse {

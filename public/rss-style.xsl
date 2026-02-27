@@ -315,7 +315,7 @@
         </div>
 
         <div class="footer">
-          Powered by <a href="https://github.com/Mahiro-Blog" target="_blank">Mahiro Blog</a> · RSS Feed
+          Powered by <a href="https://github.com/mhya123/Mahiro-Blog" target="_blank">Mahiro Blog</a> · RSS Feed
         </div>
       </body>
     </html>

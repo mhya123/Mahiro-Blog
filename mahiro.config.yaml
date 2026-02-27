@@ -10,7 +10,7 @@ site:
     code: github-dark
   date_format: ddd MMM DD YYYY
   blog:
-    pageSize: 8
+    pageSize: 10
   banner:
     defaultMode: background  # 默认背景模式: normal | fullscreen | background | hidden
     enableRandom: false
@@ -28,9 +28,9 @@ site:
     type: info  # info | success | warning | error
     size: lg    # sm | md | lg
     closable: false  # 是否可以关闭
-  police_beian: 
-  police_beian_code: 11010802033243
-  police_beian_link: https://beian.mps.gov.cn/#/query/webSearch?code=11010802033243
+  police_beian:    # 写公安网备案信息 例如 蜀公网安备XXXXX号
+  police_beian_code: 11010802033243  # 填写数字
+  police_beian_link: https://beian.mps.gov.cn/#/query/webSearch?code=11010802033243  # 填写链接
   
   pages:
     home:
@@ -41,18 +41,15 @@ site:
         - 🌸 欲买桂花同载酒，终不似，少年游。 | Youth fades, but memories remain.
         - 🌟 保持热爱，奔赴山海。 | Live with passion, journey to the stars.
         - ☕ 代码写诗，生活如歌。 | Code is poetry, life is a song。
-    # friend:
-    #   title: 友人帐
-    #   subtitle: 记录那些珍贵的友谊，分享彼此的故事
+    friend:
+      title: 友链
+      subtitle: 记录那些珍贵的友谊，分享彼此的故事
     about:
       title: About Me
       subtitle: 一个热爱生活与技术的普通人！
     navigation:
       title: 网站导航
       subtitle: 收藏的常用网站和工具链接
-    # anime:
-    #   title: 追番
-    #   subtitle: 记录和分享我喜欢的动漫作品
     project:
       title: Projects
       subtitle: 展示一些个人搭建的项目，搬运工！
@@ -75,32 +72,21 @@ site:
       href: /navigation
       svg: material-symbols:explore-outline
       target: _self
-    # - id: entertainment
-    #   text: 娱乐
-    #   href: '#'
-    #   svg: material-symbols:play-circle-outline-rounded
-    #   target: _self
-    #   subItems:
-    #     - id: anime
-    #       text: 追番
-    #       href: /anime
-    #       svg: material-symbols:movie-outline
-    #       target: _self
     - id: music
       text: 音乐
       href: /music
       svg: material-symbols:music-note-rounded
       target: _self
     - id: project
-      text: 项目
+      text: 实验室
       href: /project
       svg: material-symbols:code-blocks-outline
       target: _self
-    # - id: friend
-    #   text: 友人帐
-    #   href: /friend
-    #   svg: material-symbols:supervisor-account-outline-rounded
-    #   target: _self
+    - id: friend
+      text: 友链
+      href: /friend
+      svg: material-symbols:supervisor-account-outline-rounded
+      target: _self
     - id: about
       text: 关于
       href: /about
@@ -120,9 +106,9 @@ github:
   encryptKey: wudishiduomejimo
 umami:
   enable: false
-  baseUrl: https://umami.131714.xyz
-  shareId: jToXL5Z3hnA1gKUw
-  websiteId: 3f9afc6c-f0bd-4734-be15-6d053960d34d
+  baseUrl: https://umami.mahiro.work
+  shareId: 1111111111
+  websiteId: 11111111111111
   timezone: Asia/Shanghai
 user:
   name: mhya520
@@ -139,15 +125,7 @@ user:
         ariaLabel: BiliBili
         title: BiliBili
         svg: ri:bilibili-line
-      # - href: >-
-      #     https://www.douyin.com/user/MS4wLjABAAAAeO0sqJYUgh1a26GkVPtS2yv_IOODjeqvtl4KSjvsntg?from_tab_name=main
-      #   ariaLabel: Douyin
-      #   title: Douyin
-      #   svg: ri:tiktok-line
-      # - href: https://weibo.com/u/7579913510
-      #   title: Weibo
-      #   ariaLabel: Weibo
-      #   svg: ri:weibo-fill
+      
   footer:
     social:
       - href: https://github.com/mhya123

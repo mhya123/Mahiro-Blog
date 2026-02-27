@@ -33,24 +33,27 @@ const typedMenu = SITE_MENU as MenuItem[];
 ---      
       
 <!-- 桌面端透明导航栏 -->      
-<nav class="fixed top-0 left-0 right-0 z-50 hidden md:block transition-opacity duration-500 opacity-100 pointer-events-auto" id="navbar-desktop">      
+<nav class="fixed top-0 left-0 right-0 z-50 hidden lg:block transition-opacity duration-500 opacity-100 pointer-events-auto" id="navbar-desktop">      
   <div class="max-w-blog mx-auto px-4">      
     <!-- 透明背景，添加毛玻璃效果 -->      
-    <div id="navbar-bg" class="bg-base-100/80 backdrop-blur-xl border border-white/20 px-6 py-3 rounded-full shadow-2xl transition-colors duration-300">      
-      <div class="flex items-center justify-between">      
+    <div id="navbar-bg" class="bg-base-100/80 backdrop-blur-xl border border-white/20 px-4 xl:px-6 py-2 xl:py-2.5 rounded-full shadow-2xl transition-all duration-300 w-full">      
+      <div class="flex items-center w-full">      
 
-        <!-- 品牌标识 - 使用主题色 -->        
-        <a href="/" class="flex items-center space-x-2 hover:scale-105 transition-transform duration-300">        
-          <span class="text-3xl font-bold tracking-tight text-primary">{SITE_TITLE}</span>        
-        </a>      
+        <!-- 左侧：品牌标识 -->        
+        <div class="flex-none pr-2">
+          <a href="/" class="flex items-center space-x-2 hover:scale-105 transition-transform duration-300">        
+            <span class="text-2xl xl:text-3xl font-bold tracking-tight text-primary transition-all">{SITE_TITLE}</span>        
+          </a>      
+        </div>
               
-        <!-- 桌面端水平菜单 - 响应主题颜色 -->      
-        <div class="flex items-center space-x-1">      
+        <!-- 中间：桌面端水平菜单 - 自适应宽度防止溢出并支持隐藏的横向滚动 -->      
+        <div class="flex-1 flex justify-center min-w-0 mx-1 xl:mx-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">      
+          <div class="flex items-center space-x-0 xl:space-x-2 shrink-0 py-1">      
           {typedMenu.map((item) => (      
             item.subItems ? (      
-              <div class="dropdown dropdown-hover">      
-                <div tabindex="0" role="button" class="nav-item btn btn-ghost text-xl md:text-3xl lg:text-xl font-bold px-4 py-2 rounded-xl hover:bg-white/10 transition-all duration-200 text-base-content dark:text-white flex items-center gap-2">      
-                  <Icon name={item.svg} class="w-5 h-5" />
+              <div class="dropdown dropdown-hover shrink-0">      
+                <div tabindex="0" role="button" class="nav-item btn btn-ghost btn-sm h-8 xl:h-10 px-2 xl:px-3 text-sm xl:text-base font-bold rounded-xl hover:bg-white/10 transition-all duration-200 text-base-content dark:text-white inline-flex items-center justify-center gap-1 xl:gap-2 whitespace-nowrap">      
+                  <Icon name={item.svg} class="w-4 h-4 xl:w-5 xl:h-5 transition-all shrink-0" />
                   <span>{item.text}</span>
                 </div>      
                 <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl border border-base-200 w-52 mt-2 text-base-content">      
@@ -72,25 +75,28 @@ const typedMenu = SITE_MENU as MenuItem[];
               <a       
                 href={item.href}       
                 target={item.target || "_self"}       
-                class="nav-item btn btn-ghost text-lg font-bold px-4 py-2 rounded-xl hover:bg-white/10 transition-all duration-200 text-base-content dark:text-white flex items-center gap-2"      
+                class="nav-item shrink-0 btn btn-ghost btn-sm h-8 xl:h-10 px-2 xl:px-3 text-sm xl:text-base font-bold rounded-xl hover:bg-white/10 transition-all duration-200 text-base-content dark:text-white inline-flex items-center justify-center gap-1 xl:gap-2 whitespace-nowrap"      
               >      
-                <Icon name={item.svg} class="w-5 h-5" />
+                <Icon name={item.svg} class="w-4 h-4 xl:w-5 xl:h-5 transition-all shrink-0" />
                 {item.text}      
               </a>      
             )      
           ))}      
+          </div>
         </div>      
               
-        <!-- 右侧工具栏 -->      
-        <div class="flex items-center space-x-2">      
-          <a href="/config" class="btn btn-ghost btn-circle hover:bg-white/10 text-primary" aria-label="Config">
-            <Icon name="material-symbols:settings-outline" class="w-5 h-5" />
+        <!-- 右侧：工具栏 -->      
+        <div class="flex-none flex items-center space-x-0 xl:space-x-2 transition-all">      
+          <a href="/config" class="btn btn-ghost btn-circle btn-sm hover:bg-white/10 text-primary" aria-label="Config">
+            <Icon name="material-symbols:settings-outline" class="w-4 h-4 xl:w-5 xl:h-5" />
           </a>
-          <ThemeSelector />
-          <FontSelector />
-          <BannerSettings />
-          <!-- 主题切换 -->      
-          <ThemeToggle className="btn btn-ghost btn-circle hover:bg-white/10 text-primary" />      
+          <div class="scale-90 xl:scale-100 transition-transform origin-right flex items-center space-x-0 xl:space-x-2">
+            <ThemeSelector />
+            <FontSelector />
+            <BannerSettings />
+            <!-- 主题切换 -->      
+            <ThemeToggle className="btn btn-ghost btn-circle btn-sm hover:bg-white/10 text-primary" />      
+          </div>
         </div>      
       </div>      
     </div>      
@@ -98,9 +104,9 @@ const typedMenu = SITE_MENU as MenuItem[];
 </nav>      
       
 <!-- 移动端顶部悬浮导航栏 -->
-<nav id="navbar-mobile" class="fixed top-0 left-0 right-0 z-50 md:hidden transition-all duration-500 ease-in-out">
+<nav id="navbar-mobile" class="fixed top-0 left-0 right-0 z-50 lg:hidden transition-all duration-500 ease-in-out">
   <div class="max-w-blog mx-auto px-2 pt-2">
-    <div class="flex items-center justify-between px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full">
+    <div class="flex items-center gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full">
       {typedMenu.map((item) => {
         const isChildActive = item.subItems?.some(sub => currentPath === sub.href || (sub.href !== '/' && currentPath.startsWith(sub.href)));
         const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href)) || isChildActive;
@@ -110,7 +116,7 @@ const typedMenu = SITE_MENU as MenuItem[];
             return (
               <div class="dropdown dropdown-bottom dropdown-end">
                 <div tabindex="0" role="button" class:list={[
-                  "relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group",
+                  "shrink-0 relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group",
                   isActive ? "text-primary" : "text-base-content/60 hover:text-primary"
                 ]} aria-label={item.text}>
                   {isActive && (
@@ -139,7 +145,7 @@ const typedMenu = SITE_MENU as MenuItem[];
           <a
             href={item.href}
             class:list={[
-              "relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group",
+              "shrink-0 relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 group",
               isActive && !isHome ? "text-primary" : "text-base-content/60 hover:text-primary"
             ]}
             aria-label={item.text}
@@ -159,7 +165,7 @@ const typedMenu = SITE_MENU as MenuItem[];
       })}
 
       {/* 移动端设置菜单 */}
-      <div class="relative flex items-center justify-center w-10 h-10">
+      <div class="shrink-0 relative flex items-center justify-center w-10 h-10 ml-auto">
           <MobileSettings />
       </div>
     </div>

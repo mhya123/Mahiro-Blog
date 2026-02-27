@@ -60,20 +60,20 @@ export default defineConfig({
             type: "element",
             tagName: "div",
             properties: {
-              class: "not-prose ryuchan-code",
+              class: "not-prose mahiro-code",
             },
             children: [
               {
                 type: "element",
                 tagName: "div",
                 properties: {
-                  class: "ryuchan-code-toolbar",
+                  class: "mahiro-code-toolbar",
                 },
                 children: [
                   {
                     type: "element",
                     tagName: "span",
-                    properties: { class: "ryuchan-code-toolbar-language" },
+                    properties: { class: "mahiro-code-toolbar-language" },
                     children: [{ type: "text", value: language }],
                   },
                   {
@@ -89,7 +89,7 @@ export default defineConfig({
                         type: "element",
                         tagName: "span",
                         properties: {
-                          "class": "ryuchan-code-toolbar-copy-icon",
+                          "class": "mahiro-code-toolbar-copy-icon",
                           "aria-hidden": "true",
                         },
                         children: [
@@ -138,7 +138,7 @@ export default defineConfig({
                         type: "element",
                         tagName: "span",
                         properties: {
-                          "class": "ryuchan-code-toolbar-copy-success hidden",
+                          "class": "mahiro-code-toolbar-copy-success hidden",
                           "aria-hidden": "true",
                         },
                         children: [
@@ -178,7 +178,7 @@ export default defineConfig({
                 ...node,
                 properties: {
                   ...node.properties,
-                  class: "ryuchan-code-content",
+                  class: "mahiro-code-content",
                 },
                 children: [
                   {

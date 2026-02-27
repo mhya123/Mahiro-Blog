@@ -1,22 +1,10 @@
 {
     "playlists": [
         {
-            "name": "我的最爱",
-            "cover": "",
-            "songs": [
-                {
-                    "id": 1377164042,
-                    "comment": "Улетали птицами гордыми"
-                },
-                {
-                    "id": 1478156555,
-                    "comment": "Все так, як має бути"
-                },
-                {
-                    "id": 1456653112,
-                    "comment": "ilove urr girl"
-                }
-            ]
+            "name": "网易云歌单",
+            "type": "netease-playlist",
+            "neteaseId": 17796218218,
+            "cover": ""
         }
     ]
 }

@@ -1,8 +1,8 @@
 #!/bin/bash
-# English Language File for Ryuchan Updater
+# English Language File for Mahiro Updater
 
 # --- Header ---
-MSG_HEADER_TITLE="Ryuchan Project Update Assistant"
+MSG_HEADER_TITLE="Mahiro Project Update Assistant"
 
 # --- Warnings and Prompts ---
 MSG_WARNING_TITLE="⚠️  Warning: This script will fetch the latest files from the official repository and overwrite your local files."
@@ -17,7 +17,7 @@ ERR_GIT_DIRTY_ADVICE="For safety, please commit your changes before running this
 MSG_GIT_CLEAN="✅ Local Git status is clean, ready to start the update."
 
 # --- Steps ---
-MSG_STEP1_CLONE="\n${C_BLUE}Step 1: Cloning the latest Ryuchan repository from GitHub...${C_NC}"
+MSG_STEP1_CLONE="\n${C_BLUE}Step 1: Cloning the latest Mahiro repository from GitHub...${C_NC}"
 ERR_STEP1_CLONE_FAILED="❌ Clone failed. Please check your network connection or Git configuration."
 MSG_STEP1_CLONE_SUCCESS="✅ Latest code cloned successfully!"
 
