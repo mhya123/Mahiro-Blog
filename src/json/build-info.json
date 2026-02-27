@@ -1,10 +1,10 @@
 {
-  "commitSha": "bb973058d325c5f9e98f507c0dc420f4ff9cfcc3",
-  "commitShort": "bb97305",
-  "commitMessage": "feat: 添加侧边栏个人资料组件，展示用户、博客统计、社交链接和分类信息，并引入相关配置。",
+  "commitSha": "4ffd8a9042444c460b9f2acbf0ad51d15ea2102c",
+  "commitShort": "4ffd8a9",
+  "commitMessage": "fix:修改代码块大小",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-27T20:22:17+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/bb973058d325c5f9e98f507c0dc420f4ff9cfcc3",
-  "buildTime": "2026/2/27 20:22:55",
-  "totalCommits": 76
+  "commitDate": "2026-02-27T21:35:43+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/4ffd8a9042444c460b9f2acbf0ad51d15ea2102c",
+  "buildTime": "2026/2/27 21:36:23",
+  "totalCommits": 78
 }
