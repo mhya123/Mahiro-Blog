@@ -99,9 +99,9 @@ github:
   appId: 在部署端配置环境变量
   encryptKey: wudishiduomejimo
 umami:
-  enable: false
+  enable: true
   baseUrl: https://umami.mahiro.work
-  shareId: 1111111111
+  shareId: 49720733-f763-40bd-9d11-fcb88cfa5333
   websiteId: 在部署端或 .env 配置 PUBLIC_UMAMI_WEBSITE_ID
   timezone: Asia/Shanghai
 user:
