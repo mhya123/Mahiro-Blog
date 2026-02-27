@@ -1,10 +1,10 @@
 {
-  "commitSha": "0acb8569a78a7368623804c20d67ec403401cb7c",
-  "commitShort": "0acb856",
+  "commitSha": "b4636afffaac601e878ef0f5ab713aec2e047e7f",
+  "commitShort": "b4636af",
   "commitMessage": "chore: dev 脚本在启动开发服务器前增加执行 pnpm prefetch:git。",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-27T13:13:14+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0acb8569a78a7368623804c20d67ec403401cb7c",
-  "buildTime": "2026/2/27 13:13:55",
-  "totalCommits": 28
+  "commitDate": "2026-02-27T13:14:13+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/b4636afffaac601e878ef0f5ab713aec2e047e7f",
+  "buildTime": "2026/2/27 13:30:02",
+  "totalCommits": 29
 }
