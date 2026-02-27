@@ -31,7 +31,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8 # 如果项目兼容，建议这里也可以写 9
+          version: 9 
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
