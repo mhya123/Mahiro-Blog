@@ -48,7 +48,7 @@ jobs:
               BADGE_ERR: '字段校验未通过：badge 的值必须严格填写。建议填写 "好友" 或 "友情链接"。',
               SSRF_BLOCK: '安全拦截：目标 URL 疑似指向内网或保留 IP。',
               SUCCESS: `🎉 **审核通过！**\n\n感谢申请！系统已检测到有效的双向链接并确认格式无误，现在为您自动执行合并 (Squash Merge)。`,
-              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能检测到有效的反链、站点访问异常或格式有误（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式：\n\n\`\`\`json\n{\n  "name": "您的网站名",\n  "avatar": "https://您的头像URL",\n  "description": "您的网站描述",\n  "url": "https://您的网站URL",\n  "badge": "好友"\n}\n\`\`\`\n\n请您参考上方的错误报告与正确格式修正后，重新开启或提交新的 PR，期待您的加入！`
+              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能检测到有效的反链、站点访问异常或格式有误（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式：\n\n\`\`\`json\n{\n  "name": "您的网站名",\n  "avatar": "https://您的头像URL",\n  "description": "您的网站描述",\n  "url": "https://您的网站URL",\n  "badge": "友情"\n}\n\`\`\`\n\n请您参考上方的错误报告与正确格式修正后，重新开启或提交新的 PR，期待您的加入！`
             };
 
             // ================= 辅助函数 =================
@@ -131,6 +131,7 @@ jobs:
             await manageLabels([LABELS.BASE, LABELS.RUNNING], []);
             const reportData = [];
             let isFailed = false;
+            let applySiteName = "未知站点"; // 提权作用域，为了在最后的 Merge 里能拿到网站名称
 
             try {
               // 1. 获取 PR 文件列表
@@ -163,6 +164,9 @@ jobs:
               const missingKeys = requiredKeys.filter(k => !json[k] || typeof json[k] !== 'string');
               if (missingKeys.length > 0) throw new Error(`${MSG.JSON_KEY_ERR} 缺失: ${missingKeys.join(', ')}`);
               
+              // 成功解析 JSON 后，缓存站点的名字
+              applySiteName = json.name.trim();
+
               // 放宽一点对 badge 的限制，可以改成您的特定值如果需要
               if (!json.badge.trim()) {
                 throw new Error(MSG.BADGE_ERR);
@@ -232,7 +236,7 @@ jobs:
             }
 
             // ================= 报告生成与最终动作 =================
-            let markdownTable = `### � 自动化审核报告\n\n| 检查项目 | 状态 | 详细说明 |\n| :--- | :--- | :--- |\n`;
+            let markdownTable = `### 🔍 自动化审核报告\n\n| 检查项目 | 状态 | 详细说明 |\n| :--- | :--- | :--- |\n`;
             reportData.forEach(r => { markdownTable += `| **${r.item}** | ${r.status} | ${r.detail} |\n`; });
 
             if (isFailed) {
@@ -244,9 +248,22 @@ jobs:
             } else {
               await manageLabels([LABELS.PASSED], [LABELS.RUNNING]);
               await createComment(`${markdownTable}\n\n---\n\n${MSG.SUCCESS}`);
-              // 执行自动 Squash Merge（带兜底）
+              
+              // 格式化当前时间 (东八区)
+              const nowTime = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+              const commitTitle = `✨ 新增友链: ${applySiteName}`;
+              const commitMsg = `${applySiteName} 在 ${nowTime} 提交了友链申请，并由 Action 自动审核通过并合并。`;
+
+              // 执行自动 Squash Merge（带自定义提交信息）
               try {
-                await github.rest.pulls.merge({ owner, repo, pull_number, merge_method: 'squash' });
+                await github.rest.pulls.merge({ 
+                  owner, 
+                  repo, 
+                  pull_number, 
+                  merge_method: 'squash',
+                  commit_title: commitTitle,
+                  commit_message: commitMsg
+                });
               } catch (mergeErr) {
                 await createComment(`⚠️ 自动合并失败: ${mergeErr.message}\n\n请仓库管理员手动合并此 PR。`);
               }
