@@ -2,24 +2,41 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Icon } from "astro-icon/components";
 import FriendCard from "@/components/mdx/FriendCard.astro";
-import Showcase from "@/components/mdx/Showcase.astro";
 
-const friends = [
-  // 按照这种格式添加
+// 使用 import.meta.glob 自动加载所有友链 JSON 文件
+const friendModules = import.meta.glob<{ default: any }>('/src/data/friends/*.json', { eager: true });
+const friends = Object.values(friendModules).map((mod) => mod.default);
 
-  {
-    name: "MhYa123",
-    avatar: "https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg",
-    description: "描述",
-    url: "https://www.mahir.work",
-    badge: "好友"
-  }
+// GitHub Issue 友链申请模板链接（预填内容）
+const issueTitle = encodeURIComponent("【友链申请】您的站点名称");
+const issueBody = encodeURIComponent(`
+## 友链申请
 
-];
+请填写以下信息：
 
-const sites = [
-  { name: "Mahiro Demo", url: "https://www.mahiro.work" }
-];
+- **站点名称**：
+- **站点地址**：
+- **站点描述**：
+- **头像链接**：
+- **您的称呼**：
+
+---
+
+### 我的站点信息（用于互换友链）
+
+\`\`\`json
+{
+  "name": "",
+  "avatar": "",
+  "description": "",
+  "url": "",
+  "badge": ""
+}
+\`\`\`
+
+> 提交后我会尽快审核，感谢您的申请！
+`.trim());
+const applyUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${issueTitle}&body=${issueBody}&labels=friend-link`;
 ---
 
 <BaseLayout title="Friends" isIndexed={false}>
@@ -33,21 +50,90 @@ const sites = [
       记录那些珍贵的友谊，分享彼此的故事。
     </p>
     
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {friends.map((friend) => (
-        <FriendCard
-          name={friend.name}
-          avatar={friend.avatar}
-          description={friend.description}
-          url={friend.url}
-          badge={friend.badge}
-        />
-      ))}
-    </div>
+    {friends.length > 0 ? (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {friends.map((friend) => (
+          <FriendCard
+            name={friend.name}
+            avatar={friend.avatar}
+            description={friend.description}
+            url={friend.url}
+            badge={friend.badge}
+          />
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-12 text-base-content/50">
+        <Icon name="lucide:users" class="w-16 h-16 mx-auto mb-4 opacity-30" />
+        <p class="text-lg">暂时还没有友链，快来申请成为第一个吧！</p>
+      </div>
+    )}
   </div>
 
-
-  <div class="divider my-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+  <!-- Divider -->
+  <div class="divider my-8 animate-fade-in-up" style="animation-delay: 0.1s;">
     <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
+  </div>
+
+  <!-- 友链申请区块 -->
+  <div class="animate-fade-in-up" style="animation-delay: 0.2s;">
+    <h2 class="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-3">
+      <Icon name="lucide:hand-metal" class="text-primary" />
+      <span>友链申请</span>
+    </h2>
+    <p class="text-base-content/70 text-base mb-6">
+      想要互换友链？欢迎通过 GitHub Issue 提交申请，我会尽快审核！
+    </p>
+
+    <!-- 申请信息卡片 -->
+    <div class="bg-base-100 rounded-2xl border border-base-200 p-6 md:p-8 mb-6">
+      <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <Icon name="lucide:info" class="w-5 h-5 text-primary" />
+        申请要求
+      </h3>
+      <ul class="space-y-3 text-base-content/80 text-sm">
+        <li class="flex items-start gap-2">
+          <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+          <span>您的站点能够正常访问且有实质内容</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+          <span>已在您的站点添加本站友链</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+          <span>站点不包含违规/侵权内容</span>
+        </li>
+      </ul>
+
+      <div class="divider my-4"></div>
+
+      <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <Icon name="lucide:link" class="w-5 h-5 text-primary" />
+        本站信息
+      </h3>
+      <div class="bg-base-200/50 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+        <pre class="whitespace-pre text-base-content/80">{JSON.stringify({
+  name: "MhYa123",
+  avatar: "https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg",
+  description: "MhYa123的博客分享各类杂谈,技术,生活.",
+  url: "https://www.mahir.work",
+  badge: "博主"
+}, null, 2)}</pre>
+      </div>
+    </div>
+
+    <!-- 申请按钮 -->
+    <div class="flex justify-center">
+      <a
+        href={applyUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-primary btn-lg gap-2 px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+      >
+        <Icon name="lucide:send" class="w-5 h-5" />
+        前往 GitHub 提交申请
+      </a>
+    </div>
   </div>
 </BaseLayout>

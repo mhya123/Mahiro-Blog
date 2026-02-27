@@ -1,0 +1,253 @@
+name: Admin Friend Link Audit
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 友链自动化审核与合并
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+            const head_sha = context.payload.pull_request.head.sha;
+
+            // ================= 常量定义区 =================
+            const MY_DOMAINS = ['mahiro.work']; // 填你需要匹配的核心主域名或多个域名
+
+            const LABELS = {
+              BASE: '友链申请',
+              RUNNING: 'audit-running',
+              PASSED: 'audit-passed',
+              NEED_FIX: 'need-fix',
+              SITE_OK: 'site-ok',
+              SITE_ERR: 'site-error',
+              AVATAR_OK: 'avatar-ok',
+              AVATAR_ERR: 'avatar-error',
+              LINK_OK: 'backlink-ok',
+              LINK_ERR: 'backlink-error'
+            };
+
+            const MSG = {
+              PR_MULTI_FILES: 'PR 必须仅包含 1 个文件的变更。',
+              PR_PATH_ERR: '修改路径必须严格限制在 `src/data/friends/` 目录下，且文件扩展名必须是 `.json`。',
+              PR_ACTION_ERR: '只允许新增 (added) 或修改 (modified) 文件。',
+              JSON_PARSE_ERR: 'JSON 解析失败，请检查文件格式是否符合规范。',
+              JSON_KEY_ERR: 'JSON 缺少必填字段，必须包含：name, avatar, description, url, badge。',
+              BADGE_ERR: '字段校验未通过：badge 的值必须严格填写。建议填写 "好友" 或 "友情链接"。',
+              SSRF_BLOCK: '安全拦截：目标 URL 疑似指向内网或保留 IP。',
+              SUCCESS: `🎉 **审核通过！**\n\n感谢申请！系统已检测到有效的双向链接并确认格式无误，现在为您自动执行合并 (Squash Merge)。`,
+              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能检测到有效的反链、站点访问异常或格式有误（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式：\n\n\`\`\`json\n{\n  "name": "您的网站名",\n  "avatar": "https://您的头像URL",\n  "description": "您的网站描述",\n  "url": "https://您的网站URL",\n  "badge": "好友"\n}\n\`\`\`\n\n请您参考上方的错误报告与正确格式修正后，重新开启或提交新的 PR，期待您的加入！`
+            };
+
+            // ================= 辅助函数 =================
+            async function createComment(body) {
+              const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+              const footer = `\n\n---\n*🤖 该评论由 Action 自动化发送，无需回复。 [查看构建日志](${runUrl})*`;
+              await github.rest.issues.createComment({ owner, repo, issue_number: pull_number, body: body + footer });
+            }
+
+            async function ensureLabel(name, color = 'ededed') {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (e) {
+                if (e.status === 404) {
+                  await github.rest.issues.createLabel({ owner, repo, name, color });
+                }
+              }
+            }
+
+            // 缓存当前标签状态，避免每次调用都重新 GET
+            let _labelCache = null;
+            async function getLabelCache() {
+              if (!_labelCache) {
+                const current = await github.rest.issues.get({ owner, repo, issue_number: pull_number });
+                _labelCache = new Set((current.data.labels || []).map(l => l.name));
+              }
+              return _labelCache;
+            }
+
+            async function manageLabels(addList = [], removeList = []) {
+              const currentLabels = await getLabelCache();
+
+              for (const name of addList) {
+                if (!currentLabels.has(name)) {
+                  await ensureLabel(name, name.includes('ok') ? '0e8a16' : (name.includes('error') || name === LABELS.NEED_FIX ? 'd93f0b' : '1d76db'));
+                  await github.rest.issues.addLabels({ owner, repo, issue_number: pull_number, labels: [name] });
+                  currentLabels.add(name);
+                }
+              }
+              for (const name of removeList) {
+                if (currentLabels.has(name)) {
+                  try {
+                    await github.rest.issues.removeLabel({ owner, repo, issue_number: pull_number, name });
+                    currentLabels.delete(name);
+                  } catch (e) { /* ignore */ }
+                }
+              }
+            }
+
+            function isSafeUrl(urlStr) {
+              try {
+                const u = new URL(urlStr);
+                if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+                const h = u.hostname;
+                if (/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|::1)/i.test(h)) return false;
+                return true;
+              } catch { return false; }
+            }
+
+            async function fetchWithTimeout(url, timeoutMs = 10000, { headOnly = false } = {}) {
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), timeoutMs);
+              try {
+                const res = await fetch(url, {
+                  method: headOnly ? 'HEAD' : 'GET',
+                  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+                  signal: controller.signal,
+                  redirect: 'follow'
+                });
+                const text = headOnly ? '' : await res.text();
+                return { ok: res.ok, status: res.status, text };
+              } catch (e) {
+                return { ok: false, error: e.message };
+              } finally {
+                clearTimeout(timer);
+              }
+            }
+
+            // ================= 核心执行逻辑 =================
+            await manageLabels([LABELS.BASE, LABELS.RUNNING], []);
+            const reportData = [];
+            let isFailed = false;
+
+            try {
+              // 1. 获取 PR 文件列表
+              const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number });
+              
+              if (files.length !== 1) throw new Error(MSG.PR_MULTI_FILES);
+              const file = files[0];
+              
+              if (!file.filename.startsWith('src/data/friends/') || !file.filename.endsWith('.json')) {
+                throw new Error(MSG.PR_PATH_ERR);
+              }
+              if (file.status !== 'added' && file.status !== 'modified') {
+                throw new Error(MSG.PR_ACTION_ERR);
+              }
+
+              // 2. 读取文件内容进行 JSON 格式检查（从 Fork 仓库读取）
+              const prHead = context.payload.pull_request.head;
+              const { data: fileData } = await github.rest.repos.getContent({
+                owner: prHead.repo.owner.login,
+                repo: prHead.repo.name,
+                path: file.filename,
+                ref: head_sha
+              });
+              const contentStr = Buffer.from(fileData.content, 'base64').toString('utf-8');
+              
+              let json;
+              try { json = JSON.parse(contentStr); } catch { throw new Error(MSG.JSON_PARSE_ERR); }
+
+              const requiredKeys = ['name', 'avatar', 'description', 'url', 'badge'];
+              const missingKeys = requiredKeys.filter(k => !json[k] || typeof json[k] !== 'string');
+              if (missingKeys.length > 0) throw new Error(`${MSG.JSON_KEY_ERR} 缺失: ${missingKeys.join(', ')}`);
+              
+              // 放宽一点对 badge 的限制，可以改成您的特定值如果需要
+              if (!json.badge.trim()) {
+                throw new Error(MSG.BADGE_ERR);
+              }
+              
+              reportData.push({ item: 'JSON 格式', status: '✅ 通关', detail: '字段校验完整且规范' });
+
+              // 3. 安全防护 SSRF
+              if (!isSafeUrl(json.url) || !isSafeUrl(json.avatar)) {
+                throw new Error(MSG.SSRF_BLOCK);
+              }
+
+              // 4. 头像连通性检查（HEAD 请求，避免下载大图片）
+              const avatarRes = await fetchWithTimeout(json.avatar, 10000, { headOnly: true });
+              if (avatarRes.ok) {
+                reportData.push({ item: '头像连通性', status: '✅ 正常', detail: `状态码: ${avatarRes.status}` });
+                await manageLabels([LABELS.AVATAR_OK]);
+              } else {
+                isFailed = true;
+                reportData.push({ item: '头像连通性', status: '❌ 失败', detail: avatarRes.error || `状态码: ${avatarRes.status}` });
+                await manageLabels([LABELS.AVATAR_ERR]);
+              }
+
+              // 5. 站点与反链连通性检查
+              const siteRes = await fetchWithTimeout(json.url);
+              if (siteRes.ok) {
+                reportData.push({ item: '站点连通性', status: '✅ 正常', detail: `状态码: ${siteRes.status}` });
+                await manageLabels([LABELS.SITE_OK]);
+
+                // 反链分析
+                const html = siteRes.text;
+                let hasBacklink = false;
+                let isNofollow = false;
+
+                // 动态构造正则匹配任何指定的信任域名
+                const domainPattern = MY_DOMAINS.map(d => d.replace(/\./g, '\\.')).join('|');
+                const linkRegex = new RegExp(`<a[^>]*href\\s*=\\s*["'][^"']*(${domainPattern})[^"']*["'][^>]*>`, 'gi');
+                
+                let match;
+                while ((match = linkRegex.exec(html)) !== null) {
+                  hasBacklink = true;
+                  if (match[0].toLowerCase().includes('rel="nofollow"')) {
+                    isNofollow = true;
+                  }
+                }
+
+                if (hasBacklink) {
+                  const nofollowTag = isNofollow ? ' *(注: 检测到 nofollow 属性)*' : '';
+                  reportData.push({ item: '反链检测', status: '✅ 已找到', detail: `在源码中发现本站链接${nofollowTag}` });
+                  await manageLabels([LABELS.LINK_OK]);
+                } else {
+                  isFailed = true;
+                  reportData.push({ item: '反链检测', status: '❌ 缺失', detail: '未在对方页面找到指向本站的超链接' });
+                  await manageLabels([LABELS.LINK_ERR]);
+                }
+
+              } else {
+                isFailed = true;
+                reportData.push({ item: '站点连通性', status: '❌ 失败', detail: siteRes.error || `状态码: ${siteRes.status}` });
+                reportData.push({ item: '反链检测', status: '⚠️ 跳过', detail: '站点无法访问，跳过反链检测' });
+                await manageLabels([LABELS.SITE_ERR, LABELS.LINK_ERR]);
+              }
+
+            } catch (err) {
+              isFailed = true;
+              reportData.push({ item: '致命错误/前置检查', status: '❌ 拦截', detail: err.message });
+            }
+
+            // ================= 报告生成与最终动作 =================
+            let markdownTable = `### � 自动化审核报告\n\n| 检查项目 | 状态 | 详细说明 |\n| :--- | :--- | :--- |\n`;
+            reportData.forEach(r => { markdownTable += `| **${r.item}** | ${r.status} | ${r.detail} |\n`; });
+
+            if (isFailed) {
+              await manageLabels([LABELS.NEED_FIX], [LABELS.RUNNING]);
+              await createComment(`${markdownTable}\n\n---\n\n${MSG.REJECT}`);
+              // 强制关闭 PR
+              await github.rest.pulls.update({ owner, repo, pull_number, state: 'closed' });
+              core.setFailed('自动化审核未通过，已关闭 PR。');
+            } else {
+              await manageLabels([LABELS.PASSED], [LABELS.RUNNING]);
+              await createComment(`${markdownTable}\n\n---\n\n${MSG.SUCCESS}`);
+              // 执行自动 Squash Merge（带兜底）
+              try {
+                await github.rest.pulls.merge({ owner, repo, pull_number, merge_method: 'squash' });
+              } catch (mergeErr) {
+                await createComment(`⚠️ 自动合并失败: ${mergeErr.message}\n\n请仓库管理员手动合并此 PR。`);
+              }
+            }
