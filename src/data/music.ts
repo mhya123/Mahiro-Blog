@@ -1,10 +1,10 @@
 /**
  * 音乐数据层
  * 通过 Meting API 从网易云音乐解析歌曲信息
- * 在构建时执行，结果传递给组件作为静态 props
+ * 支持多歌单管理
  */
 import { MUSIC_CONFIG } from "@config";
-import musicIds from './music-ids.json';
+import musicData from './music-ids.json';
 
 export interface MusicItem {
     title: string;
@@ -16,6 +16,12 @@ export interface MusicItem {
     id?: string | number;
 }
 
+export interface Playlist {
+    name: string;
+    cover: string;
+    songs: MusicItem[];
+}
+
 interface MetingResponse {
     name: string;
     artist: string;
@@ -24,19 +30,18 @@ interface MetingResponse {
     lrc: string;
 }
 
-interface MusicIdEntry {
+interface SongIdEntry {
     id: string | number;
     comment?: string;
 }
 
-const API_BASE = MUSIC_CONFIG?.api || 'https://api.qijieya.cn/meting';
-
-// 从 music-ids.json 获取 ID 列表，回退到 config
-function getPlaylistIds(): (string | number)[] {
-    const jsonIds = (musicIds as MusicIdEntry[]).map(entry => entry.id);
-    if (jsonIds.length > 0) return jsonIds;
-    return MUSIC_CONFIG?.playlist || [];
+interface PlaylistEntry {
+    name: string;
+    cover?: string;
+    songs: SongIdEntry[];
 }
+
+const API_BASE = MUSIC_CONFIG?.api || 'https://api.qijieya.cn/meting';
 
 /**
  * 通过 Meting API 获取单首歌曲信息
@@ -53,7 +58,6 @@ async function fetchSongById(id: string | number): Promise<MusicItem | null> {
             console.warn(`[Music] 歌曲 ${id} 返回空数据`);
             return null;
         }
-
         const song = data[0];
         return {
             title: song.name || 'Unknown',
@@ -70,53 +74,49 @@ async function fetchSongById(id: string | number): Promise<MusicItem | null> {
 }
 
 /**
- * 批量获取播放列表
- * 从 mahiro.config.yaml 的 music.playlist 读取 ID 列表
+ * 获取所有歌单（含已解析的歌曲信息）
  */
-export async function fetchPlaylist(): Promise<MusicItem[]> {
-    const ids = getPlaylistIds();
-    if (ids.length === 0) {
-        console.log('[Music] 播放列表为空');
-        return [];
-    }
+export async function getAllPlaylists(): Promise<Playlist[]> {
+    const entries = (musicData as any).playlists as PlaylistEntry[] || [];
+    if (entries.length === 0) return [];
 
-    console.log(`[Music] 正在解析 ${ids.length} 首歌曲...`);
+    console.log(`[Music] 正在解析 ${entries.length} 个歌单...`);
 
-    const results = await Promise.allSettled(
-        ids.map((id) => fetchSongById(id))
-    );
+    const playlists: Playlist[] = [];
 
-    const songs: MusicItem[] = [];
-    for (const result of results) {
-        if (result.status === 'fulfilled' && result.value) {
-            songs.push(result.value);
+    for (const entry of entries) {
+        const ids = entry.songs.map(s => s.id);
+        const results = await Promise.allSettled(ids.map(id => fetchSongById(id)));
+
+        const songs: MusicItem[] = [];
+        for (const result of results) {
+            if (result.status === 'fulfilled' && result.value) {
+                songs.push(result.value);
+            }
         }
+
+        // 歌单封面：优先用配置的，其次用第一首歌的封面
+        const cover = entry.cover || (songs[0]?.cover || '');
+
+        playlists.push({
+            name: entry.name,
+            cover,
+            songs,
+        });
+
+        console.log(`[Music] 歌单「${entry.name}」: ${songs.length}/${ids.length} 首`);
     }
 
-    console.log(`[Music] 成功解析 ${songs.length}/${ids.length} 首歌曲`);
-    return songs;
-}
-
-// 保持兼容：如果有本地 music.json 数据则回退使用
-let fallbackData: MusicItem[] = [];
-try {
-    const mod = await import('./music.json');
-    fallbackData = mod.default || [];
-} catch {
-    // 无 music.json 文件
+    return playlists;
 }
 
 /**
- * 获取最终播放列表
- * 优先使用 Meting API（config 中有 playlist），否则回退到 music.json
+ * 获取所有歌曲的扁平列表（兼容 GlobalAudio）
  */
 export async function getMusicList(): Promise<MusicItem[]> {
-    const configIds = getPlaylistIds();
-    if (configIds.length > 0) {
-        return fetchPlaylist();
-    }
-    return fallbackData;
+    const playlists = await getAllPlaylists();
+    return playlists.flatMap(p => p.songs);
 }
 
-// 保持原来的导出兼容
-export const musicList: MusicItem[] = fallbackData;
+// 保持兼容
+export const musicList: MusicItem[] = [];

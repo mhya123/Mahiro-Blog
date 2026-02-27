@@ -80,17 +80,17 @@ site:
     #   href: '#'
     #   svg: material-symbols:play-circle-outline-rounded
     #   target: _self
-      subItems:
-        # - id: anime
-        #   text: 追番
-        #   href: /anime
-        #   svg: material-symbols:movie-outline
-        #   target: _self
-        # - id: music
-        #   text: 音乐
-        #   href: /music
-        #   svg: material-symbols:music-note-rounded
-        #   target: _self
+    #   subItems:
+    #     - id: anime
+    #       text: 追番
+    #       href: /anime
+    #       svg: material-symbols:movie-outline
+    #       target: _self
+    - id: music
+      text: 音乐
+      href: /music
+      svg: material-symbols:music-note-rounded
+      target: _self
     - id: project
       text: 项目
       href: /project

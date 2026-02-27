@@ -1,16 +1,126 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import MusicPlayer from "@/components/widgets/MusicPlayer.astro";
-import { getMusicList } from "@/data/music";
+import { getAllPlaylists } from "@/data/music";
 
-// 构建时通过 Meting API 获取播放列表
-const musicList = await getMusicList();
+const playlists = await getAllPlaylists();
+const allSongs = playlists.flatMap(p => p.songs);
+const playlistsJson = JSON.stringify(playlists);
 ---
 
-<BaseLayout title="音乐" showSidebar={true} showTOC={false} isIndexed={false}>
-  <div class="max-w-4xl mx-auto py-8 px-4">
-    <MusicPlayer 
-      list={musicList}
-    />
+<BaseLayout title="音乐" showSidebar={false} showTOC={false} isIndexed={false}>
+  <div class="max-w-5xl mx-auto py-8 px-4 space-y-8">
+
+    <!-- 歌单列表 -->
+    <div id="playlist-selector">
+      <h2 class="text-2xl font-bold text-base-content mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V6"/><path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/><path d="M12 12H3"/><path d="M16 6H3"/><path d="M12 18H3"/></svg>
+        歌单
+      </h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {playlists.map((playlist, idx) => (
+          <button
+            class:list={[
+              "playlist-card group relative overflow-hidden rounded-2xl border border-base-200 bg-base-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-left",
+              idx === 0 ? "ring-2 ring-primary active-playlist" : ""
+            ]}
+            data-playlist-index={idx}
+          >
+            <!-- 封面 -->
+            <div class="aspect-square overflow-hidden bg-base-200">
+              {playlist.cover ? (
+                <img
+                  src={playlist.cover}
+                  alt={playlist.name}
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary/40">
+                    <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                  </svg>
+                </div>
+              )}
+            </div>
+            <!-- 歌单信息 -->
+            <div class="p-3">
+              <h3 class="font-bold text-sm text-base-content truncate">{playlist.name}</h3>
+              <p class="text-xs text-base-content/50 mt-0.5">{playlist.songs.length} 首歌</p>
+            </div>
+            <!-- 播放状态指示器 -->
+            <div class="absolute top-2 right-2 w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center opacity-0 group-[.active-playlist]:opacity-100 transition-opacity shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- 播放器 -->
+    <div id="music-player-container">
+      <MusicPlayer list={allSongs} />
+    </div>
   </div>
+
+  <script is:inline define:vars={{ playlistsJson }}>
+    document.addEventListener("astro:page-load", () => {
+      const playlists = JSON.parse(playlistsJson);
+      const cards = document.querySelectorAll('.playlist-card');
+
+      cards.forEach(card => {
+        card.addEventListener('click', () => {
+          const idx = parseInt(card.getAttribute('data-playlist-index'));
+          const playlist = playlists[idx];
+          if (!playlist) return;
+
+          // 更新选中状态
+          cards.forEach(c => {
+            c.classList.remove('ring-2', 'ring-primary', 'active-playlist');
+          });
+          card.classList.add('ring-2', 'ring-primary', 'active-playlist');
+
+          // 切换到此歌单的歌曲
+          if (window.globalMusicPlayer) {
+            window.globalMusicPlayer.playlist = playlist.songs.map(s => ({
+              title: s.title,
+              artist: s.artist,
+              cover: s.cover,
+              url: s.url,
+              lrc: s.lrc || '',
+            }));
+            window.globalMusicPlayer.currentIndex = 0;
+            window.globalMusicPlayer.loadTrack(0);
+
+            // 更新页面播放器的播放列表
+            const playlistList = document.getElementById('playlist-list');
+            if (playlistList) {
+              playlistList.innerHTML = playlist.songs.map((s, i) => `
+                <li class="playlist-item group flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 border border-transparent transition-all cursor-pointer ${i === 0 ? 'active' : ''}" data-index="${i}">
+                  <span class="font-mono text-neu-text-muted text-sm font-bold w-6 text-center group-hover:text-neu-accent transition-colors">${String(i + 1).padStart(2, '0')}</span>
+                  <div class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-neu-border/50">
+                    <img src="${s.cover || ''}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="cover"/>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                    <h3 class="font-bold text-neu-text truncate text-sm leading-none group-[.active]:text-neu-accent transition-colors">${s.title || 'Unknown'}</h3>
+                    <p class="text-[11px] text-neu-text-muted truncate uppercase tracking-wider">${s.artist || 'Unknown'}</p>
+                  </div>
+                </li>
+              `).join('');
+
+              // 重新绑定播放列表项点击事件
+              playlistList.querySelectorAll('.playlist-item').forEach(item => {
+                item.addEventListener('click', () => {
+                  const index = parseInt(item.getAttribute('data-index'));
+                  if (window.globalMusicPlayer) {
+                    window.globalMusicPlayer.loadTrack(index);
+                    window.globalMusicPlayer.play();
+                  }
+                });
+              });
+            }
+          }
+        });
+      });
+    });
+  </script>
 </BaseLayout>
