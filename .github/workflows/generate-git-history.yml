@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/content/blog/**'
-      - 'script/generate-git-info.mjs'
+  workflow_dispatch:
 
 permissions:
   contents: write
