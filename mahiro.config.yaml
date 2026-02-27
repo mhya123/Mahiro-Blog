@@ -92,12 +92,6 @@ site:
       href: /about
       svg: material-symbols:info-outline-rounded
       target: _self
-anime:
-  bilibili:
-    uid: '1536411565'
-  tmdb:
-    apiKey: 08a6bef260044f70c150251c79f2e476
-    listId: '8556173'
 github:
   owner: mhya123
   repo: Mahiro-Blog
@@ -108,7 +102,7 @@ umami:
   enable: false
   baseUrl: https://umami.mahiro.work
   shareId: 1111111111
-  websiteId: 11111111111111
+  websiteId: 在部署端或 .env 配置 PUBLIC_UMAMI_WEBSITE_ID
   timezone: Asia/Shanghai
 user:
   name: mhya520
