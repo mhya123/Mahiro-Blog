@@ -26,7 +26,7 @@ jobs:
             // ================= 常量定义区 =================
             const MY_DOMAINS = ['mahiro.work']; // 填你需要匹配的核心主域名或多个域名
 
-            // 标签
+            // 全中文专业标签
             const LABELS = {
               BASE: '友链申请',
               RUNNING: '审核中',
@@ -50,7 +50,7 @@ jobs:
               BADGE_ERR: '字段校验未通过：badge 的值必须严格填写。仅允许填写 "好友", "友情" 或 "友情链接"。',
               SSRF_BLOCK: '安全拦截：目标 URL 疑似指向内网或保留 IP。',
               SUCCESS: `🎉 **审核通过！**\n\n感谢申请！系统已检测到有效的双向链接并确认格式无误，现在为您自动执行合并 (Squash Merge)。`,
-              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能检测到有效的反链、站点访问异常或格式有误（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式，并将文件名改为 \`您的网站名.json\`：\n\n\`\`\`json\n{\n  "name": "您的网站名",\n  "avatar": "https://您的头像URL",\n  "description": "您的网站描述",\n  "url": "https://您的网站URL",\n  "badge": "友情"\n}\n\`\`\`\n\n请您参考上方的错误报告与正确格式修正后，重新开启或提交新的 PR，期待您的加入！`
+              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能检测到有效的反链、站点访问异常或格式有误（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式，并将文件名改为 \`您的网站名.json\`。\n**（🚨注意：如果您的本站链接放在了专门的二级页面例如 /friends，请务必填写 \`backlink\` 字段指路！）**\n\n\`\`\`json\n{\n  "name": "您的网站名",\n  "avatar": "https://您的头像URL",\n  "description": "您的网站描述",\n  "url": "https://您的网站URL",\n  "backlink": "https://您的友链页URL (选填)",\n  "badge": "友情"\n}\n\`\`\`\n\n请您参考上方的错误报告与正确格式修正后，重新开启或提交新的 PR，期待您的加入！`
             };
 
             // ================= 辅助函数 =================
@@ -70,7 +70,7 @@ jobs:
               }
             }
 
-            // 自动分配标签颜色
+            // 智能分配标签颜色
             function getLabelColor(name) {
               const greenLabels = ['审核通过', '站点正常', '头像正常', '反链有效'];
               const redLabels = ['待修改', '站点异常', '头像异常', '反链缺失'];
@@ -142,7 +142,7 @@ jobs:
             await manageLabels([LABELS.BASE, LABELS.RUNNING], []);
             const reportData = [];
             let isFailed = false;
-            let applySiteName = "未知站点"; // 提取作用域，为了在最后的 Merge 里能拿到网站名称
+            let applySiteName = "未知站点";
 
             try {
               // 1. 获取 PR 文件列表
@@ -155,16 +155,15 @@ jobs:
               if (!file.filename.startsWith('src/data/friends/') || !file.filename.endsWith('.json')) {
                 throw new Error(MSG.PR_PATH_ERR);
               }
-              // 拦截直接使用 "你的名字.json" 的提交
+              // 防呆校验：拦截直接使用 "你的名字.json" 的提交
               if (file.filename.endsWith('/你的名字.json')) {
                 throw new Error(MSG.PR_FILENAME_ERR);
               }
-              
               if (file.status !== 'added' && file.status !== 'modified') {
                 throw new Error(MSG.PR_ACTION_ERR);
               }
 
-              // 2. 读取文件内容进行 JSON 格式检查（从 Fork 仓库读取）
+              // 2. 读取文件内容进行 JSON 格式检查
               const prHead = context.payload.pull_request.head;
               const { data: fileData } = await github.rest.repos.getContent({
                 owner: prHead.repo.owner.login,
@@ -181,10 +180,8 @@ jobs:
               const missingKeys = requiredKeys.filter(k => !json[k] || typeof json[k] !== 'string');
               if (missingKeys.length > 0) throw new Error(`${MSG.JSON_KEY_ERR} 缺失: ${missingKeys.join(', ')}`);
               
-              // 成功解析 JSON 后，缓存站点的名字
               applySiteName = json.name.trim();
 
-              // 严格限定 badge 字段的内容
               const allowedBadges = ['好友', '友情', '友情链接'];
               if (!allowedBadges.includes(json.badge.trim())) {
                 throw new Error(MSG.BADGE_ERR);
@@ -192,13 +189,32 @@ jobs:
               
               reportData.push({ item: 'JSON 格式', status: '✅ 通关', detail: '字段校验完整且规范' });
 
-              // 3. 安全防护 SSRF
-              if (!isSafeUrl(json.url) || !isSafeUrl(json.avatar)) {
+              // 3. 安全防护 SSRF (包括新加的 backlink 字段)
+              if (!isSafeUrl(json.url) || !isSafeUrl(json.avatar) || (json.backlink && !isSafeUrl(json.backlink))) {
                 throw new Error(MSG.SSRF_BLOCK);
               }
 
-              // 4. 头像连通性检查（HEAD 请求，避免下载大图片）
-              const avatarRes = await fetchWithTimeout(json.avatar, 10000, { headOnly: true });
+              // 4. 并发发起网络请求（重点：backlink 逻辑判断）
+              const fetchTasks = [
+                fetchWithTimeout(json.avatar, 10000, { headOnly: true }), // [0] 测头像
+                fetchWithTimeout(json.url)                                // [1] 测主站存活
+              ];
+
+              // ★ 如果用户填写了 backlink 字段，就额外发起一个请求去扒这个指定的页面
+              const hasCustomBacklink = typeof json.backlink === 'string' && json.backlink.trim() !== '';
+              if (hasCustomBacklink) {
+                fetchTasks.push(fetchWithTimeout(json.backlink.trim()));  // [2] 去专属友链页扒反链
+              }
+
+              const results = await Promise.all(fetchTasks);
+              const avatarRes = results[0];
+              const siteRes = results[1];
+              
+              // ★ 核心逻辑：如果有 backlink 就用 backlink 的页面源码，没写就默认用主站 url 的源码
+              const backlinkRes = hasCustomBacklink ? results[2] : siteRes;
+              const checkTargetUrl = hasCustomBacklink ? json.backlink.trim() : json.url;
+
+              // 验证头像
               if (avatarRes.ok) {
                 reportData.push({ item: '头像连通性', status: '✅ 正常', detail: `状态码: ${avatarRes.status}` });
                 await manageLabels([LABELS.AVATAR_OK]);
@@ -208,18 +224,22 @@ jobs:
                 await manageLabels([LABELS.AVATAR_ERR]);
               }
 
-              // 5. 站点与反链连通性检查
-              const siteRes = await fetchWithTimeout(json.url);
+              // 验证站点 (永远只测 json.url 是否存活，保证导流地址没挂)
               if (siteRes.ok) {
                 reportData.push({ item: '站点连通性', status: '✅ 正常', detail: `状态码: ${siteRes.status}` });
                 await manageLabels([LABELS.SITE_OK]);
+              } else {
+                isFailed = true;
+                reportData.push({ item: '站点连通性', status: '❌ 失败', detail: siteRes.error || `状态码: ${siteRes.status}` });
+                await manageLabels([LABELS.SITE_ERR]);
+              }
 
-                // 反链分析
-                const html = siteRes.text;
+              // 验证反链 (去 checkTargetUrl 里面扒)
+              if (backlinkRes.ok) {
+                const html = backlinkRes.text;
                 let hasBacklink = false;
                 let isNofollow = false;
 
-                // 动态构造正则匹配任何指定的信任域名
                 const domainPattern = MY_DOMAINS.map(d => d.replace(/\./g, '\\.')).join('|');
                 const linkRegex = new RegExp(`<a[^>]*href\\s*=\\s*["'][^"']*(${domainPattern})[^"']*["'][^>]*>`, 'gi');
                 
@@ -233,19 +253,18 @@ jobs:
 
                 if (hasBacklink) {
                   const nofollowTag = isNofollow ? ' *(注: 检测到 nofollow 属性)*' : '';
-                  reportData.push({ item: '反链检测', status: '✅ 已找到', detail: `在源码中发现本站链接${nofollowTag}` });
+                  // 在报告里明确打印出它到底是在哪个页面(主站还是专属页)找到的反链
+                  reportData.push({ item: '反链检测', status: '✅ 已找到', detail: `在 [目标页面](${checkTargetUrl}) 中发现本站链接${nofollowTag}` });
                   await manageLabels([LABELS.LINK_OK]);
                 } else {
                   isFailed = true;
-                  reportData.push({ item: '反链检测', status: '❌ 缺失', detail: '未在对方页面找到指向本站的超链接' });
+                  reportData.push({ item: '反链检测', status: '❌ 缺失', detail: `未在 [目标页面](${checkTargetUrl}) 找到指向本站的超链接` });
                   await manageLabels([LABELS.LINK_ERR]);
                 }
-
               } else {
                 isFailed = true;
-                reportData.push({ item: '站点连通性', status: '❌ 失败', detail: siteRes.error || `状态码: ${siteRes.status}` });
-                reportData.push({ item: '反链检测', status: '⚠️ 跳过', detail: '站点无法访问，跳过反链检测' });
-                await manageLabels([LABELS.SITE_ERR, LABELS.LINK_ERR]);
+                reportData.push({ item: '反链检测', status: '❌ 失败', detail: `无法访问扒取反链的目标页面，状态码: ${backlinkRes.status}` });
+                await manageLabels([LABELS.LINK_ERR]);
               }
 
             } catch (err) {
