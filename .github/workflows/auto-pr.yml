@@ -26,29 +26,31 @@ jobs:
             // ================= 常量定义区 =================
             const MY_DOMAINS = ['mahiro.work']; // 填你需要匹配的核心主域名或多个域名
 
+            // 全中文专业标签
             const LABELS = {
               BASE: '友链申请',
-              RUNNING: 'audit-running',
-              PASSED: 'audit-passed',
-              NEED_FIX: 'need-fix',
-              SITE_OK: 'site-ok',
-              SITE_ERR: 'site-error',
-              AVATAR_OK: 'avatar-ok',
-              AVATAR_ERR: 'avatar-error',
-              LINK_OK: 'backlink-ok',
-              LINK_ERR: 'backlink-error'
+              RUNNING: '审核中',
+              PASSED: '审核通过',
+              NEED_FIX: '待修改',
+              SITE_OK: '站点正常',
+              SITE_ERR: '站点异常',
+              AVATAR_OK: '头像正常',
+              AVATAR_ERR: '头像异常',
+              LINK_OK: '反链有效',
+              LINK_ERR: '反链缺失'
             };
 
             const MSG = {
               PR_MULTI_FILES: 'PR 必须仅包含 1 个文件的变更。',
               PR_PATH_ERR: '修改路径必须严格限制在 `src/data/friends/` 目录下，且文件扩展名必须是 `.json`。',
+              PR_FILENAME_ERR: '文件名校验失败：请不要直接使用模板默认的 `你的名字.json`，请将其重命名为您自己的站点名称或 ID。',
               PR_ACTION_ERR: '只允许新增 (added) 或修改 (modified) 文件。',
               JSON_PARSE_ERR: 'JSON 解析失败，请检查文件格式是否符合规范。',
               JSON_KEY_ERR: 'JSON 缺少必填字段，必须包含：name, avatar, description, url, badge。',
-              BADGE_ERR: '字段校验未通过：badge 的值必须严格填写。建议填写 "好友" 或 "友情链接"。',
+              BADGE_ERR: '字段校验未通过：badge 的值必须严格填写。仅允许填写 "好友", "友情" 或 "友情链接"。',
               SSRF_BLOCK: '安全拦截：目标 URL 疑似指向内网或保留 IP。',
               SUCCESS: `🎉 **审核通过！**\n\n感谢申请！系统已检测到有效的双向链接并确认格式无误，现在为您自动执行合并 (Squash Merge)。`,
-              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能检测到有效的反链、站点访问异常或格式有误（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式：\n\n\`\`\`json\n{\n  "name": "您的网站名",\n  "avatar": "https://您的头像URL",\n  "description": "您的网站描述",\n  "url": "https://您的网站URL",\n  "badge": "友情"\n}\n\`\`\`\n\n请您参考上方的错误报告与正确格式修正后，重新开启或提交新的 PR，期待您的加入！`
+              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能检测到有效的反链、站点访问异常或格式有误（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式，并将文件名改为 \`您的网站名.json\`：\n\n\`\`\`json\n{\n  "name": "您的网站名",\n  "avatar": "https://您的头像URL",\n  "description": "您的网站描述",\n  "url": "https://您的网站URL",\n  "badge": "友情"\n}\n\`\`\`\n\n请您参考上方的错误报告与正确格式修正后，重新开启或提交新的 PR，期待您的加入！`
             };
 
             // ================= 辅助函数 =================
@@ -68,6 +70,15 @@ jobs:
               }
             }
 
+            // 智能分配标签颜色
+            function getLabelColor(name) {
+              const greenLabels = ['审核通过', '站点正常', '头像正常', '反链有效'];
+              const redLabels = ['待修改', '站点异常', '头像异常', '反链缺失'];
+              if (greenLabels.includes(name)) return '0e8a16'; // 绿色
+              if (redLabels.includes(name)) return 'd93f0b';   // 红色
+              return '1d76db'; // 蓝色 (默认)
+            }
+
             // 缓存当前标签状态，避免每次调用都重新 GET
             let _labelCache = null;
             async function getLabelCache() {
@@ -83,7 +94,7 @@ jobs:
 
               for (const name of addList) {
                 if (!currentLabels.has(name)) {
-                  await ensureLabel(name, name.includes('ok') ? '0e8a16' : (name.includes('error') || name === LABELS.NEED_FIX ? 'd93f0b' : '1d76db'));
+                  await ensureLabel(name, getLabelColor(name));
                   await github.rest.issues.addLabels({ owner, repo, issue_number: pull_number, labels: [name] });
                   currentLabels.add(name);
                 }
@@ -131,7 +142,7 @@ jobs:
             await manageLabels([LABELS.BASE, LABELS.RUNNING], []);
             const reportData = [];
             let isFailed = false;
-            let applySiteName = "未知站点"; // 提权作用域，为了在最后的 Merge 里能拿到网站名称
+            let applySiteName = "未知站点"; // 提取作用域，为了在最后的 Merge 里能拿到网站名称
 
             try {
               // 1. 获取 PR 文件列表
@@ -140,9 +151,15 @@ jobs:
               if (files.length !== 1) throw new Error(MSG.PR_MULTI_FILES);
               const file = files[0];
               
+              // 校验路径和扩展名
               if (!file.filename.startsWith('src/data/friends/') || !file.filename.endsWith('.json')) {
                 throw new Error(MSG.PR_PATH_ERR);
               }
+              // 🛑 防呆校验：拦截直接使用 "你的名字.json" 的提交
+              if (file.filename.endsWith('/你的名字.json')) {
+                throw new Error(MSG.PR_FILENAME_ERR);
+              }
+              
               if (file.status !== 'added' && file.status !== 'modified') {
                 throw new Error(MSG.PR_ACTION_ERR);
               }
@@ -167,8 +184,9 @@ jobs:
               // 成功解析 JSON 后，缓存站点的名字
               applySiteName = json.name.trim();
 
-              // 放宽一点对 badge 的限制，可以改成您的特定值如果需要
-              if (!json.badge.trim()) {
+              // 严格限定 badge 字段的内容
+              const allowedBadges = ['好友', '友情', '友情链接'];
+              if (!allowedBadges.includes(json.badge.trim())) {
                 throw new Error(MSG.BADGE_ERR);
               }
               
@@ -232,7 +250,7 @@ jobs:
 
             } catch (err) {
               isFailed = true;
-              reportData.push({ item: '致命错误/前置检查', status: '❌ 拦截', detail: err.message });
+              reportData.push({ item: '前置校验拦截', status: '❌ 未通过', detail: err.message });
             }
 
             // ================= 报告生成与最终动作 =================
