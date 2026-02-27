@@ -1,0 +1,94 @@
+---
+import { Icon } from "astro-icon/components";
+
+const fonts = [
+  { name: "系统默认", value: "system-ui, -apple-system, sans-serif", preview: "system-ui" },
+  { name: "思源黑体", value: "'Noto Sans SC', sans-serif", preview: "'Noto Sans SC'" },
+  { name: "思源宋体", value: "'Noto Serif SC', serif", preview: "'Noto Serif SC'" },
+  { name: "霞鹜文楷", value: "'LXGW WenKai', cursive", preview: "'LXGW WenKai'" },
+  { name: "马善政楷体", value: "'Ma Shan Zheng', cursive", preview: "'Ma Shan Zheng'" },
+  { name: "站酷小薇", value: "'ZCOOL XiaoWei', serif", preview: "'ZCOOL XiaoWei'" },
+  { name: "龙藏", value: "'Long Cang', cursive", preview: "'Long Cang'" },
+  { name: "站酷庆科黄油体", value: "'ZCOOL QingKe HuangYou', cursive", preview: "'ZCOOL QingKe HuangYou'" },
+  { name: "站酷快乐体", value: "'ZCOOL KuaiLe', cursive", preview: "'ZCOOL KuaiLe'" },
+  { name: "刘建毛草", value: "'Liu Jian Mao Cao', cursive", preview: "'Liu Jian Mao Cao'" },
+  { name: "芝麻行", value: "'Zhi Mang Xing', cursive", preview: "'Zhi Mang Xing'" },
+];
+---
+
+<div class="dropdown dropdown-end">
+  <div tabindex="0" role="button" class="btn btn-ghost btn-circle hover:bg-white/10 text-primary" title="Change Font">
+    <Icon name="material-symbols:font-download-outline" class="w-5 h-5" />
+  </div>
+  <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-200 rounded-box w-56 max-h-96 overflow-y-auto flex-nowrap">
+    {fonts.map((font) => (
+      <li>
+        <button
+          class="flex gap-3 items-center"
+          data-set-font-nav={font.value}
+          aria-label={`切换字体为 ${font.name}`}
+        >
+          <span class="w-8 text-lg font-bold" style={`font-family: ${font.preview};`}>Aa</span>
+          <span>{font.name}</span>
+        </button>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<script is:inline>
+  // 全局字体应用函数 - 通过注入 style 标签强制覆盖 DaisyUI 字体
+  function applyFont(font) {
+    var el = document.getElementById('blog-font-override');
+    if (!el) {
+      el = document.createElement('style');
+      el.id = 'blog-font-override';
+      document.head.appendChild(el);
+    }
+    el.textContent = 'html, body, *, *::before, *::after { font-family: ' + font + ' !important; }';
+  }
+
+  // 页面加载时应用已保存的字体
+  (function() {
+    var font = localStorage.getItem('blog-font');
+    if (font) applyFont(font);
+  })();
+
+  document.addEventListener("astro:page-load", () => {
+    // 恢复已保存的字体
+    var savedFont = localStorage.getItem('blog-font');
+    if (savedFont) applyFont(savedFont);
+
+    const fontButtons = document.querySelectorAll('[data-set-font-nav]');
+
+    const updateActiveFont = () => {
+      const currentFont = localStorage.getItem('blog-font') || '';
+      fontButtons.forEach(btn => {
+        if (btn.getAttribute('data-set-font-nav') === currentFont) {
+          btn.classList.add('bg-primary/10', 'text-primary', 'font-bold');
+        } else {
+          btn.classList.remove('bg-primary/10', 'text-primary', 'font-bold');
+        }
+      });
+      // 同步 MobileSettings 字体按钮
+      document.querySelectorAll('[data-set-font]').forEach(mBtn => {
+        if (mBtn.getAttribute('data-set-font') === currentFont) {
+          mBtn.classList.add('bg-primary/10', 'text-primary', 'font-bold', 'active');
+        } else {
+          mBtn.classList.remove('bg-primary/10', 'text-primary', 'font-bold', 'active');
+        }
+      });
+    };
+
+    updateActiveFont();
+
+    fontButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const font = btn.getAttribute('data-set-font-nav');
+        applyFont(font);
+        localStorage.setItem('blog-font', font);
+        updateActiveFont();
+      });
+    });
+  });
+</script>

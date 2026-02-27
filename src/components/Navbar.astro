@@ -2,6 +2,7 @@
 import { Icon } from "astro-icon/components";      
 import ThemeToggle from "./widgets/ThemeToggle.astro";      
 import ThemeSelector from "./widgets/ThemeSelector.astro";
+import FontSelector from "./widgets/FontSelector.astro";
 import BannerSettings from "./widgets/BannerSettings.astro";
 import MobileSettings from "./widgets/MobileSettings.astro";
 import { SITE_TITLE, SITE_MENU, USER_AVATAR } from "../config";      
@@ -86,6 +87,7 @@ const typedMenu = SITE_MENU as MenuItem[];
             <Icon name="material-symbols:settings-outline" class="w-5 h-5" />
           </a>
           <ThemeSelector />
+          <FontSelector />
           <BannerSettings />
           <!-- 主题切换 -->      
           <ThemeToggle className="btn btn-ghost btn-circle hover:bg-white/10 text-primary" />      

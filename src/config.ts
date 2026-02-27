@@ -47,6 +47,9 @@ export const BILIBILI_CONFIG = config.anime?.bilibili;
 // GitHub 配置
 export const GITHUB_CONFIG = config.github;
 
+// 音乐配置
+export const MUSIC_CONFIG = config.music || { api: 'https://api.qijieya.cn/meting', autoplay: false, playlist: [] };
+
 // 代码块的主题
 export const CODE_THEME = config.site.theme.code;
 

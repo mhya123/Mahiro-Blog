@@ -20,6 +20,7 @@ import Banner from "@components/Banner.astro";
 import MobileTOC from "@components/widgets/MobileTOC.astro";
 import GlobalAudio from "@components/widgets/GlobalAudio.astro";
 import CookieConsent from "@components/widgets/CookieConsent.astro";
+import UpdateNotifier from "@components/widgets/UpdateNotifier";
 
 const {
   title,
@@ -57,6 +58,25 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       image={image}
     />
     <title>{`${title} - ${SITE_TAB}`}</title>
+
+    <!-- Google Fonts 预连接 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- 中文字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&family=LXGW+WenKai:wght@400;700&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Long+Cang&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Liu+Jian+Mao+Cao&family=Zhi+Mang+Xing&display=swap" rel="stylesheet" />
+
+    <!-- 字体初始化（防闪烁 FOUC）-->
+    <script is:inline>
+      (function() {
+        var font = localStorage.getItem('blog-font');
+        if (font) {
+          var el = document.createElement('style');
+          el.id = 'blog-font-override';
+          el.textContent = 'html, body, *, *::before, *::after { font-family: ' + font + ' !important; }';
+          document.head.appendChild(el);
+        }
+      })();
+    </script>
 
     <!-- Umami分析（自建） -->
     {
@@ -165,6 +185,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     <MobileTOC headings={headings} showTOC={showTOC} />
     <GlobalAudio />
     <CookieConsent />
+    <UpdateNotifier client:only="react" />
 
     <!-- 其余脚本保持不变 -->
     <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>

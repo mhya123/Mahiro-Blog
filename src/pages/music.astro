@@ -1,7 +1,10 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import MusicPlayer from "@/components/widgets/MusicPlayer.astro";
-import { musicList } from "@/data/music";
+import { getMusicList } from "@/data/music";
+
+// 构建时通过 Meting API 获取播放列表
+const musicList = await getMusicList();
 ---
 
 <BaseLayout title="音乐" showSidebar={true} showTOC={false} isIndexed={false}>

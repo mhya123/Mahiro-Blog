@@ -1,6 +1,7 @@
 ---
-import { musicList } from "@/data/music";
-// 默认播放第一首
+import { getMusicList } from "@/data/music";
+// 构建时通过 Meting API 获取播放列表
+const musicList = await getMusicList();
 const initialPlaylist = JSON.stringify(musicList);
 const initialSong = musicList[0] || {};
 ---
@@ -539,6 +540,7 @@ const initialSong = musicList[0] || {};
         
         updateUI() {
              const song = this.playlist[this.currentIndex];
+             if (!song) return;
              const coverSrc = song.cover || "";
              
              // --- Update Mini Player ---

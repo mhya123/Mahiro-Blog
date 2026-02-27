@@ -185,4 +185,9 @@ export interface Config {
   comments?: CommentsConfig;
   anime?: AnimeConfig;
   github?: GithubConfig;
+  music?: {
+    api?: string;
+    autoplay?: boolean;
+    playlist?: (string | number)[];
+  };
 }

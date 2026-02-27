@@ -89,6 +89,86 @@ const themes = [
       </details>
     </li>
 
+    <!-- Font Selector -->
+    <li>
+      <details>
+        <summary class="font-medium flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
+          <div class="flex items-center gap-2">
+            <Icon name="material-symbols:font-download-outline" class="w-5 h-5" />
+            Font
+          </div>
+        </summary>
+        <ul class="p-2 bg-base-100 rounded-box max-h-60 overflow-y-auto flex-nowrap">
+          <li>
+            <button data-set-font="system-ui, -apple-system, sans-serif" class="flex gap-3 items-center">
+              <span style="font-family: system-ui;">Aa</span>
+              <span>系统默认</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'Noto Sans SC', sans-serif" class="flex gap-3 items-center">
+              <span style="font-family: 'Noto Sans SC';">Aa</span>
+              <span>思源黑体</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'Noto Serif SC', serif" class="flex gap-3 items-center">
+              <span style="font-family: 'Noto Serif SC';">Aa</span>
+              <span>思源宋体</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'LXGW WenKai', cursive" class="flex gap-3 items-center">
+              <span style="font-family: 'LXGW WenKai';">Aa</span>
+              <span>霞鹜文楷</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'Ma Shan Zheng', cursive" class="flex gap-3 items-center">
+              <span style="font-family: 'Ma Shan Zheng';">Aa</span>
+              <span>马善政楷体</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'ZCOOL XiaoWei', serif" class="flex gap-3 items-center">
+              <span style="font-family: 'ZCOOL XiaoWei';">Aa</span>
+              <span>站酷小薇</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'Long Cang', cursive" class="flex gap-3 items-center">
+              <span style="font-family: 'Long Cang';">Aa</span>
+              <span>龙藏</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'ZCOOL QingKe HuangYou', cursive" class="flex gap-3 items-center">
+              <span style="font-family: 'ZCOOL QingKe HuangYou';">Aa</span>
+              <span>站酷庆科黄油体</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'ZCOOL KuaiLe', cursive" class="flex gap-3 items-center">
+              <span style="font-family: 'ZCOOL KuaiLe';">Aa</span>
+              <span>站酷快乐体</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'Liu Jian Mao Cao', cursive" class="flex gap-3 items-center">
+              <span style="font-family: 'Liu Jian Mao Cao';">Aa</span>
+              <span>刘建毛草</span>
+            </button>
+          </li>
+          <li>
+            <button data-set-font="'Zhi Mang Xing', cursive" class="flex gap-3 items-center">
+              <span style="font-family: 'Zhi Mang Xing';">Aa</span>
+              <span>芝麻行</span>
+            </button>
+          </li>
+        </ul>
+      </details>
+    </li>
+
     <!-- Config Button -->
     <li>
       <a href="/config" class="flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
@@ -254,7 +334,32 @@ const themes = [
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme', 'data-banner-mode']
+      attributeFilter: ['data-theme', 'data-banner-mode', 'data-font']
+    });
+
+    // Font Selector Logic
+    const fontButtons = document.querySelectorAll('[data-set-font]');
+
+    const updateActiveFontButton = () => {
+      const currentFont = document.documentElement.getAttribute('data-font') || localStorage.getItem('blog-font') || '';
+      fontButtons.forEach(btn => {
+        if (btn.getAttribute('data-set-font') === currentFont) {
+          btn.classList.add('bg-primary/10', 'text-primary', 'font-bold', 'active');
+        } else {
+          btn.classList.remove('bg-primary/10', 'text-primary', 'font-bold', 'active');
+        }
+      });
+    };
+
+    updateActiveFontButton();
+
+    fontButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const font = btn.getAttribute('data-set-font');
+        if (typeof applyFont === 'function') applyFont(font);
+        localStorage.setItem('blog-font', font);
+        updateActiveFontButton();
+      });
     });
   });
 </script>

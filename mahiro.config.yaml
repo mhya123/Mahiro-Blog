@@ -56,9 +56,9 @@ site:
     project:
       title: Projects
       subtitle: 展示一些个人搭建的项目，搬运工！
-    # music:
-    #   title: Cloud Music
-    #   subtitle: 沉浸式享受音乐时光
+    music:
+      title: Cloud Music
+      subtitle: 沉浸式享受音乐时光
   menu:
     - id: home
       text: 首页
@@ -166,6 +166,12 @@ user:
         ariaLabel: Telegram
         title: Telegram
         svg: ri:telegram-line
+# 音乐配置
+music:
+  api: https://api.qijieya.cn/meting
+  autoplay: false
+  playlist:
+    - 1377164042    # Улетали птицами гордыми
 comments:
   enable: true
   type: giscus
