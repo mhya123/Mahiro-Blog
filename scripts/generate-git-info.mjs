@@ -25,8 +25,9 @@ if (!fs.existsSync(jsonDir)) {
     fs.mkdirSync(jsonDir, { recursive: true });
 }
 
-// 检查是否在持续集成/部署环境中运行 (Vercel, Cloudflare, etc)
-const isCI = process.env.CI || process.env.VERCEL || process.env.CF_PAGES;
+// 检查是否在无法拉取完整 git 的部署云环境运行 (Vercel, Cloudflare, etc)
+// 注意：如果是 GitHub Actions 我们故意不把它当做阉割版的 CI，而是让它跑本地原生的 git log
+const isCI = (process.env.CI || process.env.VERCEL || process.env.CF_PAGES) && !process.env.GITHUB_ACTIONS;
 
 // ============================================
 // 1. 生成全局 Build Info 
