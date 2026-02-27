@@ -1,10 +1,10 @@
 {
-  "commitSha": "2ac6e9ac58a732808855262f1db9c92c87a6b715",
-  "commitShort": "2ac6e9a",
-  "commitMessage": "数据脱敏",
+  "commitSha": "4a9bb8914b4b9c6e090b48d430bf393cad1c047d",
+  "commitShort": "4a9bb89",
+  "commitMessage": "umami设置",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-27T17:20:53+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/2ac6e9ac58a732808855262f1db9c92c87a6b715",
-  "buildTime": "2026/2/27 17:21:22",
-  "totalCommits": 72
+  "commitDate": "2026-02-27T18:10:36+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/4a9bb8914b4b9c6e090b48d430bf393cad1c047d",
+  "buildTime": "2026/2/27 18:11:09",
+  "totalCommits": 74
 }
