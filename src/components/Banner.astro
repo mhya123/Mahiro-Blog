@@ -52,8 +52,11 @@ const bannerHeight = BANNER_HEIGHT;
 
 // 随机图 API 配置
 const RANDOM_API_URL = BANNER_CONFIG?.randomUrl;
-// 首屏图片：服务端生成一个随机种子，确保每次刷新（或构建）时有一张初始图
-const initialRandomImage = `${RANDOM_API_URL}?t=${Date.now()}`;
+const isRandomEnabled = BANNER_CONFIG?.enableRandom ?? false;
+// 首屏图片：根据配置决定是否启用带时间戳的随机图，未启用时首选固定的 images 列表
+const initialRandomImage = isRandomEnabled 
+  ? `${RANDOM_API_URL}?t=${Date.now()}` 
+  : (BANNER_CONFIG?.images?.[0] || RANDOM_API_URL);
 ---
 
 <div id="banner" class="banner">
@@ -211,8 +214,10 @@ const initialRandomImage = `${RANDOM_API_URL}?t=${Date.now()}`;
 </script>
 
 <!-- 随机图轮播脚本 -->
-<script define:vars={{ RANDOM_API_URL }} is:inline>
+<script define:vars={{ RANDOM_API_URL, isRandomEnabled }} is:inline>
   document.addEventListener("astro:page-load", () => {
+    if (!isRandomEnabled) return;
+    
     const bgCurrent = document.getElementById("banner-bg-current");
     const bgNext = document.getElementById("banner-bg-next");
     const banner = document.getElementById("banner");

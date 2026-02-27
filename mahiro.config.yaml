@@ -1,7 +1,7 @@
 site:
   tab: Mahiro
   title: Mahiro
-  description: 🌸 轻盈、优雅、纯净 —— 用文字与图片记录生活与创意
+  description: MhYa123的博客分享各类杂谈,技术,生活.
   language: zh
   favicon: https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg
   theme:
@@ -63,7 +63,7 @@ site:
       svg: material-symbols:home-outline-rounded
       target: _self
     - id: write
-      text: 写作
+      text: 随笔
       href: /write
       svg: material-symbols:edit-square-outline-rounded
       target: _self
