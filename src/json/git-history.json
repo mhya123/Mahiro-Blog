@@ -36,6 +36,15 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/d022b3224b89b55ce31e5cbdd37858087e7de3e4"
     }
   ],
+  "src/content/blog/umamisql.md": [
+    {
+      "sha": "e408740e8f90d701c9baaf27f31a24b0be72ab99",
+      "message": "add: Umami v3 数据库可视化管理与访问量修改教程",
+      "authorName": "MhYa123",
+      "date": "2026-02-27T21:36:53+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/e408740e8f90d701c9baaf27f31a24b0be72ab99"
+    }
+  ],
   "src/content/blog/wbzda.md": [
     {
       "sha": "5d740cbf5e1cb9cfa533279552d6cbde25d655d7",
