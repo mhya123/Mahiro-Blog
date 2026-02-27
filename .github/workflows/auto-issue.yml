@@ -41,6 +41,7 @@ jobs:
             };
 
             const MSG = {
+              TITLE_ERR: '占位符拦截：系统检测到您的标题或 JSON 内容中依然包含默认的“您的网站名”，请务必将其修改为您自己的真实网站名称。',
               JSON_MISSING_ERR: '未在 Issue 中找到合法的 JSON 代码块。请确保您的 JSON 数据包裹在 ```json 和 ``` 之间。',
               JSON_PARSE_ERR: 'JSON 解析失败，请检查文件格式是否符合完全正确的 JSON 规范（如：不能有单引号，不能缺少逗号等）。',
               JSON_KEY_ERR: 'JSON 缺少必填字段，必须包含：name, avatar, description, url, badge。',
@@ -146,6 +147,11 @@ jobs:
             let blockedByWaf = false;
 
             try {
+              // 0. 标题防呆校验
+              if (issue_title.includes('您的网站名')) {
+                throw new Error(MSG.TITLE_ERR);
+              }
+
               // 1. 提取 JSON 代码块
               const jsonMatch = issue_body.match(/```json\s+([\s\S]+?)\s+```/i);
               if (!jsonMatch || !jsonMatch[1]) {
@@ -156,6 +162,10 @@ jobs:
               
               let json;
               try { json = JSON.parse(contentStr); } catch { throw new Error(MSG.JSON_PARSE_ERR); }
+
+              if (json.name && json.name.includes('您的网站名')) {
+                throw new Error(MSG.TITLE_ERR);
+              }
 
               const requiredKeys = ['name', 'avatar', 'description', 'url', 'badge'];
               const missingKeys = requiredKeys.filter(k => !json[k] || typeof json[k] !== 'string');

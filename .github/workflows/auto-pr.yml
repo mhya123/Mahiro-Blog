@@ -47,6 +47,7 @@ jobs:
               PR_PATH_ERR: '修改路径必须严格限制在 `src/data/friends/` 目录下，且文件扩展名必须是 `.json`。',
               PR_FILENAME_ERR: '文件名校验失败：请不要直接使用模板默认的 `你的名字.json`，请将其重命名为您自己的站点名称或 ID。',
               PR_ACTION_ERR: '只允许新增 (added) 或修改 (modified) 文件。',
+              TEMPLATE_ERR: '内容校验未通过：系统检测到您的 JSON 文件中依然包含默认的占位符“您的网站名”，请务必将其修改为您真实的网站信息后再提交。',
               JSON_PARSE_ERR: 'JSON 解析失败，请检查文件格式是否符合规范。',
               JSON_KEY_ERR: 'JSON 缺少必填字段，必须包含：name, avatar, description, url, badge。',
               BADGE_ERR: '字段校验未通过：badge 的值必须严格填写。仅允许填写 "好友", "友情" 或 "友情链接"。',
@@ -177,6 +178,10 @@ jobs:
               
               let json;
               try { json = JSON.parse(contentStr); } catch { throw new Error(MSG.JSON_PARSE_ERR); }
+
+              if (json.name && json.name.includes('您的网站名')) {
+                throw new Error(MSG.TEMPLATE_ERR);
+              }
 
               const requiredKeys = ['name', 'avatar', 'description', 'url', 'badge'];
               const missingKeys = requiredKeys.filter(k => !json[k] || typeof json[k] !== 'string');
