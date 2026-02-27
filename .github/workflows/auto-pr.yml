@@ -26,7 +26,7 @@ jobs:
             // ================= 常量定义区 =================
             const MY_DOMAINS = ['mahiro.work']; // 填你需要匹配的核心主域名或多个域名
 
-            // 全中文专业标签
+            // 标签
             const LABELS = {
               BASE: '友链申请',
               RUNNING: '审核中',
@@ -70,7 +70,7 @@ jobs:
               }
             }
 
-            // 智能分配标签颜色
+            // 自动分配标签颜色
             function getLabelColor(name) {
               const greenLabels = ['审核通过', '站点正常', '头像正常', '反链有效'];
               const redLabels = ['待修改', '站点异常', '头像异常', '反链缺失'];
@@ -155,7 +155,7 @@ jobs:
               if (!file.filename.startsWith('src/data/friends/') || !file.filename.endsWith('.json')) {
                 throw new Error(MSG.PR_PATH_ERR);
               }
-              // 🛑 防呆校验：拦截直接使用 "你的名字.json" 的提交
+              // 拦截直接使用 "你的名字.json" 的提交
               if (file.filename.endsWith('/你的名字.json')) {
                 throw new Error(MSG.PR_FILENAME_ERR);
               }
