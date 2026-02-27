@@ -1,0 +1,48 @@
+{
+  "src/content/blog/test.md": [
+    {
+      "sha": "9a822af174a6ba894b6b6b5251f603729a132521",
+      "message": "feat: 实现核心站点配置、导航栏、音乐页面及多个UI小部件，并集成国际化和Umami统计。",
+      "authorName": "MhYa123",
+      "date": "2026-02-27T09:55:05+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/9a822af174a6ba894b6b6b5251f603729a132521"
+    },
+    {
+      "sha": "d1003d8092c5db80de2121113030d3eaf97104a1",
+      "message": "feat: Add post metadata management UI and frontmatter parsing utilities.",
+      "authorName": "MhYa123",
+      "date": "2026-02-26T17:11:48+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d1003d8092c5db80de2121113030d3eaf97104a1"
+    },
+    {
+      "sha": "531732f164d750a07811ca101c1ac8a4d0f5d20e",
+      "message": "docs: Update test blog post to verify revision history modal",
+      "authorName": "MhYa123",
+      "date": "2026-02-26T16:50:17+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/531732f164d750a07811ca101c1ac8a4d0f5d20e"
+    },
+    {
+      "sha": "862ab60cb4679807a68bc5bfdacdb3597ac6f01e",
+      "message": "Remove unused assets and update footer with police备案信息; modify site configuration and blog metadata; clean up project page by removing outdated projects.",
+      "authorName": "MhYa123",
+      "date": "2026-02-10T09:42:02+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/862ab60cb4679807a68bc5bfdacdb3597ac6f01e"
+    },
+    {
+      "sha": "d022b3224b89b55ce31e5cbdd37858087e7de3e4",
+      "message": "feat(blog): publish post \"test\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-02-08T04:52:43Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d022b3224b89b55ce31e5cbdd37858087e7de3e4"
+    }
+  ],
+  "src/content/blog/wbzda.md": [
+    {
+      "sha": "5d740cbf5e1cb9cfa533279552d6cbde25d655d7",
+      "message": "feat(blog): publish post \"我不知道啊\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-02-26T08:03:37Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/5d740cbf5e1cb9cfa533279552d6cbde25d655d7"
+    }
+  ]
+}

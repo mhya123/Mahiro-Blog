@@ -1,61 +1,26 @@
-import { execSync } from 'node:child_process';
 import type { CommitData } from '@/components/widgets/CommitHistory';
+// 忽略 TypeScript 对于未知 JSON 的报错，因为该文件在构建或开发时生成
+// @ts-ignore
+import gitHistory from '../json/git-history.json';
 
 /**
- * 在构建时通过 git log 或 GitHub API 获取指定文件的提交历史
- * 优先使用 GitHub API 防止云部署平台的浅克隆和服务器端 fetch 缓存导致记录过时
+ * 获取指定文件的提交历史（从预生成的 JSON 中读取）
+ * 这样不受 Vercel 等平台浅克隆的影响，并且没有任何外部 API 请求延迟
  */
 export async function getFileCommits(filePath: string, owner: string, repo: string, maxCount = 20): Promise<CommitData[]> {
-    if (owner && repo) {
-        try {
-            const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${filePath}&per_page=${maxCount}`, {
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'User-Agent': 'Mahiro-Blog-Build'
-                },
-                cache: 'no-store'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    return data.map((item: any) => ({
-                        sha: item.sha,
-                        message: item.commit.message.split('\n')[0],
-                        authorName: item.commit.author.name,
-                        date: item.commit.author.date,
-                        url: item.html_url,
-                    }));
-                }
-            }
-        } catch (error) {
-            console.warn(`Failed to fetch commits from GitHub API for ${filePath}, falling back to local git.`);
-        }
-    }
-
     try {
-        // 降级：使用 git log 获取本地提交记录
-        const separator = '|||';
-        const format = `%H${separator}%s${separator}%an${separator}%aI`;
-        const result = execSync(
-            `git log --format="${format}" --max-count=${maxCount} -- "${filePath}"`,
-            { encoding: 'utf-8', timeout: 10000 }
-        ).trim();
+        // 将 Windows 的反斜杠统一替换为正斜杠，以匹配生成的 JSON key
+        const normalizedPath = filePath.replace(/\\/g, '/');
+        const historyRecord = gitHistory as Record<string, CommitData[]>;
 
-        if (!result) return [];
+        if (historyRecord && historyRecord[normalizedPath]) {
+            // 返回对应文件的历史记录，并限制最大数量
+            return historyRecord[normalizedPath].slice(0, maxCount);
+        }
 
-        return result.split('\n').filter(Boolean).map(line => {
-            const [sha, message, authorName, date] = line.split(separator);
-            return {
-                sha,
-                message,
-                authorName,
-                date,
-                url: owner && repo ? `https://github.com/${owner}/${repo}/commit/${sha}` : '',
-            };
-        });
-    } catch (error) {
-        console.warn(`Failed to get git log for ${filePath}:`, error);
+        return [];
+    } catch (e) {
+        console.warn(`Failed to get pre-built git history for post: ${filePath}`, e);
         return [];
     }
 }
