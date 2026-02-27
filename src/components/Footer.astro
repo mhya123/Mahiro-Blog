@@ -6,7 +6,7 @@ import dayjs from "@utils/dayjs";
 
 const owner = GITHUB_CONFIG?.owner || '';
 const repo = GITHUB_CONFIG?.repo || '';
-const buildInfo = getBuildInfo(owner, repo);
+const buildInfo = await getBuildInfo(owner, repo);
 ---
 
 <footer class="footer bg-base-100 py-2 px-4 md:p-10 rounded-xl shadow-lg gap-y-2 md:gap-4">
@@ -27,7 +27,7 @@ const buildInfo = getBuildInfo(owner, repo);
       ></path>
     </svg>
     <p class="text-xs md:text-base">
-      Powered by <a href="https://github.com/Mahiro-Blog" target="_blank" class="font-bold">Mahiro - Blog</a>
+      Powered by <a href="https://github.com/mhya123/Mahiro-Blog" target="_blank" class="font-bold">Mahiro - Blog</a>
       <br />
       Copyright ©
       <a href={USER_SITE} target="_blank" class="font-bold">{USER_NAME}</a>
