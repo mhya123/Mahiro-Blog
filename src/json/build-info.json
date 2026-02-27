@@ -1,10 +1,10 @@
 {
-  "commitSha": "d77b3817c52218ac8bdc1efadad0d789ae34c96f",
-  "commitShort": "d77b381",
-  "commitMessage": "chore: 移除构建脚本中的 `pnpm prefetch:git` 步骤",
+  "commitSha": "fe99b2bf44492436fc8f740526d54ba3e2cf9026",
+  "commitShort": "fe99b2b",
+  "commitMessage": "feat: 添加 GitHub Actions 工作流以生成 Git 历史 JSON 数据",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-27T13:36:33+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/d77b3817c52218ac8bdc1efadad0d789ae34c96f",
-  "buildTime": "2026/2/27 13:36:45",
-  "totalCommits": 31
+  "commitDate": "2026-02-27T14:04:25+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/fe99b2bf44492436fc8f740526d54ba3e2cf9026",
+  "buildTime": "2026/2/27 14:07:02",
+  "totalCommits": 36
 }
