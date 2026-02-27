@@ -1,84 +1,173 @@
-# Mahiro Blog
+# ✨ Mahiro Blog
 
-这是一个基于 [Astro](https://astro.build) 构建的现代化个人博客网站，采用优雅、极简且高度可定制的设计。本网站融合了多种流行技术栈，包括前端组件库 (React, Preact), 工具链库 (Tailwind CSS, DaisyUI) 等，提供了出色的加载性能和卓越的用户体验。
+基于 **Astro** 构建的现代化个人博客系统。整体设计追求优雅、极简与高度可定制，在保证极致加载性能的同时，提供流畅、沉浸式的阅读体验。
 
-## 🌟 核心特性
-
-- ⚡️ **极速体验**: 基于 Astro 混合构建（Static Site Generation + ViewTransitions），支持极致无明显等待的页面跳转。
-- 🎨 **主题系统**: 集成 [DaisyUI](https://daisyui.com)，内置美观优雅的主题和排版支持。
-- 📝 **Markdown/MDX 支持**: 原生支持现代 Markdown 甚至嵌入在 MDX 中的交互式组件。
-- 🔍 **本地搜索**: 基于自带强悍的静态全站搜索引擎 `pagefind`。
-- 🎵 **全局悬浮音乐播放器**: 可拖拽调整、沉浸式、极客向设计的独立音乐播放组件。
-- 🤝 **友链全自动审核闭环**: 特色化集成 GitHub Action (Auto-PR)。申请者只需在页面一键提交 PR，后台触发存活与反链审核机制，成功即可实现无人值守全自动发布！
-- ⏰ **自给自足式 Git MetaData**: 构建期间自动归档最后更新、Commit Message 时间等 Git History 历史脉络至文章和网站底部。
-
-## 🛠 技术栈概览
-
-- 核心框架：**Astro 4 🚀**
-- 交互组件：**React** + **Preact**
-- 样式方案：**Tailwind CSS** + **DaisyUI**
-- 面向内容：**MDX**
-- 全文搜索：**Pagefind**
-- 部署：优先 **Vercel** / **Cloudflare Pages**
-- 本地包管理：**pnpm** 📦
-
-## 📂 基础目录结构
-
-\`\`\`text
-Mahiro-Blog/
-├── .github/workflows/    # 自动化构建与代码审查相关的 GitHub Action (如 Auto-PR)
-├── public/               # 公共静态资源映射文件和 Favicon
-├── scripts/              # 本地数据抓取、计算构建前预处理与 MetaData 的 NodeJS 脚本
-├── src/
-│   ├── components/       # 系统通用组件 (React / Astro 组件)
-│   ├── config.ts         # 网站基础配置文件
-│   ├── content/          # 博客的核心数据内容 (文章存放在这里基于 md / mdx 编写)
-│   ├── data/
-│   │   ├── friends/      # 存放每位友链朋友信息的 `.json` 档案 (提供基于 PR 自动化审核的功能)
-│   │   └── music/        # 音乐播放器的歌单等配置列表
-│   ├── layouts/          # Astro 页面包裹与路由共享模版层 
-│   ├── pages/            # Astro 特有的物理单页面路由，例如首页, /posts, /friend, /about 等 
-│   ├── styles/           # Tailwind 样式以及 DaisyUI 个性化混入 CSS
-│   └── lib/              # Utils 处理、各类格式化与工具函数库
-├── package.json          # Node.js 依赖管理
-└── astro.config.mjs      # Astro 核心扩展插件加载与配置文件
-\`\`\`
-
-## 🚀 快速上手 (本地开发)
-
-请务必先安装 [Node.js](https://nodejs.org/) (建议版本 v20 以上) 且全局安装 \`pnpm\`。
-
-**1. 克隆代码后安装依赖项**
-\`\`\`bash
-pnpm install
-# 若未安装 pnpm，运行: npm install -g pnpm
-\`\`\`
-
-**2. 启动开发服务器**
-\`\`\`bash
-pnpm run dev
-\`\`\`
-*(开发环境已分离本地构建元数据的钩子，专注于实现秒级刷新)*
-
-**3. 进行数据元抓取 (手动生成需要依赖网络连通性的构建结构)**
-构建前生成必要信息（如歌曲基础元数据、Git 分支日志等），以便于页面在 SSR/SSG 时拉取该部分缓存。如果这部分缺失，会报错，请在项目根目录下利用脚本指令完成静态渲染前准备。
-\`\`\`bash
-pnpm run prefetch:music
-pnpm run git
-\`\`\`
-
-## ✨ 高级管理特性
-
-### 如何加入友链？(给第三方朋友)
-
-本网站提供一套无人值守式友链交换体验。您可以通过如下方式极速融入本站的“好朋友”圈：
-
-1. 确认您的主站、以及相关二级页面包含了本站 `mahiro.work` 域名的双向超链接。
-2. 前往我的网站友链页：[Friends](https://www.mahiro.work/friend) 页面
-3. 点击底部“提交 PR 申请”大按钮。系统会自动将您重定向至 GitHub `new/main/.../friends` 环境中。
-4. 改掉原本 `你的名字.json` 替换成您自己的名称，并在正文完善字段。如果不在此直接写 `backlink` 字段，审核机器人便会顺着 `url` 进入主页检索本站；如有二级路由专门做收纳，请在文件中添加 `backlink` 。
-5. 申请发完后，等待自动触发 Action `Auto-PR` 逻辑审计。如果通过，您的 PR 会被瞬间 Squash Merge，约三分钟后友链板即能被公开索引访问！ 🎉
+融合当前主流前端生态（React / Preact / Tailwind CSS / DaisyUI 等），既保留静态站点的性能优势，也具备现代应用级的交互能力。
 
 ---
 
-> Generated for Mahiro Blog - Where memories and the soul exist. 
+## 🌟 核心特性
+
+### ⚡ 极速体验
+
+* 基于 **Astro 混合构建模式**（SSG + ViewTransitions）
+* 页面切换流畅自然，几乎无感知等待
+* 结构清晰，首屏加载极致优化
+
+### 🎨 主题系统
+
+* 集成 **DaisyUI** 主题体系
+* 优雅排版与暗色模式支持
+* 可快速扩展与自定义视觉风格
+
+### 📝 Markdown / MDX 支持
+
+* 原生支持现代 Markdown
+* 支持在 MDX 中嵌入交互组件
+* 内容与逻辑自然融合
+
+### 🔍 本地搜索
+
+* 基于 `pagefind` 的静态全文搜索
+* 无需后端，构建即生成
+* 轻量且响应迅速
+
+### 🎵 全局悬浮音乐播放器
+
+* 独立可拖拽组件
+* 支持沉浸式播放体验
+* 极客向设计，UI 高度定制
+
+### 🤝 友链全自动审核闭环
+
+* 集成 GitHub Action 自动化流程
+* 支持一键 PR 提交
+* 自动存活检测 + 反链校验
+* 审核通过自动 Squash Merge
+* 全流程无人值守发布
+
+### ⏰ Git MetaData 自动归档
+
+* 构建期间自动提取 Git 历史
+* 归档最后更新时间与 Commit Message
+* 在文章底部呈现时间脉络
+
+---
+
+## 🛠 技术栈概览
+
+| 类别   | 技术                            |
+| ---- | ----------------------------- |
+| 核心框架 | **Astro 4 🚀**                |
+| 交互组件 | **React + Preact**            |
+| 样式系统 | **Tailwind CSS + DaisyUI**    |
+| 内容系统 | **MDX**                       |
+| 搜索引擎 | **Pagefind**                  |
+| 部署平台 | **Vercel / Cloudflare Pages** |
+| 包管理器 | **pnpm** 📦                   |
+
+---
+
+## 📂 项目目录结构
+
+```
+Mahiro-Blog/
+├── .github/workflows/    # GitHub Action 自动化流程 (Auto-PR 等)
+├── public/               # 静态资源与 Favicon
+├── scripts/              # 构建前数据抓取与元数据生成脚本
+├── src/
+│   ├── components/       # 公共组件 (React / Astro)
+│   ├── config.ts         # 全局配置
+│   ├── content/          # 博客文章 (md / mdx)
+│   ├── data/
+│   │   ├── friends/      # 友链 JSON 数据 (PR 自动审核入口)
+│   │   └── music/        # 音乐播放器配置
+│   ├── layouts/          # 页面布局模板
+│   ├── pages/            # 路由页面 (/, /posts, /friend, /about 等)
+│   ├── styles/           # Tailwind 与 DaisyUI 自定义样式
+│   └── lib/              # 工具函数与数据处理逻辑
+├── package.json
+└── astro.config.mjs
+```
+
+---
+
+## 🚀 快速开始（本地开发）
+
+请确保已安装：
+
+* Node.js（推荐 v20+）
+* pnpm（建议全局安装）
+
+### 1️⃣ 安装依赖
+
+```bash
+pnpm install
+# 如未安装 pnpm:
+npm install -g pnpm
+```
+
+### 2️⃣ 启动开发服务器
+
+```bash
+pnpm run dev
+```
+
+> 开发环境已分离构建期元数据钩子，专注于实现快速热更新。
+
+### 3️⃣ 构建前数据预处理
+
+为保证 SSR / SSG 正常运行，需要提前生成部分静态缓存数据：
+
+```bash
+pnpm run prefetch:music
+pnpm run git
+```
+
+若未执行此步骤，构建阶段可能报错。
+
+---
+
+## ✨ 进阶功能说明
+
+## 🤝 如何加入友链？
+
+本站提供一套完整的无人值守友链交换流程：
+
+### 第一步
+
+确认您的网站页面已包含本站域名 `mahiro.work` 的双向超链接。
+
+### 第二步
+
+访问友链页面：
+👉 [https://www.mahiro.work/friend](https://www.mahiro.work/friend)
+
+### 第三步
+
+点击页面底部 “提交 PR 申请” 按钮。
+系统将自动跳转至 GitHub 对应目录：
+
+```
+/new/main/.../friends
+```
+
+### 第四步
+
+* 将 `你的名字.json` 改为您的名称
+* 完善 JSON 字段信息
+* 如反链不在主页，请填写 `backlink` 字段
+
+### 第五步
+
+提交 PR 后将自动触发：
+
+* 存活检测
+* 反链校验
+* 自动审核
+* 自动 Squash Merge
+
+审核通过后约 3 分钟即可公开展示 🎉
+
+---
+
