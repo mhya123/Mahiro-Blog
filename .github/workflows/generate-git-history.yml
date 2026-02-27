@@ -18,16 +18,22 @@ jobs:
         with:
           fetch-depth: 0 # 获取完整提交历史
           
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
           
       - name: Install Dependencies
-        run: npm install js-yaml
+        run: pnpm install
         
       - name: Generate Git History Data
-        run: npm run git
+        run: pnpm run git
         
       - name: Commit Updated JSON Files
         run: |
