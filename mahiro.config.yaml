@@ -10,7 +10,7 @@ site:
     code: github-dark
   date_format: ddd MMM DD YYYY
   blog:
-    pageSize: 10
+    pageSize: 8
   banner:
     defaultMode: background  # 默认背景模式: normal | fullscreen | background | hidden
     enableRandom: false
@@ -87,11 +87,11 @@ site:
       href: /friend
       svg: material-symbols:supervisor-account-outline-rounded
       target: _self
-    - id: about
-      text: 关于
-      href: /about
-      svg: material-symbols:info-outline-rounded
-      target: _self
+    # - id: about
+    #   text: 关于
+    #   href: /about
+    #   svg: material-symbols:info-outline-rounded
+    #   target: _self
 github:
   owner: mhya123
   repo: Mahiro-Blog

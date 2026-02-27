@@ -31,27 +31,28 @@
 :root {
   --custom-page-bg: oklch(var(--b2));
   --banner-wave-bg: oklch(var(--b2));
-  
+
   /* Neumorphism - Adaptive to Theme */
   --neu-base: oklch(var(--b1));
-  --neu-text: oklch(var(--bc)); 
+  --neu-text: oklch(var(--bc));
   --neu-accent: oklch(var(--p));
-  
+
   /* Adaptive Shadows using opacity */
   --neu-border: oklch(var(--bc) / 0.1);
   --neu-btn-text: oklch(var(--bc));
-  --neu-btn-bg: oklch(var(--b2)); /* Slightly different from base */
+  --neu-btn-bg: oklch(var(--b2));
+  /* Slightly different from base */
   --neu-text-muted: oklch(var(--bc) / 0.6);
-  
+
   /* FORCE Neutral Shadows */
-  --shadow-neu-out: 8px 8px 16px 0 rgba(0,0,0,0.05), -8px -8px 16px 0 rgba(255,255,255,0.6) !important; 
-  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0,0,0,0.05), inset -8px -8px 16px 0 rgba(255,255,255,0.6) !important;
+  --shadow-neu-out: 8px 8px 16px 0 rgba(0, 0, 0, 0.05), -8px -8px 16px 0 rgba(255, 255, 255, 0.6) !important;
+  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0, 0, 0, 0.05), inset -8px -8px 16px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 [data-theme-type="light"] {
   color-scheme: light;
-  --shadow-neu-out: 8px 8px 16px 0 rgba(0,0,0,0.05), -8px -8px 16px 0 rgba(255,255,255,0.6) !important;
-  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0,0,0,0.05), inset -8px -8px 16px 0 rgba(255,255,255,0.6) !important;
+  --shadow-neu-out: 8px 8px 16px 0 rgba(0, 0, 0, 0.05), -8px -8px 16px 0 rgba(255, 255, 255, 0.6) !important;
+  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0, 0, 0, 0.05), inset -8px -8px 16px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 [data-theme-type="dark"] {
@@ -63,10 +64,10 @@
   --neu-btn-bg: oklch(var(--b2));
   --neu-text-muted: oklch(var(--bc) / 0.5);
   --neu-accent: oklch(var(--p));
-  
+
   /* Dark Shadows */
-  --shadow-neu-out: 8px 8px 16px 0 rgba(0,0,0,0.4), -8px -8px 16px 0 rgba(255,255,255,0.02) !important;
-  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0,0,0,0.4), inset -8px -8px 16px 0 rgba(255,255,255,0.02) !important;
+  --shadow-neu-out: 8px 8px 16px 0 rgba(0, 0, 0, 0.4), -8px -8px 16px 0 rgba(255, 255, 255, 0.02) !important;
+  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0, 0, 0, 0.4), inset -8px -8px 16px 0 rgba(255, 255, 255, 0.02) !important;
 }
 
 /* Banner Modes */
@@ -80,15 +81,16 @@
   .banner {
     display: none !important;
   }
-  
+
   .page-content-animate {
     margin-top: 6rem !important;
-    min-height: calc(100vh - 6rem - 100px); /* Ensure footer is pushed down */
+    min-height: calc(100vh - 6rem - 100px);
+    /* Ensure footer is pushed down */
   }
 
   /* Remove navbar shadow in hidden mode */
   #navbar-bg,
-  #navbar-mobile > div {
+  #navbar-mobile>div {
     box-shadow: none !important;
   }
 }
@@ -114,19 +116,22 @@
     left: 0;
     width: 100vw;
     height: 100vh !important;
-    z-index: -2; /* 位于最底层 */
+    z-index: -2;
+    /* 位于最底层 */
     opacity: 1 !important;
-    pointer-events: none; /* 确保不阻挡点击 */
+    pointer-events: none;
+    /* 确保不阻挡点击 */
   }
 
   /* 隐藏 Banner 中的文字内容和波浪 */
-  .banner .banner-inner > .relative.z-20, /* 标题容器 */
+  .banner .banner-inner>.relative.z-20,
+  /* 标题容器 */
   .banner .waves {
     display: none !important;
   }
 
   /* 适配暗色模式遮罩 - 加深 Banner 内部的遮罩层 */
-  &[data-theme-type="dark"] .banner .banner-inner > .absolute.z-10 {
+  &[data-theme-type="dark"] .banner .banner-inner>.absolute.z-10 {
     background-color: rgba(0, 0, 0, 0.5);
   }
 
@@ -137,18 +142,21 @@
 
   /* Make components semi-transparent in background mode */
   /* General rule for card-like elements */
-  .bg-base-100, .card-base, .card, 
-  .music-player-widget > .bg-neu-base {
+  .bg-base-100,
+  .card-base,
+  .card,
+  .music-player-widget>.bg-neu-base {
     background-color: oklch(var(--b1) / 0.7) !important;
     backdrop-filter: blur(10px);
-    border: 1px solid oklch(var(--bc) / 0.1); /* 增加边框以增强轮廓 */
+    border: 1px solid oklch(var(--bc) / 0.1);
+    /* 增加边框以增强轮廓 */
   }
 
   /* Just make inner neumorphic elements transparent, NO border/blur/shadow to avoid visual noise */
   .bg-neu-base {
     background-color: oklch(var(--b1) / 0.7) !important;
   }
-  
+
   /* 
    * 在透明背景模式下，强烈的拟态阴影会让界面看起来"脏"或者不协调。
    * 因此我们移除拟态阴影，改为更适合玻璃拟态的简单阴影。
@@ -160,10 +168,12 @@
   --neu-text-muted: oklch(var(--bc)) !important;
 
   /* Fix flickering line issue in background mode */
-  .music-player-widget > .bg-neu-base {
-    transform: translate3d(0, 0, 0); /* Force GPU acceleration to prevent repaint glitches */
+  .music-player-widget>.bg-neu-base {
+    transform: translate3d(0, 0, 0);
+    /* Force GPU acceleration to prevent repaint glitches */
     backface-visibility: hidden;
-    will-change: transform; /* Hint to browser to keep this layer stable */
+    will-change: transform;
+    /* Hint to browser to keep this layer stable */
   }
 
   .bg-base-200 {
@@ -175,7 +185,7 @@
     background-color: oklch(var(--b3) / 0.7) !important;
     backdrop-filter: blur(10px);
   }
-  
+
   /* Navbar specific */
   #navbar-bg {
     background-color: oklch(var(--b1) / 0.6) !important;
@@ -192,7 +202,8 @@
 /* Global styles with nesting support */
 html {
   @apply scroll-smooth font-sans;
-  font-family: theme('fontFamily.sans') !important; /* 强制使用自定义字体，防止主题覆盖 */
+  font-family: theme('fontFamily.sans') !important;
+  /* 强制使用自定义字体，防止主题覆盖 */
   font-size: 16px;
   /* 桌面端默认字号 */
   line-height: 1.75;
@@ -232,7 +243,7 @@ kbd {
 
 code {
   @apply font-mono;
-  font-size: 1.1em;
+  font-size: 0.9em;
 }
 
 .scrollbar-none {
@@ -264,7 +275,7 @@ code {
 }
 
 .mahiro-code {
-  @apply relative my-6 rounded-2xl border border-base-300/20 bg-transparent overflow-hidden;
+  @apply relative my-4 rounded-xl border border-base-300/20 bg-transparent overflow-hidden;
 
   &-toolbar {
     @apply sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-base-200 border-b border-base-content/20;
@@ -275,11 +286,15 @@ code {
   }
 
   &-content {
-    @apply overflow-x-auto p-4 bg-transparent text-base md:text-lg;
+    @apply overflow-x-auto py-2 px-4 bg-transparent text-sm text-base-content/80 leading-snug;
 
     pre {
       @apply bg-transparent;
       counter-reset: line;
+    }
+
+    code {
+      font-size: inherit;
     }
 
     .line {
@@ -934,5 +949,17 @@ code {
   --rounded-btn: 0.5rem !important;
   --rounded-badge: 1.9rem !important;
 }
-@keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.animate-spin-slow { animation: spin-slow 8s linear infinite; }
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
