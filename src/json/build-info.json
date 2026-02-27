@@ -1,10 +1,10 @@
 {
-  "commitSha": "d73b245d897622de50df6670c589f7adff8c19cd",
-  "commitShort": "d73b245",
-  "commitMessage": "add:Umami v3 数据库可视化管理与访问量修改教程",
+  "commitSha": "535c68d1bff4e062d08e897768663be766a7a6d9",
+  "commitShort": "535c68d",
+  "commitMessage": "add:  auto-issues fix: auto-pr",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-27T21:37:05+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/d73b245d897622de50df6670c589f7adff8c19cd",
-  "buildTime": "2026/2/27 21:37:36",
-  "totalCommits": 81
+  "commitDate": "2026-02-27T22:10:14+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/535c68d1bff4e062d08e897768663be766a7a6d9",
+  "buildTime": "2026/2/27 22:10:49",
+  "totalCommits": 85
 }
