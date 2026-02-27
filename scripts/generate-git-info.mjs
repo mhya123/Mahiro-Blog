@@ -25,9 +25,7 @@ if (!fs.existsSync(jsonDir)) {
     fs.mkdirSync(jsonDir, { recursive: true });
 }
 
-// ============================================
 // 1. 生成全局 Build Info 
-// ============================================
 
 function generateBuildInfo() {
     const now = new Date();
@@ -84,9 +82,7 @@ function generateBuildInfo() {
     console.log(`[Generate Git Info] 成功生成: ${buildInfoPath}`);
 }
 
-// ============================================
 // 2. 生成具体文件（博客文章）的 Git History
-// ============================================
 
 function generateBlogGitHistory() {
     const blogDir = path.resolve(process.cwd(), 'src/content/blog');

@@ -3,7 +3,7 @@
   "type": "module",
   "version": "2.0.0",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "pnpm prefetch:git && astro dev",
     "start": "astro dev",
     "check": "astro check",
     "prefetch:music": "node scripts/fetch-music-duration.mjs",

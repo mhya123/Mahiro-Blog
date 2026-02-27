@@ -1,10 +1,10 @@
 {
-  "commitSha": "52cb32741da1b766867f3517b1834c180bc7e66f",
-  "commitShort": "52cb327",
-  "commitMessage": "feat: 为博客文章引入 Git 提交历史展示及项目构建信息获取功能，支持 GitHub API 优先策略。",
+  "commitSha": "2f6bc06c69439caf79a040971b730b5157c6faa6",
+  "commitShort": "2f6bc06",
+  "commitMessage": "feat: 在构建时生成 Git 信息，包括构建详情和文章历史记录。",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-27T13:03:51+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/52cb32741da1b766867f3517b1834c180bc7e66f",
-  "buildTime": "2026/2/27 13:08:05",
-  "totalCommits": 26
+  "commitDate": "2026-02-27T13:09:42+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/2f6bc06c69439caf79a040971b730b5157c6faa6",
+  "buildTime": "2026/2/27 13:12:09",
+  "totalCommits": 27
 }
