@@ -125,6 +125,26 @@ const getCategoryDisplayName = (category: string): string => {
       </div>
     </div>
 
+    <!-- 全站访问量统计 -->  
+    {umamiConfig.enable && (
+      <div class="grid grid-cols-2 mt-3 pt-3 border-t border-base-content/20">
+          <div class="text-center">
+              <div class="text-xs text-base-content/50 mb-1 flex items-center justify-center gap-1">
+                  <Icon name="material-symbols:visibility-outline" class="text-base text-primary"></Icon>
+                  <span class="text-xs">访问量</span>
+              </div>
+              <div id="site-views" class="font-bold text-lg text-base-content">-</div>
+          </div>
+          <div class="text-center border-l border-base-content/20">
+              <div class="text-xs text-base-content/50 mb-1 flex items-center justify-center gap-1">
+                  <Icon name="material-symbols:person" class="text-base text-primary"></Icon>
+                  <span class="text-xs">访客数</span>
+              </div>
+              <div id="site-visitors" class="font-bold text-lg text-base-content">-</div>
+          </div>
+      </div>
+    )}
+
     <!-- 社交图标 - 恢复原始样式 -->  
     <div class="mt-4 pt-3 border-t border-base-content/20">  
       <div class="flex flex-wrap gap-2 justify-center">  
@@ -150,26 +170,6 @@ const getCategoryDisplayName = (category: string): string => {
         )})}  
       </div>  
     </div>  
-      
-    <!-- 全站访问量统计 -->  
-    {umamiConfig.enable && (
-      <div class="grid grid-cols-2 mt-3 pt-3 border-t border-base-content/20">
-          <div class="text-center">
-              <div class="text-xs text-base-content/50 mb-1 flex items-center justify-center gap-1">
-                  <Icon name="material-symbols:visibility-outline" class="text-base text-primary"></Icon>
-                  <span class="text-xs">访问量</span>
-              </div>
-              <div id="site-views" class="font-bold text-lg text-base-content">-</div>
-          </div>
-          <div class="text-center border-l border-base-content/20">
-              <div class="text-xs text-base-content/50 mb-1 flex items-center justify-center gap-1">
-                  <Icon name="material-symbols:person" class="text-base text-primary"></Icon>
-                  <span class="text-xs">访客数</span>
-              </div>
-              <div id="site-visitors" class="font-bold text-lg text-base-content">-</div>
-          </div>
-      </div>
-    )}
   </div>  
 </div>  
   

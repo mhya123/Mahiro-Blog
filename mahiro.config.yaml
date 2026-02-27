@@ -101,7 +101,7 @@ github:
 umami:
   enable: true
   baseUrl: https://umami.mahiro.work
-  shareId: 49720733-f763-40bd-9d11-fcb88cfa5333
+  shareId: 在部署端或 .env 配置 PUBLIC_UMAMI_SHARE_ID
   websiteId: 在部署端或 .env 配置 PUBLIC_UMAMI_WEBSITE_ID
   timezone: Asia/Shanghai
 user:

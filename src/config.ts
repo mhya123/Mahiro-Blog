@@ -123,7 +123,7 @@ export interface UmamiConfig {
 export const umamiConfig: UmamiConfig = {
   enable: config.umami?.enable ?? false,
   baseUrl: config.umami?.baseUrl ?? "https://umami.acofork.com",
-  shareId: config.umami?.shareId ?? "CdkXbGgZr6ECKOyK",
+  shareId: import.meta.env.PUBLIC_UMAMI_SHARE_ID || config.umami?.shareId || "CdkXbGgZr6ECKOyK",
   websiteId: import.meta.env.PUBLIC_UMAMI_WEBSITE_ID || config.umami?.websiteId || "",
   timezone: config.umami?.timezone ?? "Asia/Shanghai",
 };
