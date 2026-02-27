@@ -1,10 +1,10 @@
 {
-  "commitSha": "4a9bb8914b4b9c6e090b48d430bf393cad1c047d",
-  "commitShort": "4a9bb89",
-  "commitMessage": "umami设置",
+  "commitSha": "bb973058d325c5f9e98f507c0dc420f4ff9cfcc3",
+  "commitShort": "bb97305",
+  "commitMessage": "feat: 添加侧边栏个人资料组件，展示用户、博客统计、社交链接和分类信息，并引入相关配置。",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-27T18:10:36+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/4a9bb8914b4b9c6e090b48d430bf393cad1c047d",
-  "buildTime": "2026/2/27 18:11:09",
-  "totalCommits": 74
+  "commitDate": "2026-02-27T20:22:17+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/bb973058d325c5f9e98f507c0dc420f4ff9cfcc3",
+  "buildTime": "2026/2/27 20:22:55",
+  "totalCommits": 76
 }
