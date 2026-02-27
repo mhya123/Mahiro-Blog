@@ -29,12 +29,13 @@ export async function getBuildInfo(owner: string, repo: string): Promise<BuildIn
     // 优先尝试使用 GitHub API 获取最新 commit，解决 CI/CD 服务器上 .git 目录可能被浅克隆导致更新慢的问题
     if (owner && repo) {
         try {
-            // 获取最新的一条 commit
+            // 获取最新的一条 commit，必须禁用缓存否则部署平台会加载旧数据
             const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`, {
                 headers: {
                     'Accept': 'application/vnd.github.v3+json',
                     'User-Agent': 'Mahiro-Blog-Build'
-                }
+                },
+                cache: 'no-store'
             });
             if (response.ok) {
                 const data = await response.json();
