@@ -1,38 +1,36 @@
-name: Admin Friend Link Audit
+name: Admin Friend Link Issue Audit
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
-    paths:
-      - 'src/data/friends/**.json'
+  issues:
+    types: [opened, edited]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
   issues: write
 
 jobs:
-  audit:
+  audit-issue:
     runs-on: ubuntu-latest
+    if: contains(github.event.issue.title, '友链申请')
     steps:
-      - name: 友链自动化审核与合并
+      - name: 友链 Issue 自动化审核与 WAF 拦截转审
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const pull_number = context.payload.pull_request.number;
-            const head_sha = context.payload.pull_request.head.sha;
+            const issue_number = context.payload.issue.number;
+            const issue_body = context.payload.issue.body || '';
 
             // ================= 常量定义区 =================
-            const MY_DOMAINS = ['mahiro.work']; // 填你需要匹配的核心主域名或多个域名
+            const MY_DOMAINS = ['mahiro.work'];
 
-            // 全中文专业标签
             const LABELS = {
               BASE: '友链申请',
               RUNNING: '审核中',
               PASSED: '审核通过',
+              NEEDS_MANUAL: '需人工审核',
               NEED_FIX: '待修改',
               SITE_OK: '站点正常',
               SITE_ERR: '站点异常',
@@ -43,23 +41,21 @@ jobs:
             };
 
             const MSG = {
-              PR_MULTI_FILES: 'PR 必须仅包含 1 个文件的变更。',
-              PR_PATH_ERR: '修改路径必须严格限制在 `src/data/friends/` 目录下，且文件扩展名必须是 `.json`。',
-              PR_FILENAME_ERR: '文件名校验失败：请不要直接使用模板默认的 `你的名字.json`，请将其重命名为您自己的站点名称或 ID。',
-              PR_ACTION_ERR: '只允许新增 (added) 或修改 (modified) 文件。',
-              JSON_PARSE_ERR: 'JSON 解析失败，请检查文件格式是否符合规范。',
+              JSON_MISSING_ERR: '未在 Issue 中找到合法的 JSON 代码块。请确保您的 JSON 数据包裹在 ```json 和 ``` 之间。',
+              JSON_PARSE_ERR: 'JSON 解析失败，请检查文件格式是否符合完全正确的 JSON 规范（如：不能有单引号，不能缺少逗号等）。',
               JSON_KEY_ERR: 'JSON 缺少必填字段，必须包含：name, avatar, description, url, badge。',
               BADGE_ERR: '字段校验未通过：badge 的值必须严格填写。仅允许填写 "好友", "友情" 或 "友情链接"。',
               SSRF_BLOCK: '安全拦截：目标 URL 疑似指向内网或保留 IP。',
-              SUCCESS: `🎉 **审核通过！**\n\n感谢申请！系统已检测到有效的双向链接并确认格式无误，现在为您自动执行合并 (Squash Merge), 预计需要 3 分钟才能在主站上生效。`,
-              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能检测到有效的反链、站点访问异常或格式有误（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式，并将文件名改为 \`您的网站名.json\`。\n**（🚨注意：如果您的本站链接放在了专门的二级页面例如 /friends，请务必填写 \`backlink\` 字段指路！）**\n\n\`\`\`json\n{\n  "name": "您的网站名",\n  "avatar": "https://您的头像URL",\n  "description": "您的网站描述",\n  "url": "https://您的网站URL",\n  "backlink": "https://您的友链页URL (选填)",\n  "badge": "友情"\n}\n\`\`\`\n\n**请您参考上方的错误报告与正确格式修正后，直接提交建立一个新的 PR，期待您的加入！**`
+              SUCCESS: `🎉 **预审通过！**\n\n感谢您提交的友链申请！系统已成功检测到本站双向链接并确认全部信息可达。\n\n由于 Issue 无法自动生成代码文件，我已打上 \`审核通过\` 标签。仓库管理员稍后会人工将您的网站添加入库，请耐心等待。`,
+              NEEDS_MANUAL: `🤖 **自动化初审遇到了困难 (需人工干预)**\n\n您好！感谢提交申请。由于自动化审核工具（无头爬虫）在试图访问您的站点以检查连通性或反链时，遭到了网站安全策略（可能为防火墙 WAF、防爬虫策略或海外拦截）的拒绝。\n\n但这 **完全正常**！系统已自动为您打上 \`需人工审核\` 标签，并自动通知了仓库管理员。\n\n管理员将在近期通过普通浏览器手动访问您的网站复核确认，请耐心等待！`,
+              REJECT: `您好！感谢对本站的关注。\n\n您提交的内容存在 **严重的不可抗拒的格式问题**，导致自动化审核中断（详情请见上方审核报告）。鉴于此，系统已暂时 **关闭** 此 Issue。\n\n### 💡 修改建议：\n请参考上方报告修正您的配置。**完成后，请您在仓库重新提交一个新的 Issue 进行申请，不要在此 Issue 处修改！**`
             };
 
             // ================= 辅助函数 =================
             async function createComment(body) {
               const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
               const footer = `\n\n---\n*🤖 该评论由 Action 自动化发送，无需回复。 [查看构建日志](${runUrl})*`;
-              await github.rest.issues.createComment({ owner, repo, issue_number: pull_number, body: body + footer });
+              await github.rest.issues.createComment({ owner, repo, issue_number, body: body + footer });
             }
 
             async function ensureLabel(name, color = 'ededed') {
@@ -72,20 +68,20 @@ jobs:
               }
             }
 
-            // 智能分配标签颜色
             function getLabelColor(name) {
               const greenLabels = ['审核通过', '站点正常', '头像正常', '反链有效'];
               const redLabels = ['待修改', '站点异常', '头像异常', '反链缺失'];
-              if (greenLabels.includes(name)) return '0e8a16'; // 绿色
-              if (redLabels.includes(name)) return 'd93f0b';   // 红色
-              return '1d76db'; // 蓝色 (默认)
+              const orangeLabels = ['需人工审核'];
+              if (greenLabels.includes(name)) return '0e8a16';
+              if (redLabels.includes(name)) return 'd93f0b';
+              if (orangeLabels.includes(name)) return 'd93f0b'; // orange/red
+              return '1d76db';
             }
 
-            // 缓存当前标签状态，避免每次调用都重新 GET
             let _labelCache = null;
             async function getLabelCache() {
               if (!_labelCache) {
-                const current = await github.rest.issues.get({ owner, repo, issue_number: pull_number });
+                const current = await github.rest.issues.get({ owner, repo, issue_number });
                 _labelCache = new Set((current.data.labels || []).map(l => l.name));
               }
               return _labelCache;
@@ -97,14 +93,14 @@ jobs:
               for (const name of addList) {
                 if (!currentLabels.has(name)) {
                   await ensureLabel(name, getLabelColor(name));
-                  await github.rest.issues.addLabels({ owner, repo, issue_number: pull_number, labels: [name] });
+                  await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [name] });
                   currentLabels.add(name);
                 }
               }
               for (const name of removeList) {
                 if (currentLabels.has(name)) {
                   try {
-                    await github.rest.issues.removeLabel({ owner, repo, issue_number: pull_number, name });
+                    await github.rest.issues.removeLabel({ owner, repo, issue_number, name });
                     currentLabels.delete(name);
                   } catch (e) { /* ignore */ }
                 }
@@ -143,37 +139,20 @@ jobs:
             // ================= 核心执行逻辑 =================
             await manageLabels([LABELS.BASE, LABELS.RUNNING], []);
             const reportData = [];
-            let isFailed = false;
-            let applySiteName = "未知站点";
+            
+            // 致命格式错误（引发关闭）
+            let fatalError = false;
+            // 连通性/刮削受阻（仅转人工，不关闭）
+            let blockedByWaf = false;
 
             try {
-              // 1. 获取 PR 文件列表
-              const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number });
+              // 1. 提取 JSON 代码块
+              const jsonMatch = issue_body.match(/```json\s+([\s\S]+?)\s+```/i);
+              if (!jsonMatch || !jsonMatch[1]) {
+                throw new Error(MSG.JSON_MISSING_ERR);
+              }
               
-              if (files.length !== 1) throw new Error(MSG.PR_MULTI_FILES);
-              const file = files[0];
-              
-              // 校验路径和扩展名
-              if (!file.filename.startsWith('src/data/friends/') || !file.filename.endsWith('.json')) {
-                throw new Error(MSG.PR_PATH_ERR);
-              }
-              // 防呆校验：拦截直接使用 "你的名字.json" 的提交
-              if (file.filename.endsWith('/你的名字.json')) {
-                throw new Error(MSG.PR_FILENAME_ERR);
-              }
-              if (file.status !== 'added' && file.status !== 'modified') {
-                throw new Error(MSG.PR_ACTION_ERR);
-              }
-
-              // 2. 读取文件内容进行 JSON 格式检查
-              const prHead = context.payload.pull_request.head;
-              const { data: fileData } = await github.rest.repos.getContent({
-                owner: prHead.repo.owner.login,
-                repo: prHead.repo.name,
-                path: file.filename,
-                ref: head_sha
-              });
-              const contentStr = Buffer.from(fileData.content, 'base64').toString('utf-8');
+              const contentStr = jsonMatch[1].trim();
               
               let json;
               try { json = JSON.parse(contentStr); } catch { throw new Error(MSG.JSON_PARSE_ERR); }
@@ -182,8 +161,6 @@ jobs:
               const missingKeys = requiredKeys.filter(k => !json[k] || typeof json[k] !== 'string');
               if (missingKeys.length > 0) throw new Error(`${MSG.JSON_KEY_ERR} 缺失: ${missingKeys.join(', ')}`);
               
-              applySiteName = json.name.trim();
-
               const allowedBadges = ['好友', '友情', '友情链接'];
               if (!allowedBadges.includes(json.badge.trim())) {
                 throw new Error(MSG.BADGE_ERR);
@@ -191,18 +168,17 @@ jobs:
               
               reportData.push({ item: 'JSON 格式', status: '✅ 通关', detail: '字段校验完整且规范' });
 
-              // 3. 安全防护 SSRF (包括新加的 backlink 字段)
+              // 2. 安全防护 SSRF
               if (!isSafeUrl(json.url) || !isSafeUrl(json.avatar) || (json.backlink && !isSafeUrl(json.backlink))) {
                 throw new Error(MSG.SSRF_BLOCK);
               }
 
-              // 4. 并发发起网络请求（重点：backlink 逻辑判断）
+              // 3. 网络并发测试
               const fetchTasks = [
                 fetchWithTimeout(json.avatar, 10000, { headOnly: true }), // [0] 测头像
                 fetchWithTimeout(json.url)                                // [1] 测主站存活
               ];
 
-              // ★ 如果用户填写了 backlink 字段，就额外发起一个请求去扒这个指定的页面
               const hasCustomBacklink = typeof json.backlink === 'string' && json.backlink.trim() !== '';
               if (hasCustomBacklink) {
                 fetchTasks.push(fetchWithTimeout(json.backlink.trim()));  // [2] 去专属友链页扒反链
@@ -212,7 +188,6 @@ jobs:
               const avatarRes = results[0];
               const siteRes = results[1];
               
-              // ★ 核心逻辑：如果有 backlink 就用 backlink 的页面源码，没写就默认用主站 url 的源码
               const backlinkRes = hasCustomBacklink ? results[2] : siteRes;
               const checkTargetUrl = hasCustomBacklink ? json.backlink.trim() : json.url;
 
@@ -221,22 +196,22 @@ jobs:
                 reportData.push({ item: '头像连通性', status: '✅ 正常', detail: `状态码: ${avatarRes.status}` });
                 await manageLabels([LABELS.AVATAR_OK]);
               } else {
-                isFailed = true;
-                reportData.push({ item: '头像连通性', status: '❌ 失败', detail: avatarRes.error || `状态码: ${avatarRes.status}` });
+                blockedByWaf = true;
+                reportData.push({ item: '头像连通性', status: '⚠️ 疑似拦截', detail: avatarRes.error || `请求受阻，状态码: ${avatarRes.status} (WAF?)` });
                 await manageLabels([LABELS.AVATAR_ERR]);
               }
 
-              // 验证站点 (永远只测 json.url 是否存活，保证导流地址没挂)
+              // 验证站点
               if (siteRes.ok) {
                 reportData.push({ item: '站点连通性', status: '✅ 正常', detail: `状态码: ${siteRes.status}` });
                 await manageLabels([LABELS.SITE_OK]);
               } else {
-                isFailed = true;
-                reportData.push({ item: '站点连通性', status: '❌ 失败', detail: siteRes.error || `状态码: ${siteRes.status}` });
+                blockedByWaf = true;
+                reportData.push({ item: '站点连通性', status: '⚠️ 疑似拦截', detail: siteRes.error || `请求受阻，状态码: ${siteRes.status} (WAF?)` });
                 await manageLabels([LABELS.SITE_ERR]);
               }
 
-              // 验证反链 (去 checkTargetUrl 里面扒)
+              // 验证反链
               if (backlinkRes.ok) {
                 const html = backlinkRes.text;
                 let hasBacklink = false;
@@ -255,22 +230,21 @@ jobs:
 
                 if (hasBacklink) {
                   const nofollowTag = isNofollow ? ' *(注: 检测到 nofollow 属性)*' : '';
-                  // 在报告里明确打印出它到底是在哪个页面(主站还是专属页)找到的反链
                   reportData.push({ item: '反链检测', status: '✅ 已找到', detail: `在 [目标页面](${checkTargetUrl}) 中发现本站链接${nofollowTag}` });
                   await manageLabels([LABELS.LINK_OK]);
                 } else {
-                  isFailed = true;
-                  reportData.push({ item: '反链检测', status: '❌ 缺失', detail: `未在 [目标页面](${checkTargetUrl}) 找到指向本站的超链接` });
+                  blockedByWaf = true;
+                  reportData.push({ item: '反链检测', status: '⚠️ 未找到', detail: `未在 [目标页面](${checkTargetUrl}) 提取到指向本站的超链接，可能被安全验证页阻隔` });
                   await manageLabels([LABELS.LINK_ERR]);
                 }
               } else {
-                isFailed = true;
-                reportData.push({ item: '反链检测', status: '❌ 失败', detail: `无法访问扒取反链的目标页面，状态码: ${backlinkRes.status}` });
+                blockedByWaf = true;
+                reportData.push({ item: '反链检测', status: '⚠️ 疑似拦截', detail: `无法作为爬虫访问扒取反链的网页资源，状态码: ${backlinkRes.status}` });
                 await manageLabels([LABELS.LINK_ERR]);
               }
 
             } catch (err) {
-              isFailed = true;
+              fatalError = true;
               reportData.push({ item: '前置校验拦截', status: '❌ 未通过', detail: err.message });
             }
 
@@ -278,32 +252,29 @@ jobs:
             let markdownTable = `### 🔍 自动化审核报告\n\n| 检查项目 | 状态 | 详细说明 |\n| :--- | :--- | :--- |\n`;
             reportData.forEach(r => { markdownTable += `| **${r.item}** | ${r.status} | ${r.detail} |\n`; });
 
-            if (isFailed) {
+            // 无论如何，只要进行到这里，都要保证 Issue 是开启的（除了严重格式错误强制关停）
+            const ensureOpenIssue = async () => {
+              const currentIssue = await github.rest.issues.get({ owner, repo, issue_number });
+              if (currentIssue.data.state === 'closed') {
+                 await github.rest.issues.update({ owner, repo, issue_number, state: 'open' });
+              }
+            };
+
+            if (fatalError) {
+              // 严重的格式问题 (JSON没写对, SSRF注入) -> 拒绝并关闭
               await manageLabels([LABELS.NEED_FIX], [LABELS.RUNNING]);
               await createComment(`${markdownTable}\n\n---\n\n${MSG.REJECT}`);
-              // 强制关闭 PR
-              await github.rest.pulls.update({ owner, repo, pull_number, state: 'closed' });
-              core.setFailed('自动化审核未通过，已关闭 PR。');
+              await github.rest.issues.update({ owner, repo, issue_number, state: 'closed' });
+              core.setFailed('前置安全/格式审核未通过，已关闭 Issue。');
+            } else if (blockedByWaf) {
+              // 被 WAF 盾拦截或只是轻度没扫出 -> 标注人工，不关闭
+              await ensureOpenIssue();
+              await manageLabels([LABELS.NEEDS_MANUAL], [LABELS.RUNNING, LABELS.PASSED, LABELS.NEED_FIX]);
+              await createComment(`${markdownTable}\n\n---\n\n${MSG.NEEDS_MANUAL}`);
+              core.notice('遭遇连通性障碍 (疑似 WAF 防护)，已挂起并转交人工复核。');
             } else {
-              await manageLabels([LABELS.PASSED], [LABELS.RUNNING]);
+              // 完美命中 -> 直接通过
+              await ensureOpenIssue();
+              await manageLabels([LABELS.PASSED], [LABELS.RUNNING, LABELS.NEEDS_MANUAL, LABELS.NEED_FIX]);
               await createComment(`${markdownTable}\n\n---\n\n${MSG.SUCCESS}`);
-              
-              // 格式化当前时间 (东八区)
-              const nowTime = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
-              const commitTitle = `✨ 新增友链: ${applySiteName}`;
-              const commitMsg = `${applySiteName} 在 ${nowTime} 提交了友链申请，并由 Action 自动审核通过并合并。`;
-
-              // 执行自动 Squash Merge（带自定义提交信息）
-              try {
-                await github.rest.pulls.merge({ 
-                  owner, 
-                  repo, 
-                  pull_number, 
-                  merge_method: 'squash',
-                  commit_title: commitTitle,
-                  commit_message: commitMsg
-                });
-              } catch (mergeErr) {
-                await createComment(`⚠️ 自动合并失败: ${mergeErr.message}\n\n请仓库管理员手动合并此 PR。`);
-              }
             }

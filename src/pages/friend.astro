@@ -16,6 +16,23 @@ const applyUrl = `https://github.com/mhya123/Mahiro-Blog/new/main/src/data/frien
   "backlink": "https://您的友链页URL (选填，如果本站链接不在首页)",
   "badge": "友情链接"
 }, null, 2))}`;
+
+const issueTemplate = `### 友链申请 (WAF 拦截转审)
+
+请严格按照下方 JSON 格式填写您的网站信息（不需要修改反引号,不需要更改标题）：
+
+\`\`\`json
+{
+  "name": "您的网站名",
+  "avatar": "https://您的头像URL",
+  "description": "您的网站描述",
+  "url": "https://您的网站URL",
+  "backlink": "https://您的友链页URL (选填，如果本站链接不在首页)",
+  "badge": "友情链接"
+}
+\`\`\`
+`;
+const issueUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${encodeURIComponent("友链申请: 您的网站名")}&body=${encodeURIComponent(issueTemplate)}`;
 ---
 
 <BaseLayout title="Friends" isIndexed={false}>
@@ -103,9 +120,18 @@ const applyUrl = `https://github.com/mhya123/Mahiro-Blog/new/main/src/data/frien
     </div>
 
     <!-- 提示 -->
-    <div class="alert alert-warning mb-6 flex items-center gap-2 text-sm">
+    <div class="alert alert-warning mb-4 flex items-center gap-2 text-sm">
       <Icon name="lucide:alert-triangle" class="w-5 h-5 shrink-0" />
       <span><strong>不要忘了改文件名！</strong> 请将默认的 <code>你的名字.json</code> 改为您的站点名称，例如 <code>MhYa123.json</code>。</span>
+    </div>
+
+    <!-- WAF 拦截提示 -->
+    <div class="alert alert-info mb-6 flex items-start gap-2 text-sm">
+      <Icon name="lucide:info" class="w-5 h-5 shrink-0 mt-0.5" />
+      <div>
+        <strong>验证失败？</strong>
+        <p class="mt-1">如果您的网站开启了 WAF（防火墙）拦截了无头浏览器或海外 IP 爬虫，导致 GitHub Actions 自动化验证失败，请直接前往 <a href={issueUrl} target="_blank" rel="noopener noreferrer" class="link font-bold">仓库提交 Issue 申请</a>，我们将进行人工审核。</p>
+      </div>
     </div>
 
     <!-- 申请按钮 -->
