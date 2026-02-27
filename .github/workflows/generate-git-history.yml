@@ -4,10 +4,20 @@ on:
   push:
     branches:
       - main
+    # 终极优化 1：源头拦截。当只有这两个 JSON 文件变动时，直接不触发 Workflow。
+    paths-ignore:
+      - 'src/json/build-info.json'
+      - 'src/json/git-history.json'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+#  Principle of Least Privilege
 permissions:
   contents: write
+  actions: read
 
 jobs:
   build:
@@ -16,12 +26,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 获取完整提交历史
+          fetch-depth: 0
           
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 8 # 如果项目兼容，建议这里也可以写 9
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -30,21 +40,26 @@ jobs:
           cache: 'pnpm'
           
       - name: Install Dependencies
-        run: pnpm install
+        # 跳过依赖包的生命周期脚本，提升安装速度并增强安全性
+        run: pnpm install --frozen-lockfile --ignore-scripts
         
       - name: Generate Git History Data
         run: pnpm run git
         
-      - name: Commit Updated JSON Files
+      - name: Commit and Push Updated JSON Files
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add src/json/build-info.json src/json/git-history.json
-          # 如果没有变化则不提交避免报错
-          git diff --staged --quiet || git commit -m "chore(git-info): auto-update git history JSON data"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          git add src/json/build-info.json src/json/git-history.json
+          
+          if ! git diff --staged --quiet; then
+            # 因为有了 paths-ignore，这里可以去掉 [skip ci]，保持 commit 记录干净
+            git commit -m "chore(git-info): auto-update git history JSON data"
+            
+            #  5：推送前 Rebase，解决极限并发导致的 Push 失败
+            git pull --rebase origin main
+            git push
+          else
+            echo "No changes detected, skipping commit."
+          fi
