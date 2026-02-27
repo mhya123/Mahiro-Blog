@@ -7,36 +7,14 @@ import FriendCard from "@/components/mdx/FriendCard.astro";
 const friendModules = import.meta.glob<{ default: any }>('/src/data/friends/*.json', { eager: true });
 const friends = Object.values(friendModules).map((mod) => mod.default);
 
-// GitHub Issue 友链申请模板链接（预填内容）
-const issueTitle = encodeURIComponent("【友链申请】您的站点名称");
-const issueBody = encodeURIComponent(`
-## 友链申请
-
-请填写以下信息：
-
-- **站点名称**：
-- **站点地址**：
-- **站点描述**：
-- **头像链接**：
-- **您的称呼**：
-
----
-
-### 我的站点信息（用于互换友链）
-
-\`\`\`json
-{
-  "name": "",
-  "avatar": "",
-  "description": "",
-  "url": "",
-  "badge": ""
-}
-\`\`\`
-
-> 提交后我会尽快审核，感谢您的申请！
-`.trim());
-const applyUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${issueTitle}&body=${issueBody}&labels=friend-link`;
+// 友链 PR 申请链接：引导用户直接在仓库中新建 JSON 文件提交 PR
+const applyUrl = `https://github.com/mhya123/Mahiro-Blog/new/main/src/data/friends?filename=你的名字.json&value=${encodeURIComponent(JSON.stringify({
+  "name": "您的网站名",
+  "avatar": "https://您的头像URL",
+  "description": "您的网站描述",
+  "url": "https://您的网站URL",
+  "badge": "友情链接"
+}, null, 2))}`;
 ---
 
 <BaseLayout title="Friends" isIndexed={false}>
@@ -47,7 +25,7 @@ const applyUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${issu
       <span>Friends</span>
     </h1>
     <p class="text-base-content/70 text-lg mb-6">
-      记录那些珍贵的友谊，分享彼此的故事。
+      海内存知己，天涯若比邻。
     </p>
     
     {friends.length > 0 ? (
@@ -82,7 +60,7 @@ const applyUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${issu
       <span>友链申请</span>
     </h2>
     <p class="text-base-content/70 text-base mb-6">
-      想要互换友链？欢迎通过 GitHub Issue 提交申请，我会尽快审核！
+      想要互换友链？只需在 GitHub 上提交一个 PR，机器人会自动审核并合并！
     </p>
 
     <!-- 申请信息卡片 -->
@@ -118,9 +96,15 @@ const applyUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${issu
   avatar: "https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg",
   description: "MhYa123的博客分享各类杂谈,技术,生活.",
   url: "https://www.mahir.work",
-  badge: "博主"
+  badge: "友情链接"
 }, null, 2)}</pre>
       </div>
+    </div>
+
+    <!-- 提示 -->
+    <div class="alert alert-warning mb-6 flex items-center gap-2 text-sm">
+      <Icon name="lucide:alert-triangle" class="w-5 h-5 shrink-0" />
+      <span><strong>不要忘了改文件名！</strong> 请将默认的 <code>你的名字.json</code> 改为您的站点名称，例如 <code>MhYa123.json</code>。</span>
     </div>
 
     <!-- 申请按钮 -->
@@ -131,8 +115,8 @@ const applyUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${issu
         rel="noopener noreferrer"
         class="btn btn-primary btn-lg gap-2 px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
       >
-        <Icon name="lucide:send" class="w-5 h-5" />
-        前往 GitHub 提交申请
+        <Icon name="lucide:git-pull-request" class="w-5 h-5" />
+        前往 GitHub 提交 PR 申请
       </a>
     </div>
   </div>
