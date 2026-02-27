@@ -1,10 +1,10 @@
 {
-  "commitSha": "2f6bc06c69439caf79a040971b730b5157c6faa6",
-  "commitShort": "2f6bc06",
-  "commitMessage": "feat: 在构建时生成 Git 信息，包括构建详情和文章历史记录。",
+  "commitSha": "0acb8569a78a7368623804c20d67ec403401cb7c",
+  "commitShort": "0acb856",
+  "commitMessage": "chore: dev 脚本在启动开发服务器前增加执行 pnpm prefetch:git。",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-27T13:09:42+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/2f6bc06c69439caf79a040971b730b5157c6faa6",
-  "buildTime": "2026/2/27 13:12:09",
-  "totalCommits": 27
+  "commitDate": "2026-02-27T13:13:14+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0acb8569a78a7368623804c20d67ec403401cb7c",
+  "buildTime": "2026/2/27 13:13:55",
+  "totalCommits": 28
 }
