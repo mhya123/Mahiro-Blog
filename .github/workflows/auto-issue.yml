@@ -22,6 +22,7 @@ jobs:
             const repo = context.repo.repo;
             const issue_number = context.payload.issue.number;
             const issue_body = context.payload.issue.body || '';
+            const issue_title = context.payload.issue.title || '';
 
             // ================= 常量定义区 =================
             const MY_DOMAINS = ['mahiro.work'];
