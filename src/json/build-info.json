@@ -1,10 +1,10 @@
 {
-  "commitSha": "7b6f395c6f6b37e94cc2eff6eb67041ad8fa8485",
-  "commitShort": "7b6f395",
-  "commitMessage": "feat: 实现脚本以生成构建和博客文章的 Git 历史信息，并支持 CI API 回退。",
+  "commitSha": "ff835ae4e6a861a3509b98d27519ad3bd6163e63",
+  "commitShort": "ff835ae",
+  "commitMessage": "feat: 添加新的webp格式图片至公共资源。",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-28T15:11:21+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/7b6f395c6f6b37e94cc2eff6eb67041ad8fa8485",
-  "buildTime": "2026/2/28 15:11:50",
-  "totalCommits": 133
+  "commitDate": "2026-02-28T15:15:38+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/ff835ae4e6a861a3509b98d27519ad3bd6163e63",
+  "buildTime": "2026/2/28 15:16:06",
+  "totalCommits": 135
 }
