@@ -17,7 +17,7 @@ badge: Pin
 欢迎访问我的站点，查看我的最新动态与文章分享：
 
 * **主站：** [www.mahiro.work](http://www.mahiro.work)
-* **博客：** [blog.lovemh.tech](https://www.google.com/search?q=http://blog.lovemh.tech)
+* **备用：** [blog.lovemh.tech](https://www.google.com/search?q=http://blog.lovemh.tech)
 
 ### ✉️ 联系方式
 
