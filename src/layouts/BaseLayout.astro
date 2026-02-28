@@ -24,7 +24,11 @@ import UpdateNotifier from "@components/widgets/UpdateNotifier";
 
 const {
   title,
+  description,
   image,
+  pubDate,
+  updatedDate,
+  author,
   headings = [],
   showTOC = false,
   isIndexed = true,
@@ -53,11 +57,16 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     <PointerOnNavigation />
     <Header
       title={title}
-      description={SITE_DESCRIPTION}
+      description={description || SITE_DESCRIPTION}
       favicon={SITE_FAVICON}
       image={image}
+      isPostPage={isPostPage}
+      pubDate={pubDate}
+      updatedDate={updatedDate}
+      author={author}
+      isIndexed={isIndexed}
     />
-    <title>{`${title} - ${SITE_TAB}`}</title>
+    <title>{title ? `${title} - ${SITE_TAB}` : SITE_TAB}</title>
 
     <!-- 防止静态网页被浏览器和 CDN 强缓存导致更新后依然显示老数据 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />

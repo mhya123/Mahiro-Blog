@@ -1,41 +1,89 @@
 ---
 import "../styles/global.scss";
 import "/node_modules/katex/dist/katex.min.css";
-import type { HeaderProps } from "@interfaces/data";
+import type { HeaderProps } from "@interface/data";
+import { SITE_URL, USER_NAME } from "@config";
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const canonicalURL = new URL(Astro.url.pathname, SITE_URL);
 
-const { title, description, favicon, image } = Astro.props as HeaderProps;
+const { 
+  title, 
+  description, 
+  favicon, 
+  image,
+  isPostPage = false,
+  pubDate,
+  updatedDate,
+  author,
+  isIndexed = true,
+} = Astro.props as HeaderProps;
+
+const ogImage = image ? new URL(image, SITE_URL) : null;
+const finalAuthor = author || USER_NAME;
+
+// 生成 JSON-LD 结构化数据以提升搜索引擎富文本摘要展示效果
+const schema = isPostPage ? {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": title,
+  "description": description,
+  "image": ogImage?.toString(),
+  "author": {
+    "@type": "Person",
+    "name": finalAuthor
+  },
+  "datePublished": pubDate ? new Date(pubDate).toISOString() : undefined,
+  "dateModified": updatedDate ? new Date(updatedDate).toISOString() : undefined,
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": canonicalURL.toString()
+  }
+} : {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": title || "Mahiro",
+  "url": SITE_URL
+};
 ---
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- Favicon for all browsers -->
+
+<!-- 基础图标配置 -->
 <link rel="icon" type="image/x-icon" href={favicon} />
 <link rel="shortcut icon" href={favicon} />
-
-<!-- Apple Touch Icon for iOS devices (using existing favicon) -->
 <link rel="apple-touch-icon" href={favicon} />
 <link rel="apple-touch-icon-precomposed" href={favicon} />
+
+<!-- 基础 SEO 控制 -->
+<meta name="robots" content={isIndexed ? "index, follow" : "noindex, nofollow"} />
 <meta name="generator" content={Astro.generator} />
-
 <meta name="description" content={description} />
+{finalAuthor && <meta name="author" content={finalAuthor} />}
+<link rel="canonical" href={canonicalURL.toString()} />
 
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website" />
+<!-- Open Graph / 开放图谱 (Facebook, Discord, 微信等) -->
+<meta property="og:type" content={isPostPage ? "article" : "website"} />
 <meta property="og:url" content={canonicalURL} />
 <meta property="og:title" content={title || "Mahiro"} />
 <meta property="og:description" content={description} />
-{image && <meta property="og:image" content={new URL(image, Astro.url)} />}
+<meta property="og:site_name" content="Mahiro" />
+{ogImage && <meta property="og:image" content={ogImage.toString()} />}
 
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content={canonicalURL} />
-<meta property="twitter:title" content={title || "Mahiro"} />
-<meta property="twitter:description" content={description} />
-{image && <meta property="twitter:image" content={new URL(image, Astro.url)} />}
+<!-- 文章专属 Open Graph 标签 -->
+{isPostPage && pubDate && <meta property="article:published_time" content={new Date(pubDate).toISOString()} />}
+{isPostPage && updatedDate && <meta property="article:modified_time" content={new Date(updatedDate).toISOString()} />}
+{isPostPage && finalAuthor && <meta property="article:author" content={finalAuthor} />}
 
-<link rel="canonical" href={canonicalURL.toString()} />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content={canonicalURL} />
+<meta name="twitter:title" content={title || "Mahiro"} />
+<meta name="twitter:description" content={description} />
+{ogImage && <meta name="twitter:image" content={ogImage.toString()} />}
+
+<!-- 结构化数据 -->
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />

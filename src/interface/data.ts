@@ -47,6 +47,11 @@ export interface HeaderProps {
   description: string;
   favicon: string;
   image?: string;
+  isPostPage?: boolean;
+  pubDate?: Date;
+  updatedDate?: Date;
+  author?: string;
+  isIndexed?: boolean;
 }
 
 // ===== Widget Components =====
