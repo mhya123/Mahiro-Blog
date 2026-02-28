@@ -1,48 +1,4 @@
 {
-  "src/content/blog/test.md": [
-    {
-      "sha": "c4843a6760cae2ae826b99a85f6e76c5d8e5bc12",
-      "message": "feat: 修改文章 \"test\"",
-      "authorName": "MhYa123",
-      "date": "2026-02-28T14:51:53+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/c4843a6760cae2ae826b99a85f6e76c5d8e5bc12"
-    },
-    {
-      "sha": "9a822af174a6ba894b6b6b5251f603729a132521",
-      "message": "feat: 实现核心站点配置、导航栏、音乐页面及多个UI小部件，并集成国际化和Umami统计。",
-      "authorName": "MhYa123",
-      "date": "2026-02-27T09:55:05+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/9a822af174a6ba894b6b6b5251f603729a132521"
-    },
-    {
-      "sha": "d1003d8092c5db80de2121113030d3eaf97104a1",
-      "message": "feat: Add post metadata management UI and frontmatter parsing utilities.",
-      "authorName": "MhYa123",
-      "date": "2026-02-26T17:11:48+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d1003d8092c5db80de2121113030d3eaf97104a1"
-    },
-    {
-      "sha": "531732f164d750a07811ca101c1ac8a4d0f5d20e",
-      "message": "docs: Update test blog post to verify revision history modal",
-      "authorName": "MhYa123",
-      "date": "2026-02-26T16:50:17+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/531732f164d750a07811ca101c1ac8a4d0f5d20e"
-    },
-    {
-      "sha": "862ab60cb4679807a68bc5bfdacdb3597ac6f01e",
-      "message": "Remove unused assets and update footer with police备案信息; modify site configuration and blog metadata; clean up project page by removing outdated projects.",
-      "authorName": "MhYa123",
-      "date": "2026-02-10T09:42:02+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/862ab60cb4679807a68bc5bfdacdb3597ac6f01e"
-    },
-    {
-      "sha": "d022b3224b89b55ce31e5cbdd37858087e7de3e4",
-      "message": "feat(blog): publish post \"test\"",
-      "authorName": "mahiro-blog[bot]",
-      "date": "2026-02-08T04:52:43Z",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d022b3224b89b55ce31e5cbdd37858087e7de3e4"
-    }
-  ],
   "src/content/blog/loookme.md": [
     {
       "sha": "6a2e50c9241cbf473bd01ea9d9123159d36c14a3",
@@ -85,6 +41,57 @@
       "authorName": "mahiro-blog[bot]",
       "date": "2026-02-28T05:07:57Z",
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/4cc186bc81e0a5aa32026b9c74b13b86e9d475b5"
+    }
+  ],
+  "src/content/blog/test.md": [
+    {
+      "sha": "e3ea6eeaaf26923079cf799e555ce19df45e5b50",
+      "message": "feat: 修改文章 \"test\"",
+      "authorName": "MhYa123",
+      "date": "2026-02-28T17:19:07+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/e3ea6eeaaf26923079cf799e555ce19df45e5b50"
+    },
+    {
+      "sha": "c4843a6760cae2ae826b99a85f6e76c5d8e5bc12",
+      "message": "feat: 修改文章 \"test\"",
+      "authorName": "MhYa123",
+      "date": "2026-02-28T14:51:53+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/c4843a6760cae2ae826b99a85f6e76c5d8e5bc12"
+    },
+    {
+      "sha": "9a822af174a6ba894b6b6b5251f603729a132521",
+      "message": "feat: 实现核心站点配置、导航栏、音乐页面及多个UI小部件，并集成国际化和Umami统计。",
+      "authorName": "MhYa123",
+      "date": "2026-02-27T09:55:05+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/9a822af174a6ba894b6b6b5251f603729a132521"
+    },
+    {
+      "sha": "d1003d8092c5db80de2121113030d3eaf97104a1",
+      "message": "feat: Add post metadata management UI and frontmatter parsing utilities.",
+      "authorName": "MhYa123",
+      "date": "2026-02-26T17:11:48+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d1003d8092c5db80de2121113030d3eaf97104a1"
+    },
+    {
+      "sha": "531732f164d750a07811ca101c1ac8a4d0f5d20e",
+      "message": "docs: Update test blog post to verify revision history modal",
+      "authorName": "MhYa123",
+      "date": "2026-02-26T16:50:17+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/531732f164d750a07811ca101c1ac8a4d0f5d20e"
+    },
+    {
+      "sha": "862ab60cb4679807a68bc5bfdacdb3597ac6f01e",
+      "message": "Remove unused assets and update footer with police备案信息; modify site configuration and blog metadata; clean up project page by removing outdated projects.",
+      "authorName": "MhYa123",
+      "date": "2026-02-10T09:42:02+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/862ab60cb4679807a68bc5bfdacdb3597ac6f01e"
+    },
+    {
+      "sha": "d022b3224b89b55ce31e5cbdd37858087e7de3e4",
+      "message": "feat(blog): publish post \"test\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-02-08T04:52:43Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d022b3224b89b55ce31e5cbdd37858087e7de3e4"
     }
   ],
   "src/content/blog/umamisql.md": [
