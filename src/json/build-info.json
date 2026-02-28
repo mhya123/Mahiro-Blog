@@ -1,10 +1,10 @@
 {
-  "commitSha": "a49a6116707d0b2408765b0f643deff837c3fa3f",
-  "commitShort": "a49a611",
-  "commitMessage": "fix(build): 将 git info 生成彻底集成至 build 指令，保证 GitHub Actions 构建时页脚的部署摘要始终更新",
+  "commitSha": "b87d1698a2ab3d554345d89e66a8487339c900d9",
+  "commitShort": "b87d169",
+  "commitMessage": "refactor(ci): 解耦本地 build 指令与 git metadata 抓取逻辑，将其移交至 GitHub Actions 专属控制",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-28T16:41:02+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/a49a6116707d0b2408765b0f643deff837c3fa3f",
-  "buildTime": "2026/2/28 16:42:30",
-  "totalCommits": 158
+  "commitDate": "2026-02-28T16:57:43+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/b87d1698a2ab3d554345d89e66a8487339c900d9",
+  "buildTime": "2026/2/28 16:59:50",
+  "totalCommits": 164
 }
