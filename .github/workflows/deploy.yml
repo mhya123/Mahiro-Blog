@@ -37,6 +37,13 @@ jobs:
 
       - name: Build site
         run: pnpm run build
+        env:
+          PUBLIC_GITHUB_OWNER: ${{ secrets.PUBLIC_GITHUB_OWNER }}
+          PUBLIC_GITHUB_REPO: ${{ secrets.PUBLIC_GITHUB_REPO }}
+          PUBLIC_GITHUB_BRANCH: ${{ secrets.PUBLIC_GITHUB_BRANCH }}
+          PUBLIC_GITHUB_APP_ID: ${{ secrets.PUBLIC_GITHUB_APP_ID }}
+          PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.PUBLIC_UMAMI_WEBSITE_ID }}
+          PUBLIC_UMAMI_SHARE_ID: ${{ secrets.PUBLIC_UMAMI_SHARE_ID }}
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
