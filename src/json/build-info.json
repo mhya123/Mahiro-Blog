@@ -1,10 +1,10 @@
 {
-  "commitSha": "6a2e50c9241cbf473bd01ea9d9123159d36c14a3",
-  "commitShort": "6a2e50c",
-  "commitMessage": "feat(blog): update post \"快看快看!!!!\"",
-  "commitAuthor": "mahiro-blog[bot]",
-  "commitDate": "2026-02-28T07:54:01Z",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6a2e50c9241cbf473bd01ea9d9123159d36c14a3",
-  "buildTime": "2026/2/28 15:54:26",
-  "totalCommits": 148
+  "commitSha": "58ac2d927e4dda370a59d86d5649fb792dacc81c",
+  "commitShort": "58ac2d9",
+  "commitMessage": "feat(config): 在 mahiro.config.yaml 中暴露统一的站点基础链接 (Site URL) 参数，并同步至 sitemap 和 robots.txt",
+  "commitAuthor": "MhYa123",
+  "commitDate": "2026-02-28T16:10:25+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/58ac2d927e4dda370a59d86d5649fb792dacc81c",
+  "buildTime": "2026/2/28 16:11:12",
+  "totalCommits": 150
 }
