@@ -157,6 +157,7 @@ const initialRandomImage = isRandomEnabled
 
 <!-- 打字机效果脚本 -->
 <script define:vars={{ TYPEWRITER_TEXTS, useTypewriter }} is:inline>
+  // @ts-nocheck
   document.addEventListener("astro:page-load", () => {
     if (!useTypewriter || !TYPEWRITER_TEXTS || TYPEWRITER_TEXTS.length === 0) {
       return;
