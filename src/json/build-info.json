@@ -1,10 +1,10 @@
 {
-  "commitSha": "a50436617c6d1524013543f3ac5d9de393f8c44c",
-  "commitShort": "a504366",
-  "commitMessage": "fix(astro): 修复 ts 找不到 '@interface/data' 模块路径的问题，已重定为 '@interfaces/data'",
+  "commitSha": "a49a6116707d0b2408765b0f643deff837c3fa3f",
+  "commitShort": "a49a611",
+  "commitMessage": "fix(build): 将 git info 生成彻底集成至 build 指令，保证 GitHub Actions 构建时页脚的部署摘要始终更新",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-28T16:35:59+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/a50436617c6d1524013543f3ac5d9de393f8c44c",
-  "buildTime": "2026/2/28 16:36:38",
-  "totalCommits": 156
+  "commitDate": "2026-02-28T16:41:02+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/a49a6116707d0b2408765b0f643deff837c3fa3f",
+  "buildTime": "2026/2/28 16:42:30",
+  "totalCommits": 158
 }
