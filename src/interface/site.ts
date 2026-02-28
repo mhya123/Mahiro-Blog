@@ -80,6 +80,7 @@ export interface GithubConfig {
 }
 
 export interface SiteConfig {
+  url?: string;
   tab: string;
   title: string;
   description: string;
