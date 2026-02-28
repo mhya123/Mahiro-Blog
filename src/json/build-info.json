@@ -1,10 +1,10 @@
 {
-  "commitSha": "0daf4faf6a2392e3ecc4eef857c9dddc0f3cac5d",
-  "commitShort": "0daf4fa",
-  "commitMessage": "feat: 添加 WebP 转换脚本，用于将图片转换为 WebP 格式并更新 Markdown 引用",
+  "commitSha": "7b6f395c6f6b37e94cc2eff6eb67041ad8fa8485",
+  "commitShort": "7b6f395",
+  "commitMessage": "feat: 实现脚本以生成构建和博客文章的 Git 历史信息，并支持 CI API 回退。",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-28T15:08:35+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0daf4faf6a2392e3ecc4eef857c9dddc0f3cac5d",
-  "buildTime": "2026/2/28 15:09:04",
-  "totalCommits": 131
+  "commitDate": "2026-02-28T15:11:21+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/7b6f395c6f6b37e94cc2eff6eb67041ad8fa8485",
+  "buildTime": "2026/2/28 15:11:50",
+  "totalCommits": 133
 }
