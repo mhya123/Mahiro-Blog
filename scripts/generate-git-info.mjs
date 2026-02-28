@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
+import os from 'node:os';
 import yaml from 'js-yaml';
 
 // 读取 mahiro.config.yaml 提取 owner 和 repo
@@ -153,53 +154,79 @@ async function generateBlogGitHistory() {
     const gitHistoryData = {};
     const maxCount = 20;
 
-    for (const filePath of mdFiles) {
-        // 提取绝对唯一的相对路径格式 (src/content/blog/xxx.md)，无视运行环境的工作目录深度
-        const posixPath = filePath.replace(/\\/g, '/');
-        const relativePath = posixPath.substring(posixPath.indexOf('src/content/blog/'));
-        let fileCommits = [];
+    const MAX_CONCURRENCY = Math.max(1, os.cpus().length - 1);
+    let processedCount = 0;
 
-        // 在 CI 环境尝试优先从 API 拉取单个文件的提交
-        if (isCI && owner && repo) {
-            try {
-                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${relativePath}&per_page=${maxCount}`, {
-                    headers: {
-                        'Accept': 'application/vnd.github.v3+json',
-                        'User-Agent': 'Mahiro-Blog-Build'
-                    },
-                    cache: 'no-store'
-                });
+    function getGitHistoryAsync(filePath, relativePath) {
+        return new Promise(async (resolve) => {
+            let fileCommits = [];
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        fileCommits = data.map((item) => ({
-                            sha: item.sha,
-                            message: item.commit.message.split('\n')[0],
-                            authorName: item.commit.author.name,
-                            date: item.commit.author.date,
-                            url: item.html_url,
-                        }));
+            // 在 CI 环境尝试优先从 API 拉取单个文件的提交
+            if (isCI && owner && repo) {
+                try {
+                    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${relativePath}&per_page=${maxCount}`, {
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json',
+                            'User-Agent': 'Mahiro-Blog-Build'
+                        },
+                        cache: 'no-store'
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (Array.isArray(data) && data.length > 0) {
+                            fileCommits = data.map((item) => ({
+                                sha: item.sha,
+                                message: item.commit.message.split('\n')[0],
+                                authorName: item.commit.author.name,
+                                date: item.commit.author.date,
+                                url: item.html_url,
+                            }));
+                        }
                     }
+                } catch (error) {
+                    // Ignore API errors, fallback to local git
                 }
-            } catch (error) {
-                // Ignore API errors, fallback to local git
             }
-        }
 
-        // 如果未抓取到或在本地环境，回退到 git log
-        if (fileCommits.length === 0) {
-            try {
-                const separator = '|||';
-                const format = `%H${separator}%s${separator}%an${separator}%aI`;
+            if (fileCommits.length > 0) {
+                resolve(fileCommits);
+                return;
+            }
 
-                const result = execSync(
-                    `git log --format="${format}" --max-count=${maxCount} -- "${relativePath}"`,
-                    { encoding: 'utf-8', timeout: 10000 }
-                ).trim();
+            // 本地 fallback: 执行并发并发的 git spawn
+            const separator = '|||';
+            const format = `%H${separator}%s${separator}%an${separator}%aI`;
 
-                if (result) {
-                    fileCommits = result.split('\n').filter(Boolean).map(line => {
+            const git = spawn('git', [
+                'log',
+                `--format=${format}`,
+                `--max-count=${maxCount}`,
+                '--',
+                relativePath
+            ]);
+
+            let output = '';
+            let error = '';
+
+            git.stdout.on('data', (data) => {
+                output += data.toString();
+            });
+
+            git.stderr.on('data', (data) => {
+                error += data.toString();
+            });
+
+            git.on('close', (code) => {
+                if (code !== 0 || !output.trim()) {
+                    resolve([]);
+                    return;
+                }
+
+                fileCommits = output
+                    .split('\n')
+                    .filter(Boolean)
+                    .map(line => {
                         const [sha, message, authorName, date] = line.split(separator);
                         return {
                             sha,
@@ -208,17 +235,41 @@ async function generateBlogGitHistory() {
                             date,
                             url: owner && repo ? `https://github.com/${owner}/${repo}/commit/${sha}` : '',
                         };
-                    });
-                }
-            } catch (e) {
-                console.warn(`[Generate Git Info] 无法提取文件本地历史记录: ${filePath}`, e.message);
-            }
-        }
+                    })
+                    .filter(c => c.sha && c.date);
 
-        if (fileCommits.length > 0) {
-            gitHistoryData[relativePath] = fileCommits;
-        }
+                resolve(fileCommits);
+            });
+
+            git.on('error', (err) => {
+                console.warn(`[Generate Git Info] 无法提取文件本地历史记录: ${filePath}`, err.message);
+                resolve([]);
+            });
+        });
     }
+
+    // Chunk array for concurrency control
+    for (let i = 0; i < mdFiles.length; i += MAX_CONCURRENCY) {
+        const chunk = mdFiles.slice(i, i + MAX_CONCURRENCY);
+
+        const promises = chunk.map(async (filePath) => {
+            const posixPath = filePath.replace(/\\/g, '/');
+            const relativePath = posixPath.substring(posixPath.indexOf('src/content/blog/'));
+
+            const history = await getGitHistoryAsync(filePath, relativePath);
+
+            if (history.length > 0) {
+                gitHistoryData[relativePath] = history;
+            }
+
+            processedCount++;
+            process.stdout.write(`\r[Generate Git Info] 已处理 ${processedCount}/${mdFiles.length} 篇文章的历史...`);
+        });
+
+        await Promise.all(promises);
+    }
+
+    process.stdout.write('\n');
 
     const gitHistoryPath = path.join(jsonDir, 'git-history.json');
     fs.writeFileSync(gitHistoryPath, JSON.stringify(gitHistoryData, null, 2), 'utf-8');

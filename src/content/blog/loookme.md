@@ -2,7 +2,7 @@
 title: 快看快看!!!!
 description: 联系方式和博客相关说明.
 pubDate: 2026-02-28T13:02
-image: /images/loookme/963058a8e3e786a6.png
+image: /images/loookme/963058a8e3e786a6.webp
 draft: false
 tags:
   - 联系方式
@@ -17,7 +17,7 @@ badge: Pin
 欢迎访问我的站点，查看我的最新动态与文章分享：
 
 * **主站：** [www.mahiro.work](http://www.mahiro.work)
-* **备用：** [blog.lovemh.tech](https://www.google.com/search?q=http://blog.lovemh.tech)
+* **备用：** [blog.lovemh.tech](http://blog.lovemh.tech)
 
 ### ✉️ 联系方式
 
