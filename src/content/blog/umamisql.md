@@ -3,8 +3,14 @@ title: Umami v3 数据库可视化管理与访问量修改教程
 description: ''
 pubDate: 2026-02-27T21:07
 draft: false
-tags: [umami,docker,sql,教程]
-categories: [教程]
+tags:
+  - umami
+  - docker
+  - sql
+  - 教程
+categories:
+  - 教程
+badge: ''
 ---
 本教程将引导你安全地使用可视化网页工具（Adminer）连接到通过 Docker 部署的 Umami 数据库，并使用 SQL 脚本安全地批量修改网站的访客数与浏览量。
 
@@ -45,7 +51,7 @@ Umami v3 的访客和浏览量是由 `session`（访客会话表）和 `website_
 2. 将下方经过严格测试的自动化脚本粘贴到文本框中。
 3. **注意修改脚本中的参数：**
 * `15305`：代表你要增加的浏览量/访客数，请替换为你需要的数字（注意数字和后面的 `LOOP` 之间必须保留一个空格）。
-* `'49720733-f763-40bd-9d11-fcb88cfa5333'`：请替换为你自己的实际网站 ID。
+* `'UMAMI网站ID`：请替换为你自己的实际网站 ID。
 * `'/'`：如果你想修改其他页面（如 `/about`），请修改此处的路径。
 
 
@@ -71,11 +77,11 @@ BEGIN
 
         -- 2. 写入 session 表 (登记这是一个新访客)
         INSERT INTO session (session_id, website_id, created_at)
-        VALUES (v_session_id, '49720733-f763-40bd-9d11-fcb88cfa5333', v_rand_time);
+        VALUES (v_session_id, 'UMAMI网站ID', v_rand_time);
 
         -- 3. 写入 website_event 表 (记录这个新访客访问了指定路径)
         INSERT INTO website_event (event_id, website_id, session_id, visit_id, created_at, url_path, event_type)
-        VALUES (v_event_id, '49720733-f763-40bd-9d11-fcb88cfa5333', v_session_id, v_visit_id, v_rand_time, '/', 1);
+        VALUES (v_event_id, 'UMAMI网站ID', v_session_id, v_visit_id, v_rand_time, '/', 1);
     END LOOP;
 END $$;
 ```
