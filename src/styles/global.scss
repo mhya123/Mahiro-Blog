@@ -942,7 +942,7 @@ code {
   animation: fadeInUp 0.5s ease-out forwards;
 }
 
-/* 强制统一所有主题的圆角设置，防止某些主题（如 retro, cyberpunk）修改圆角 */
+/* 强制统一所有主题的圆角设置，防止某些主题修改圆角 */
 :root,
 [data-theme] {
   --rounded-box: 1rem !important;
