@@ -153,6 +153,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
 
   <!-- 移除上边距，让Banner从顶部开始 -->
   <body
+    transition:animate="fade"
     class="flex flex-col min-h-screen bg-[var(--banner-wave-bg)]"
     {...isIndexed ? { "data-pagefind-body": true } : {}}
   >

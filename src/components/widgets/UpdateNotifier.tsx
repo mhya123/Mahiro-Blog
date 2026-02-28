@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, X, Trash2, HelpCircle, ExternalLink, Rss } from 'lucide-react';
+import gsap from 'gsap';
 import {
     fetchAndCompare,
     getChanges,
@@ -12,12 +13,16 @@ import {
 export default function UpdateNotifier() {
     const [changes, setChanges] = useState<ArticleChange[]>([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [isRendered, setIsRendered] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
-    const [isAnimating, setIsAnimating] = useState(false);
     const [isChecking, setIsChecking] = useState(false);
     const [lastCheck, setLastCheck] = useState<string | null>(null);
 
-    // 初始化：加载缓存中的变更 + 后台检查
+    const overlayRef = useRef<HTMLDivElement>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
+    const bellRef = useRef<HTMLButtonElement>(null);
+
+    // Initialization
     useEffect(() => {
         console.log('[UpdateNotifier] 组件已挂载');
 
@@ -32,7 +37,6 @@ export default function UpdateNotifier() {
             console.error('[UpdateNotifier] 读取缓存出错:', e);
         }
 
-        // 延迟 2 秒后后台检查
         const timer = setTimeout(async () => {
             try {
                 setIsChecking(true);
@@ -42,13 +46,7 @@ export default function UpdateNotifier() {
                 setLastCheck(getLastCheckTime());
                 console.log('[UpdateNotifier] 检查完成, 发现变更:', result.length, result);
 
-                if (result.length > 0) {
-                    setChanges(result);
-                    setIsAnimating(true);
-                    setTimeout(() => setIsAnimating(false), 1000);
-                } else {
-                    setChanges(result);
-                }
+                setChanges(result);
             } catch (e) {
                 console.error('[UpdateNotifier] 检查更新出错:', e);
                 setIsChecking(false);
@@ -66,24 +64,56 @@ export default function UpdateNotifier() {
 
     // 统计
     const hasChanges = changes.length > 0;
-
     const newCount = changes.filter((c) => c.type === 'new').length;
     const updateCount = changes.filter((c) => c.type === 'update').length;
 
-    const panel = isOpen
+    // 当发现变更时，给铃铛一个弹出的 GSAP 动画
+    useEffect(() => {
+        if (hasChanges && bellRef.current) {
+            gsap.fromTo(
+                bellRef.current,
+                { scale: 0.8, rotation: -20 },
+                { scale: 1, rotation: 0, duration: 0.7, ease: 'elastic.out(1, 0.4)' }
+            );
+        }
+    }, [hasChanges]);
+
+    // Handle GSAP open & close unmount lifecycles
+    useEffect(() => {
+        if (isOpen) {
+            setIsRendered(true);
+        } else if (isRendered) {
+            const tl = gsap.timeline({
+                onComplete: () => setIsRendered(false)
+            });
+            if (overlayRef.current) tl.to(overlayRef.current, { opacity: 0, duration: 0.3 }, 0);
+            if (panelRef.current) tl.to(panelRef.current, { y: 20, opacity: 0, scale: 0.95, duration: 0.3, ease: 'power2.in' }, 0);
+        }
+    }, [isOpen, isRendered]);
+
+    // Handle initial mount GSAP animation
+    useEffect(() => {
+        if (isRendered && isOpen) {
+            if (overlayRef.current) gsap.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+            if (panelRef.current) gsap.fromTo(panelRef.current, { y: 20, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.2)' });
+        }
+    }, [isRendered, isOpen]);
+
+    const panel = isRendered
         ? createPortal(
             <div className="fixed inset-0 z-[9998]">
                 <div
+                    ref={overlayRef}
                     className="absolute inset-0 bg-black/40"
                     onClick={() => setIsOpen(false)}
                 />
                 {/* 面板 */}
-                <div className="absolute bottom-20 right-4 w-[calc(100vw-2rem)] max-w-[420px] max-h-[70vh] flex flex-col bg-base-100 rounded-2xl shadow-2xl border border-base-200 overflow-hidden sm:right-6">
+                <div ref={panelRef} className="absolute bottom-20 right-4 w-[calc(100vw-2rem)] max-w-[420px] max-h-[70vh] flex flex-col bg-base-100 rounded-2xl shadow-2xl border border-base-200 overflow-hidden sm:right-6">
                     {/* Header */}
                     <div className="flex items-center justify-between px-5 py-3.5 border-b border-base-200 shrink-0">
                         <h3 className="font-bold text-base flex items-center gap-2 text-base-content">
                             <Rss className="w-5 h-5 text-primary" />
-                            发现新文章
+                            {newCount > 0 ? '发现新文章' : '文章有更新'}
                             <button
                                 onClick={() => setShowHelp(!showHelp)}
                                 className="btn btn-ghost btn-xs btn-circle text-base-content/40"
@@ -175,9 +205,9 @@ export default function UpdateNotifier() {
         <>
             {/* 铃铛按钮 - 固定右下角 */}
             <button
+                ref={bellRef}
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed bottom-6 right-6 z-[9997] btn btn-circle btn-primary shadow-xl ${isAnimating ? 'animate-bounce' : ''
-                    }`}
+                className={`fixed bottom-6 right-6 z-[9997] btn btn-circle btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform`}
                 aria-label="查看文章更新"
             >
                 <div className="relative">
