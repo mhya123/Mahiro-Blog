@@ -90,7 +90,7 @@ github:
   repo: Mahiro-Blog
   branch: main
   appId: 在部署端配置环境变量
-  encryptKey: wudishiduomejimo
+  encryptKey: 11111
 umami:
   enable: true
   baseUrl: https://umami.mahiro.work
