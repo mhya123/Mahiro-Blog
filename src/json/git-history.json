@@ -1,6 +1,13 @@
 {
   "src/content/blog/loookme.md": [
     {
+      "sha": "60a3219f8833b1c03047a35dcb420aea74245d1c",
+      "message": "feat(blog): update post \"快看快看!!!!\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-02-28T05:34:25Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/60a3219f8833b1c03047a35dcb420aea74245d1c"
+    },
+    {
       "sha": "4cc186bc81e0a5aa32026b9c74b13b86e9d475b5",
       "message": "feat(blog): publish post \"快看快看!!!!\"",
       "authorName": "mahiro-blog[bot]",
