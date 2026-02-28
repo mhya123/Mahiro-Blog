@@ -1,10 +1,10 @@
 {
-  "commitSha": "39341424905744206f720f65cbe9a48ac96db7c6",
-  "commitShort": "3934142",
-  "commitMessage": "fix",
+  "commitSha": "04db4fc4c767187517720f3f60e3f8e5d70ce168",
+  "commitShort": "04db4fc",
+  "commitMessage": "feat: 添加 GitHub Actions 工作流，用于将 Astro 站点部署到 GitHub Pages。",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-28T12:43:12+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/39341424905744206f720f65cbe9a48ac96db7c6",
-  "buildTime": "2026/2/28 12:43:49",
-  "totalCommits": 105
+  "commitDate": "2026-02-28T12:51:37+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/04db4fc4c767187517720f3f60e3f8e5d70ce168",
+  "buildTime": "2026/2/28 12:52:12",
+  "totalCommits": 107
 }
