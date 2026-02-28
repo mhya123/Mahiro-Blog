@@ -1,10 +1,10 @@
 {
-  "commitSha": "9809496bd0f9db6e8c8aa21109c7452bdb219997",
-  "commitShort": "9809496",
-  "commitMessage": "feat: 修复 浏览器在处理 CSS box-shadow 阴影 + GPU 硬件加速缩放动画 导致的  黑色线框闪烁",
+  "commitSha": "c4843a6760cae2ae826b99a85f6e76c5d8e5bc12",
+  "commitShort": "c4843a6",
+  "commitMessage": "feat: 修改文章 \"test\"",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-02-28T14:48:35+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/9809496bd0f9db6e8c8aa21109c7452bdb219997",
-  "buildTime": "2026/2/28 14:49:01",
-  "totalCommits": 123
+  "commitDate": "2026-02-28T14:51:53+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/c4843a6760cae2ae826b99a85f6e76c5d8e5bc12",
+  "buildTime": "2026/2/28 14:52:22",
+  "totalCommits": 125
 }

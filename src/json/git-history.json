@@ -24,6 +24,13 @@
   ],
   "src/content/blog/test.md": [
     {
+      "sha": "c4843a6760cae2ae826b99a85f6e76c5d8e5bc12",
+      "message": "feat: 修改文章 \"test\"",
+      "authorName": "MhYa123",
+      "date": "2026-02-28T14:51:53+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/c4843a6760cae2ae826b99a85f6e76c5d8e5bc12"
+    },
+    {
       "sha": "9a822af174a6ba894b6b6b5251f603729a132521",
       "message": "feat: 实现核心站点配置、导航栏、音乐页面及多个UI小部件，并集成国际化和Umami统计。",
       "authorName": "MhYa123",
