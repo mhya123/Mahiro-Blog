@@ -1,10 +1,10 @@
 {
-  "commitSha": "36597537b5c743de23482cad8a1a06c3589a193e",
-  "commitShort": "3659753",
-  "commitMessage": "feat(blog): update post \"Umami v3 数据库可视化管理与访问量修改教程\"",
+  "commitSha": "a19f35be1e18c9d7757d41d15607f3825fdcbfbb",
+  "commitShort": "a19f35b",
+  "commitMessage": "chore(config): update site configuration",
   "commitAuthor": "mahiro-blog[bot]",
-  "commitDate": "2026-02-28T01:03:42Z",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/36597537b5c743de23482cad8a1a06c3589a193e",
-  "buildTime": "2026/2/28 09:04:09",
-  "totalCommits": 96
+  "commitDate": "2026-02-28T01:06:13Z",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/a19f35be1e18c9d7757d41d15607f3825fdcbfbb",
+  "buildTime": "2026/2/28 09:06:41",
+  "totalCommits": 98
 }
