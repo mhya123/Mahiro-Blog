@@ -122,8 +122,8 @@ export interface UmamiConfig {
 // Umami 配置实例（从配置文件读取）
 export const umamiConfig: UmamiConfig = {
   enable: config.umami?.enable ?? false,
-  baseUrl: config.umami?.baseUrl ?? "https://umami.acofork.com",
-  shareId: import.meta.env.PUBLIC_UMAMI_SHARE_ID || config.umami?.shareId || "CdkXbGgZr6ECKOyK",
+  baseUrl: config.umami?.baseUrl ?? "https://umami.mahiro.work",
+  shareId: import.meta.env.PUBLIC_UMAMI_SHARE_ID || config.umami?.shareId || "SzhnvI9iUy5fziEI",
   websiteId: import.meta.env.PUBLIC_UMAMI_WEBSITE_ID || config.umami?.websiteId || "",
   timezone: config.umami?.timezone ?? "Asia/Shanghai",
 };
