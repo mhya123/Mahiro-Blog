@@ -59,6 +59,11 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     />
     <title>{`${title} - ${SITE_TAB}`}</title>
 
+    <!-- 防止静态网页被浏览器和 CDN 强缓存导致更新后依然显示老数据 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <!-- Google Fonts 预连接 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
