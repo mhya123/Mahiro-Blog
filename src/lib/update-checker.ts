@@ -1,9 +1,9 @@
-/**
- * 文章更新检测器
- * 客户端工具，通过获取 RSS 并与 localStorage 缓存对比来检测文章变更
- */
+import * as Diff from 'diff';
 
-const CACHE_KEY = 'blog-articles-cache';
+const DB_NAME = 'mahiro-rss-store';
+const DB_VERSION = 1;
+const STORE_NAME = 'posts';
+
 const CHANGES_KEY = 'blog-articles-changes';
 const LAST_CHECK_KEY = 'blog-last-check';
 
@@ -13,6 +13,7 @@ export interface CachedArticle {
     description: string;
     pubDate: string;
     link: string;
+    content: string;
 }
 
 export interface ArticleChange {
@@ -24,54 +25,114 @@ export interface ArticleChange {
     oldDescription?: string;
     newDescription?: string;
     detectedAt: string;
+    diff?: any; // The diff payload if any
 }
 
-/**
- * 解析 RSS XML 为文章列表
- */
-function parseRSS(xmlText: string): CachedArticle[] {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(xmlText, 'text/xml');
-    const items = doc.querySelectorAll('item');
-    const articles: CachedArticle[] = [];
-
-    items.forEach((item) => {
-        const guid = item.querySelector('guid')?.textContent || item.querySelector('link')?.textContent || '';
-        const title = item.querySelector('title')?.textContent || '';
-        const description = item.querySelector('description')?.textContent || '';
-        const pubDate = item.querySelector('pubDate')?.textContent || '';
-        const link = item.querySelector('link')?.textContent || '';
-
-        if (guid) {
-            articles.push({ guid, title, description, pubDate, link });
-        }
+// 初始化并打开数据库
+function openDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'guid' });
+            }
+        };
     });
-
-    return articles;
 }
 
-/**
- * 获取缓存的文章列表
- */
-function getCache(): CachedArticle[] {
+// 读取数据库中的文章
+function getStoredPosts(db: IDBDatabase, storeName: string): Promise<CachedArticle[]> {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readonly');
+        const store = transaction.objectStore(storeName);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// 写入数据库文章
+function setStoredPosts(db: IDBDatabase, storeName: string, posts: CachedArticle[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        store.clear();
+        posts.forEach(post => store.put(post));
+
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+    });
+}
+
+async function fetchRSSRaw(): Promise<CachedArticle[]> {
     try {
-        const raw = localStorage.getItem(CACHE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch {
+        const response = await fetch('/rss.xml', { cache: 'no-store' });
+        const text = await response.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, 'text/xml');
+
+        const items = Array.from(xml.querySelectorAll('item'));
+
+        return items.map(item => {
+            const title = item.querySelector('title')?.textContent || '';
+            const link = (item.querySelector('link')?.textContent || '').trim();
+            const guid = (item.querySelector('guid')?.textContent || link).trim();
+            const description = item.querySelector('description')?.textContent || '';
+            const pubDate = item.querySelector('pubDate')?.textContent || '';
+
+            // 兼容多种 RSS 格式的正文提取
+            let contentEncoded = item.getElementsByTagNameNS('http://purl.org/rss/1.0/modules/content/', 'encoded')[0]?.textContent;
+            let content = contentEncoded ||
+                item.getElementsByTagName('content:encoded')[0]?.textContent ||
+                item.querySelector('content')?.textContent || '';
+
+            return { title, link, guid, description, pubDate, content };
+        });
+    } catch (e) {
+        console.error('Failed to fetch RSS:', e);
         return [];
     }
 }
 
-/**
- * 保存缓存
- */
-function setCache(articles: CachedArticle[]): void {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(articles));
+function computeDiff(oldText: string, newText: string) {
+    if (!oldText || !newText) return null;
+
+    // 清洗和标准化 HTML 内容
+    const normalizeForDiffHtml = (html: string) => {
+        const s = String(html || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<div>${s}</div>`, "text/html");
+        const root = doc.body.firstElementChild;
+        if (!root) return s;
+
+        const lines: string[] = [];
+        for (const el of Array.from(root.children)) {
+            const htmlLine = String(el.outerHTML || "")
+                .replace(/\r\n/g, "\n")
+                .replace(/\r/g, "\n")
+                .replace(/\n+/g, " ")
+                .replace(/[ \t]+/g, " ")
+                .trim();
+            if (htmlLine) lines.push(htmlLine);
+        }
+        return lines.join("\n");
+    };
+
+    const cleanOld = normalizeForDiffHtml(oldText);
+    const cleanNew = normalizeForDiffHtml(newText);
+
+    if (!cleanOld || !cleanNew) return null;
+
+    // 使用 Diff 库进行逐行比对
+    const diffs = Diff.diffLines(cleanOld, cleanNew);
+    const hasChanges = diffs.some((part: any) => part.added || part.removed);
+
+    return hasChanges ? diffs : null;
 }
 
-/**
- * 获取已检测到的变更列表
- */
 export function getChanges(): ArticleChange[] {
     try {
         const raw = localStorage.getItem(CHANGES_KEY);
@@ -81,113 +142,110 @@ export function getChanges(): ArticleChange[] {
     }
 }
 
-/**
- * 保存变更列表
- */
 function setChanges(changes: ArticleChange[]): void {
     localStorage.setItem(CHANGES_KEY, JSON.stringify(changes));
 }
 
-/**
- * 获取上次检查时间
- */
 export function getLastCheckTime(): string | null {
     return localStorage.getItem(LAST_CHECK_KEY);
 }
 
-/**
- * 清空所有变更，将当前 RSS 标记为已读
- */
 export async function markAllRead(): Promise<void> {
     setChanges([]);
-    // 重新获取最新 RSS 并缓存，确保下次对比用最新数据
     try {
-        const res = await fetch('/rss.xml');
-        if (res.ok) {
-            const xml = await res.text();
-            const articles = parseRSS(xml);
-            setCache(articles);
+        const articles = await fetchRSSRaw();
+        if (articles.length > 0) {
+            const db = await openDB();
+            await setStoredPosts(db, STORE_NAME, articles);
         }
-    } catch {
-        // 忽略错误
+    } catch (e) {
+        console.error('Failed to mark all read:', e);
     }
 }
 
-/**
- * 获取 RSS 并与缓存对比，返回变更列表
- */
 export async function fetchAndCompare(): Promise<ArticleChange[]> {
     try {
-        const res = await fetch('/rss.xml', { cache: 'no-store' });
+        const res = await fetch('/rss.xml', { cache: 'no-store', method: 'HEAD' });
         if (!res.ok) return getChanges();
 
-        const xml = await res.text();
-        const latestArticles = parseRSS(xml);
-        const cached = getCache();
+        const currentPosts = await fetchRSSRaw();
+        if (currentPosts.length === 0) return getChanges();
+
+        const db = await openDB();
+        const storedPosts = await getStoredPosts(db, STORE_NAME);
         const now = new Date().toISOString();
 
         localStorage.setItem(LAST_CHECK_KEY, now);
 
-        // 首次访问：初始化缓存，不产生任何变更
-        if (cached.length === 0) {
-            setCache(latestArticles);
+        if (storedPosts.length === 0) {
+            await setStoredPosts(db, STORE_NAME, currentPosts);
             return [];
         }
 
-        // 建立缓存索引
-        const cachedMap = new Map<string, CachedArticle>();
-        cached.forEach((a) => cachedMap.set(a.guid, a));
+        const storedMap = new Map<string, CachedArticle>();
+        storedPosts.forEach(a => storedMap.set(a.guid, a));
 
-        // 保留已有的、仍然有效的变更
         const existingChanges = getChanges();
         const existingMap = new Map<string, ArticleChange>();
-        existingChanges.forEach((c) => existingMap.set(c.guid, c));
+        existingChanges.forEach(c => existingMap.set(c.guid, c));
 
-        const newChanges: ArticleChange[] = [];
+        const detectedChanges: ArticleChange[] = [];
 
-        for (const article of latestArticles) {
-            const old = cachedMap.get(article.guid);
+        currentPosts.forEach(post => {
+            const stored = storedMap.get(post.guid);
 
-            if (!old) {
-                // 新文章
-                if (!existingMap.has(article.guid)) {
-                    newChanges.push({
-                        guid: article.guid,
-                        title: article.title,
-                        link: article.link,
+            if (!stored) {
+                if (!existingMap.has(post.guid)) {
+                    detectedChanges.push({
+                        guid: post.guid,
+                        title: post.title,
+                        link: post.link,
                         type: 'new',
-                        detectedAt: now,
+                        detectedAt: now
                     });
                 } else {
-                    newChanges.push(existingMap.get(article.guid)!);
+                    detectedChanges.push(existingMap.get(post.guid)!);
                 }
             } else {
-                // 检查是否有变化
-                const titleChanged = old.title !== article.title;
-                const descChanged = old.description !== article.description;
-                const dateChanged = old.pubDate !== article.pubDate;
+                const titleChanged = post.title !== stored.title;
+                const descriptionChanged = post.description !== stored.description;
+                const contentChanged = post.content !== stored.content;
 
-                if (titleChanged || descChanged || dateChanged) {
-                    newChanges.push({
-                        guid: article.guid,
-                        title: article.title,
-                        link: article.link,
-                        type: 'update',
-                        oldTitle: titleChanged ? old.title : undefined,
-                        oldDescription: descChanged ? old.description : undefined,
-                        newDescription: descChanged ? article.description : undefined,
-                        detectedAt: existingMap.get(article.guid)?.detectedAt || now,
-                    });
+                if (titleChanged || descriptionChanged || contentChanged) {
+                    const result: any = {};
+                    let hasChanges = false;
+                    let existingChange = existingMap.get(post.guid);
+
+                    if (contentChanged) {
+                        const d = computeDiff(stored.content, post.content);
+                        if (d) {
+                            result.content = d;
+                            hasChanges = true;
+                        }
+                    }
+
+                    if (hasChanges || titleChanged || descriptionChanged) {
+                        detectedChanges.push({
+                            guid: post.guid,
+                            title: post.title,
+                            link: post.link,
+                            type: 'update',
+                            oldTitle: titleChanged ? stored.title : (existingChange?.oldTitle || undefined),
+                            oldDescription: descriptionChanged ? stored.description : (existingChange?.oldDescription || undefined),
+                            newDescription: descriptionChanged ? post.description : (existingChange?.newDescription || undefined),
+                            detectedAt: existingChange?.detectedAt || now,
+                            diff: hasChanges ? result.content : undefined
+                        });
+                    }
                 }
             }
-        }
+        });
 
-        setChanges(newChanges);
-        // 注意：不更新缓存，直到用户点击"标记已读"
+        setChanges(detectedChanges);
+        return detectedChanges;
 
-        return newChanges;
-    } catch (error) {
-        console.warn('Update check failed:', error);
+    } catch (e) {
+        console.warn('Update check failed:', e);
         return getChanges();
     }
 }

@@ -938,8 +938,8 @@ code {
   }
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
+.page-content-animate {
+  /* GSAP will handle the entrance and exit animations */
 }
 
 /* 强制统一所有主题的圆角设置，防止某些主题修改圆角 */

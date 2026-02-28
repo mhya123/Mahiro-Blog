@@ -153,7 +153,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
 
   <!-- 移除上边距，让Banner从顶部开始 -->
   <body
-    transition:animate="fade"
+    transition:animate="none"
     class="flex flex-col min-h-screen bg-[var(--banner-wave-bg)]"
     {...isIndexed ? { "data-pagefind-body": true } : {}}
   >
@@ -258,5 +258,32 @@ const bannerSubtitle = pageConfig?.subtitle || "";
         }
       }
     </style>
+
+    <script>
+      import gsap from "gsap";
+      import NProgress from "nprogress";
+      import "nprogress/nprogress.css";
+
+      // 配置 NProgress
+      NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.2 });
+
+      // 在页面开始请求时触发进度条
+      document.addEventListener("astro:before-preparation", () => {
+        NProgress.start();
+      });
+
+      // 劫持 Astro 的页面生命周期，使用 GSAP 提供顶级丝滑的阻尼进入动画
+      document.addEventListener("astro:page-load", () => {
+        NProgress.done();
+        const content = document.querySelector(".page-content-animate");
+        if (content) {
+          gsap.fromTo(
+            content,
+            { y: 80, opacity: 0 },
+            { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", clearProps: "all" }
+          );
+        }
+      });
+    </script>
   </body>
 </html>
