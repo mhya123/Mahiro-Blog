@@ -3,6 +3,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+ * Global fix for Chromium/WebKit rendering bug:
+ * Prevents black wireframe flashing when elements with border-radius and box-shadow undergo GPU-accelerated transforms (hover:scale, transition)
+ */
+.card,
+.card-base,
+[class*="hover:-translate-"],
+[class*="hover:scale-"] {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
 .max-w-blog {
   max-width: 72rem;
   /* 默认90% - 适合小屏幕 */
