@@ -10,7 +10,7 @@
     "prefetch:music": "node scripts/fetch-music-duration.mjs",
     "watermark": "node scripts/add-watermark.mjs",
     "webp": "node scripts/convert-to-webp.mjs",
-    "build": "pnpm git && pnpm prefetch:music && pnpm watermark && astro check && astro build && pagefind --site dist && cpy 'dist/pagefind/**' public/pagefind",
+    "build": "pnpm prefetch:music && pnpm watermark && astro check && astro build && pagefind --site dist && cpy 'dist/pagefind/**' public/pagefind",
     "search:clean": "rimraf public/pagefind",
     "search:index": "npm run build && cpy 'dist/pagefind/**' public/pagefind",
     "preview": "astro preview",
