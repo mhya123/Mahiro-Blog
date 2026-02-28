@@ -116,9 +116,6 @@ pnpm install
 # 获取音乐播放器数据
 pnpm run prefetch:music
 
-# 提取 Git MetaData (文章更新历史)
-pnpm run git
-
 # 批量转换图像为 WebP 格式 (自动化优化)
 pnpm run webp
 
@@ -133,11 +130,9 @@ pnpm run watermark
    * **原理**：脚本会在构建前请求 API，获取歌单下所有歌曲的音频直链、歌词、封面及歌手信息，并将其转化为静态的 `src/json/music.json` 缓存文件。
    * **效果**：访客在听歌时无需再经过任何后端代理或外部 API 寻址，音频直达，实现客户端级别的 0 延迟首播。
 
-2. ⏰ **`pnpm run git` (Git 历史与版本脉络提取)**
-   * **作用**：极速提取本仓库最近的 Git 提交记录，用来生成带有博文更新历史的时间线（Timeline）及全局构建校验信息。
-   * **架构**：该脚本利用 Node.js 原生的 `child_process` 模块并发执行底层的 `git log` 命令，物理级读取 `src/content/blog/**/*.md` 的历史快照。一旦遇到没有拉取到本地浅克隆（Shallow Clone）副本等失败情况，本博客特意设计了强大的 **CI API Fallback 智能回退机制**（通过 GitHub API 查询兜底）。
-   * **产出**：输出 `src/json/git-history.json` 和 `src/json/build-info.json` （构建哈希、耗时等）。
-   * **展示**：这些数据最终将被静态编译到您的每一篇文章底部的“历史脉络”栏，并且会在全站底部输出网页本次构建的版本哈希号。
+2. ⏰ **无感自动提取 Git 历史与版本脉络** _（本地无需操作）_
+   * **架构**：自研的元数据追溯机制已被深层集成进 GitHub Actions 的生产部署流水线中 (`deploy.yml`)。当您触发远端部署时，云端 CI 将自动抓取完整 Git 历史，计算全部博文的最终更新时间与总提交迭代次数。
+   * **智能同步**：由于启用了云端智能同步策略（搭载 `[skip ci]` Fallback），不仅云端部署将自带最新鲜、精准的时间线和页脚版号，**该自动脚本还将把更新好的对应 JSON 数据逆向 Push 存回您的当前项目仓库中**，彻底为本地环境开发和维护免去负担。
 
 3. 🖼️ **`pnpm run webp` (WebP 图像压缩转化)**
    * **作用**：自动扫描 `public/images/` 等目录下的传统图片格式资源 (PNG, JPG, JPEG 等)。
