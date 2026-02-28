@@ -1,10 +1,10 @@
 {
-  "commitSha": "f309269791008c677fc79df423ab65a0756c623d",
-  "commitShort": "f309269",
-  "commitMessage": "feat(blog): update post \"我不知道啊\"",
-  "commitAuthor": "mahiro-blog[bot]",
-  "commitDate": "2026-02-28T09:38:07Z",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/f309269791008c677fc79df423ab65a0756c623d",
-  "buildTime": "2026/2/28 17:38:31",
-  "totalCommits": 177
+  "commitSha": "96f602a058bcaf63a5d008d21790399a80bcde6f",
+  "commitShort": "96f602a",
+  "commitMessage": "Update README.md",
+  "commitAuthor": "A paramecium",
+  "commitDate": "2026-02-28T20:27:20+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/96f602a058bcaf63a5d008d21790399a80bcde6f",
+  "buildTime": "2026/2/28 20:27:48",
+  "totalCommits": 179
 }
