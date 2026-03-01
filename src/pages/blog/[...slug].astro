@@ -71,7 +71,7 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
     infoIcon="lucide:info"
   >
     <div class="flex justify-end gap-2 mb-2">
-      <CommitHistory client:load commits={commits} owner={owner} repo={repo} maxVisible={COMMIT_HISTORY_SIZE} />
+      <CommitHistory client:only="react" commits={commits} owner={owner} repo={repo} maxVisible={COMMIT_HISTORY_SIZE} />
       <a href={`/write?slug=${blog.slug}`} class="btn btn-outline btn-sm font-normal text-base-content/70 hover:text-base-content" aria-label="Edit Article">
         <Icon name="lucide:edit" class="w-4 h-4" />
         <span class="hidden sm:inline">Edit</span>
