@@ -300,18 +300,18 @@ const bannerSubtitle = pageConfig?.subtitle || "";
         // 如果没有 .onload-animation（如文章详情页），容器做完整的位移+淡入。
         if (content) {
           if (hasStagger) {
-            // 容器：只做短位移，立刻可见，不遮挡子元素动画
+            // 容器：位移 + 淡入，由子元素各自控制自己的交错入场
             gsap.fromTo(
               content,
-              { y: 40 },
-              { y: 0, duration: 0.6, ease: "expo.out", clearProps: "transform" }
+              { y: 40, opacity: 0 },
+              { y: 0, opacity: 1, duration: 0.6, ease: "expo.out", clearProps: "transform" }
             );
           } else {
-            // 无子元素交错的页面：保留原来的整体淡入
+            // 无子元素交错的页面：整体位移+淡入
             gsap.fromTo(
               content,
               { y: 80, opacity: 0 },
-              { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", clearProps: "all" }
+              { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", clearProps: "transform" }
             );
           }
         }

@@ -30,7 +30,7 @@ const slug = url ? url.split('/').filter(Boolean).pop() : undefined;
   <div class="flex flex-wrap items-center gap-x-3 gap-y-1">  
     <div class="flex items-center gap-1">  
       <Icon name="lucide:book-open" class="h-4 w-4 flex-shrink-0" />  
-      <span class="truncate">{word} {t("label.wordCount")} · {time} {t("label.readTime")}</span>  
+      <span class="truncate"><span id={`info-word-${slug}`}>{word}</span> {t("label.wordCount")} · <span id={`info-time-${slug}`}>{time}</span> {t("label.readTime")}</span>  
     </div>  
     {!hideViews && slug && umamiConfig.enable && (  
       <>
@@ -111,5 +111,36 @@ const slug = url ? url.split('/').filter(Boolean).pop() : undefined;
     // Initial run for direct loads (though astro:page-load covers it usually)
     if (document.readyState === 'complete') fetchPostViews();
     else document.addEventListener('DOMContentLoaded', fetchPostViews);
+  </script>
+)}
+
+{slug && (
+  <script define:vars={{ slug, word, time }} is:inline>
+    (function() {
+      var _done = '__animInfoWT_' + slug;
+      function _animInfoWordTime() {
+        if (window[_done]) return;
+        window[_done] = true;
+        function anim(el, target, dur) {
+          if (!el) return;
+          var to = parseInt(target, 10);
+          if (isNaN(to) || to === 0) { el.textContent = String(target); return; }
+          el.textContent = '0';
+          var s = performance.now();
+          function tick(now) {
+            var p = Math.min((now - s) / dur, 1);
+            var ease = 1 - Math.pow(1 - p, 3);
+            el.textContent = String(Math.round(to * ease));
+            if (p < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        }
+        anim(document.getElementById('info-word-' + slug), word, 600);
+        anim(document.getElementById('info-time-' + slug), time, 600);
+      }
+      document.addEventListener('astro:page-load', function() { window[_done] = false; _animInfoWordTime(); });
+      if (document.readyState === 'complete') _animInfoWordTime();
+      else document.addEventListener('DOMContentLoaded', _animInfoWordTime);
+    })();
   </script>
 )}

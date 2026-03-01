@@ -957,7 +957,8 @@ code {
 }
 
 .page-content-animate {
-  /* GSAP will handle the entrance and exit animations */
+  /* 初始隐藏，由 GSAP 动画进入，防止硬刷新时的闪烁 */
+  opacity: 0;
 }
 
 /* ===================================================
@@ -982,6 +983,10 @@ code {
     .no-js .onload-animation[data-stagger-index="#{$i}"] {
       animation-delay: #{$i * 0.08}s;
     }
+  }
+
+  .no-js .page-content-animate {
+    opacity: 1;
   }
 }
 

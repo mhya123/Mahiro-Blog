@@ -93,7 +93,7 @@ const socialLinks = [
               <div class="flex items-center gap-1">  
                 <Icon name="lucide:book-open" class="h-4 w-4" />  
                 <span>  
-                  {word} {t("label.wordCount")} · {time} {t("label.readTime")}  
+                  <span id={`license-word-${slug}`}>{word}</span> {t("label.wordCount")} · <span id={`license-time-${slug}`}>{time}</span> {t("label.readTime")}  
                 </span>  
               </div>  
             )  
@@ -313,7 +313,38 @@ const socialLinks = [
     else document.addEventListener('DOMContentLoaded', fetchLicensePageViews);
   </script>  
 )}  
-  
+
+{slug && word && time && (
+  <script define:vars={{ slug, word, time }} is:inline>
+    (function() {
+      var _done = '__animLicWT_' + slug;
+      function _animLicenseWordTime() {
+        if (window[_done]) return;
+        window[_done] = true;
+        function anim(el, target, dur) {
+          if (!el) return;
+          var to = parseInt(target, 10);
+          if (isNaN(to) || to === 0) { el.textContent = String(target); return; }
+          el.textContent = '0';
+          var s = performance.now();
+          function tick(now) {
+            var p = Math.min((now - s) / dur, 1);
+            var ease = 1 - Math.pow(1 - p, 3);
+            el.textContent = String(Math.round(to * ease));
+            if (p < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        }
+        anim(document.getElementById('license-word-' + slug), word, 600);
+        anim(document.getElementById('license-time-' + slug), time, 600);
+      }
+      document.addEventListener('astro:page-load', function() { window[_done] = false; _animLicenseWordTime(); });
+      if (document.readyState === 'complete') _animLicenseWordTime();
+      else document.addEventListener('DOMContentLoaded', _animLicenseWordTime);
+    })();
+  </script>
+)}
+
 <style>  
   .modal-backdrop button {  
     cursor: default;  
