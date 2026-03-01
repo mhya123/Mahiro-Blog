@@ -141,30 +141,35 @@ music:
   autoplay: false
   playlist:
     - 1377164042
+# ─── 评论系统配置 ───────────────────────────────────
 comments:
-  enable: true
-  type: giscus
+  enable: true          # 是否启用评论功能
+  type: giscus          # 评论系统类型：giscus | waline | none
+
+  # Giscus 配置（基于 GitHub Discussions 的评论系统）
   giscus:
-    repo: mhya123/giscus
-    repoId: R_kgDORMm8IQ
-    category: General
-    categoryId: DIC_kwDORMm8Ic4C2HoO
-    mapping: pathname
-    lang: zh-CN
-    inputPosition: top
-    reactionsEnabled: '1'
-    emitMetadata: '0'
-    loading: lazy
+    repo: mhya123/giscus           # GitHub 仓库（用于存储评论）
+    repoId: R_kgDORMm8IQ           # 仓库 ID（通过 giscus.app 获取）
+    category: General              # Discussion 分类
+    categoryId: DIC_kwDORMm8Ic4C2HoO  # 分类 ID
+    mapping: pathname              # 评论与页面的映射方式：pathname | url | title | og:title
+    lang: zh-CN                    # 界面语言
+    inputPosition: top             # 评论框位置：top（顶部）| bottom（底部）
+    reactionsEnabled: '1'          # 是否启用表情回应（👍😄🎉等），'1' 启用 / '0' 禁用
+    emitMetadata: '0'              # 是否向父页面发送 Discussion 元数据，'0' 禁用
+    loading: lazy                  # 加载方式：lazy（懒加载，滚动到可见时才加载）| eager（立即加载）
+
+  # Waline 配置（自部署的评论系统，需要后端服务）
   waline:
-    serverURL: https://your-waline-server
-    lang: zh-CN
-    emoji:
+    serverURL: https://your-waline-server  # Waline 后端服务地址
+    lang: zh-CN                            # 界面语言
+    emoji:                                 # 评论表情包列表
       - https://unpkg.com/@waline/emojis@1.1.0/weibo
       - https://unpkg.com/@waline/emojis@1.1.0/bilibili
-    meta:
-      - nick
-      - mail
-      - link
-    requiredMeta: []
-    reaction: false
-    pageview: false
+    meta:                                  # 评论者可填写的信息字段
+      - nick                               # 昵称
+      - mail                               # 邮箱
+      - link                               # 个人网站
+    requiredMeta: []                       # 必填字段（空数组=全部可选）
+    reaction: false                        # 文章表情投票（😀👍👎等），true 启用后文章顶部会显示表情投票栏
+    pageview: false                        # 页面浏览量统计计数器，true 启用后会在页面显示阅读次数（本站已用 Umami 统计，无需重复开启）
