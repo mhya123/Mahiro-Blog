@@ -1,10 +1,10 @@
 {
-  "commitSha": "d34e7922597811a2f57b95474ea974ec59e5f36e",
-  "commitShort": "d34e792",
-  "commitMessage": "feat(blog): 添加极客湾2026手机大横评补档内容",
+  "commitSha": "7de3e535422115add3974063f51f92e3c782429a",
+  "commitShort": "7de3e53",
+  "commitMessage": "fix(blog): 将组件加载方式更改为 client:only=\"react\"",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-01T19:58:02+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/d34e7922597811a2f57b95474ea974ec59e5f36e",
-  "buildTime": "2026/3/1 19:58:36",
-  "totalCommits": 229
+  "commitDate": "2026-03-01T20:34:13+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/7de3e535422115add3974063f51f92e3c782429a",
+  "buildTime": "2026/3/1 20:34:41",
+  "totalCommits": 231
 }
