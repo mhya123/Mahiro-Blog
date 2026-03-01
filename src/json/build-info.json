@@ -1,10 +1,10 @@
 {
-  "commitSha": "b0fd0d479955e11f41e3c50eaccf2a9ec414b85a",
-  "commitShort": "b0fd0d4",
-  "commitMessage": "feat(blog): 添加修订历史最大可见条数配置，优化提交历史展示 style(global): 修复卡片动画时的黑色线框闪烁问题",
+  "commitSha": "1b4d74555cf6cc28d97b58379d5383e4d029b56a",
+  "commitShort": "1b4d745",
+  "commitMessage": "fix(styles): 更新核心框架为 Astro 5，优化卡片样式以修复闪烁问题",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-01T15:57:46+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/b0fd0d479955e11f41e3c50eaccf2a9ec414b85a",
-  "buildTime": "2026/3/1 15:58:12",
-  "totalCommits": 190
+  "commitDate": "2026-03-01T16:16:47+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/1b4d74555cf6cc28d97b58379d5383e4d029b56a",
+  "buildTime": "2026/3/1 16:17:13",
+  "totalCommits": 192
 }
