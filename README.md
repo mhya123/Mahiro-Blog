@@ -209,7 +209,23 @@ pnpm run dev
 
 ---
 
+## 💖 致谢 (Acknowledgements)
+
+本项目基于开源项目 [kobaridev/RyuChan](https://github.com/kobaridev/RyuChan) 进行二次开发与深度定制。
+特别感谢原作者提供的优秀架构与代码灵感，为本博客的诞生奠定了坚实的基础！
+---
+
 ## 📄 协议 (License)
 
 本项目基于 [MIT License](https://opensource.org/licenses/MIT) 协议开源。
 你可以自由地使用、修改和分发本项目的代码，但请保留原作者的版权声明。
+
+
+
+
+
+
+
+
+
+
