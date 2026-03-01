@@ -1,10 +1,10 @@
 {
-  "commitSha": "73ed5ece282d18f4a9a93e811343fd4c4aee505d",
-  "commitShort": "73ed5ec",
-  "commitMessage": "feat(animations): 优化页面内容动画效果，防止闪烁并添加初始隐藏样式",
+  "commitSha": "ac54d997e862b645d173b558a5c7240d600c0d9a",
+  "commitShort": "ac54d99",
+  "commitMessage": "Merge branch 'main' of https://github.com/mhya123/Mahiro-Blog",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-01T17:39:09+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/73ed5ece282d18f4a9a93e811343fd4c4aee505d",
-  "buildTime": "2026/3/1 17:39:36",
-  "totalCommits": 205
+  "commitDate": "2026-03-01T17:46:58+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/ac54d997e862b645d173b558a5c7240d600c0d9a",
+  "buildTime": "2026/3/1 17:47:32",
+  "totalCommits": 208
 }
