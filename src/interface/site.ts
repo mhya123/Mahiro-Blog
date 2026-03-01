@@ -60,6 +60,7 @@ export interface SocialIcon {
 
 export interface BlogConfig {
   pageSize: number;
+  commitHistorySize?: number;
 }
 
 export interface TmdbConfig {

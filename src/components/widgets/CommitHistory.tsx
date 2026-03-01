@@ -16,9 +16,10 @@ interface CommitHistoryProps {
     commits: CommitData[];
     owner: string;
     repo: string;
+    maxVisible?: number;
 }
 
-export default function CommitHistory({ commits }: CommitHistoryProps) {
+export default function CommitHistory({ commits, maxVisible = 8 }: CommitHistoryProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
@@ -119,7 +120,15 @@ export default function CommitHistory({ commits }: CommitHistoryProps) {
                 </div>
 
                 {/* Commit List */}
-                <div className="overflow-y-auto flex-1 p-4 commit-scrollbar">
+                <div
+                    className="overflow-y-auto flex-1 p-4 commit-scrollbar"
+                    style={commits.length > maxVisible ? { maxHeight: `${maxVisible * 72}px` } : undefined}
+                >
+                    {commits.length > maxVisible && (
+                        <div className="text-xs text-base-content/40 text-center mb-2">
+                            共 {commits.length} 条记录，滚动查看更多
+                        </div>
+                    )}
                     <ul className="relative">
                         <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-base-200" />
 

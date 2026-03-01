@@ -11,7 +11,8 @@ site:
     code: github-dark
   date_format: ddd MMM DD YYYY
   blog:
-    pageSize: 8
+    pageSize: 8 # 首页每页显示文章数量
+    commitHistorySize: 6 # 修订历史最大可见条数，超出后滚动查看
   banner:
     defaultMode: background
     enableRandom: false
