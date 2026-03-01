@@ -2,6 +2,7 @@
 title: Umami v3 数据库可视化管理与访问量修改教程
 description: ''
 pubDate: 2026-02-27T21:07
+image: /images/umamisql/dda8e9e2042390da.jpg
 draft: false
 tags:
   - umami
