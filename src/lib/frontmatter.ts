@@ -16,5 +16,14 @@ export function parseFrontmatter(text: string): { data: any, content: string } {
 }
 
 export function stringifyFrontmatter(data: any, content: string): string {
-    return `---\n${yaml.dump(data)}---\n${content}`
+    // 过滤掉 undefined / null / 空字符串 / 空数组的字段，保持 YAML 干净
+    const cleaned: Record<string, any> = {}
+    for (const [key, value] of Object.entries(data)) {
+        if (value === undefined || value === null || value === '') continue
+        if (Array.isArray(value) && value.length === 0) continue
+        // draft: false 不需要写入
+        if (key === 'draft' && value === false) continue
+        cleaned[key] = value
+    }
+    return `---\n${yaml.dump(cleaned)}---\n${content}`
 }

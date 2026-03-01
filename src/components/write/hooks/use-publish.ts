@@ -6,6 +6,9 @@ import { deleteBlog } from '../services/delete-blog'
 import { useWriteStore } from '../stores/write-store'
 import { useAuthStore } from './use-auth'
 
+/** slug 只允许小写字母、数字、连字符、下划线 */
+const SLUG_PATTERN = /^[a-z0-9][a-z0-9\-_]*$/
+
 export function usePublish() {
 	const { loading, setLoading, form, cover, images, mode, originalSlug, originalFileFormat } = useWriteStore()
 	const { isAuth, setPrivateKey } = useAuthStore()
@@ -27,6 +30,14 @@ export function usePublish() {
 			toast.warning('⚠️ 请输入文章 Slug (URL 路径)')
 			return
 		}
+		if (!SLUG_PATTERN.test(form.slug)) {
+			toast.warning('⚠️ Slug 只能包含小写字母、数字、连字符和下划线，且不能以符号开头')
+			return
+		}
+		if (!form.md?.trim()) {
+			toast.warning('⚠️ 文章内容不能为空')
+			return
+		}
 
 		try {
 			setLoading(true)
@@ -44,7 +55,7 @@ export function usePublish() {
 		} finally {
 			setLoading(false)
 		}
-	}, [form, cover, images, mode, originalSlug, setLoading])
+	}, [form, cover, images, mode, originalSlug, originalFileFormat, setLoading])
 
 	const onDelete = useCallback(async () => {
 		const targetSlug = originalSlug || form.slug

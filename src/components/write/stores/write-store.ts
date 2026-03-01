@@ -79,11 +79,12 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 		const arr = Array.from(files).filter(f => f.type.startsWith('image/'))
 		if (arr.length === 0) return []
 
-		const existingHashes = new Map<string, ImageItem>(
-			images
-				.filter((it): it is Extract<ImageItem, { type: 'file'; hash?: string }> => it.type === 'file' && (it as any).hash)
-				.map(it => [(it as any).hash as string, it])
-		)
+		const existingHashes = new Map<string, ImageItem>()
+		for (const it of images) {
+			if (it.type === 'file' && it.hash) {
+				existingHashes.set(it.hash, it)
+			}
+		}
 
 		const computed = await Promise.all(
 			arr.map(async file => {
@@ -128,16 +129,16 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 	},
 	deleteImage: id =>
 		set(state => {
-			for (const it of state.images) {
-				if (it.type === 'file' && it.id === id) {
-					URL.revokeObjectURL(it.previewUrl)
-
-					if (it.id === state.cover?.id) {
-						set({ cover: null })
-					}
-				}
+			const target = state.images.find(it => it.id === id)
+			if (target?.type === 'file') {
+				URL.revokeObjectURL(target.previewUrl)
 			}
-			return { images: state.images.filter(it => it.id !== id) }
+
+			const isCoverDeleted = state.cover?.id === id
+			return {
+				images: state.images.filter(it => it.id !== id),
+				...(isCoverDeleted ? { cover: null } : {})
+			}
 		}),
 
 	// Cover state

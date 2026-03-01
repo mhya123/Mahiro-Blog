@@ -1,17 +1,30 @@
 import { motion } from 'motion/react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { useWriteStore } from '../stores/write-store'
 import { usePreviewStore } from '../stores/preview-store'
 import { usePublish } from '../hooks/use-publish'
 
 export function WriteActions() {
-	const { loading, mode, form, loadBlogForEdit, originalSlug, updateForm } = useWriteStore()
+	const { loading, mode, form, originalSlug, updateForm } = useWriteStore()
 	const { openPreview } = usePreviewStore()
 	const { isAuth, onChoosePrivateKey, onPublish, onDelete } = usePublish()
-	const [saving, setSaving] = useState(false)
 	const keyInputRef = useRef<HTMLInputElement>(null)
 	const mdInputRef = useRef<HTMLInputElement>(null)
+
+	// Ctrl/Cmd + S → 发布/更新
+	useEffect(() => {
+		const handler = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+				e.preventDefault()
+				if (!loading && isAuth) {
+					onPublish()
+				}
+			}
+		}
+		window.addEventListener('keydown', handler)
+		return () => window.removeEventListener('keydown', handler)
+	}, [loading, isAuth, onPublish])
 
 	const handleImportOrPublish = () => {
 		if (!isAuth) {
@@ -65,8 +78,19 @@ export function WriteActions() {
 		}
 
 		try {
+			const { parseFrontmatter } = await import('@/lib/frontmatter')
 			const text = await file.text()
-			updateForm({ md: text })
+			const { data, content } = parseFrontmatter(text)
+
+			// 如果导入的文件有 frontmatter，自动回填元信息
+			const updates: Partial<typeof form> = { md: content || text }
+			if (data.title) updates.title = data.title
+			if (data.description) updates.summary = data.description
+			if (data.tags?.length) updates.tags = data.tags
+			if (data.categories?.length) updates.categories = data.categories
+			if (data.draft !== undefined) updates.hidden = data.draft
+
+			updateForm(updates)
 			toast.success('📄 Markdown 文件导入成功')
 		} catch (error) {
 			toast.error('❌ 导入失败，请重试')
@@ -77,15 +101,6 @@ export function WriteActions() {
 
 	return (
 		<>
-			{loading && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm dark:bg-black/80">
-					<div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex items-center gap-3">
-						<div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-						<div className="text-base font-medium text-zinc-900 dark:text-zinc-100">处理中...</div>
-					</div>
-				</div>
-			)}
-
 			<input
 				ref={keyInputRef}
 				type='file'
@@ -97,7 +112,7 @@ export function WriteActions() {
 					if (e.currentTarget) e.currentTarget.value = ''
 				}}
 			/>
-			<input ref={mdInputRef} type='file' accept='.md' className='hidden' onChange={handleMdFileChange} />
+			<input ref={mdInputRef} type='file' accept='.md,.mdx,.markdown' className='hidden' onChange={handleMdFileChange} />
 
 			<ul className='absolute top-4 right-6 z-40 flex items-center gap-2 bg-base-100/80 backdrop-blur-xl border border-base-content/10 rounded-2xl px-4 py-2 shadow-lg'>
 				{mode === 'edit' && (
@@ -114,14 +129,19 @@ export function WriteActions() {
 							className='btn btn-sm btn-error btn-outline rounded-xl'
 							disabled={loading}
 							onClick={handleDelete}>
-							删除
+							{loading ? (
+								<>
+									<span className="loading loading-spinner loading-xs"></span>
+									处理中
+								</>
+							) : '删除'}
 						</motion.button>
 
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 							onClick={handleCancel}
-							disabled={saving}
+							disabled={loading}
 							className='btn btn-sm btn-ghost rounded-xl text-base-content'>
 							取消
 						</motion.button>
@@ -156,7 +176,12 @@ export function WriteActions() {
 					className='btn btn-sm btn-primary rounded-xl px-6 shadow-lg shadow-primary/20'
 					disabled={loading}
 					onClick={handleImportOrPublish}>
-					{buttonText}
+					{loading ? (
+						<>
+							<span className="loading loading-spinner loading-xs"></span>
+							处理中
+						</>
+					) : buttonText}
 				</motion.button>
 			</ul>
 		</>

@@ -20,10 +20,7 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
     const { form, cover, images, mode = 'create', originalSlug, originalFileFormat } = params
 
     if (!form?.slug) throw new Error('需要 slug')
-
-    // if (mode === 'edit' && originalSlug && originalSlug !== form.slug) {
-    // 	throw new Error('编辑模式下不支持修改 slug，请保持原 slug 不变')
-    // }
+    if (!/^[a-z0-9][a-z0-9\-_]*$/.test(form.slug)) throw new Error('slug 格式不合法')
 
     const token = await getAuthToken()
     const toastId = toast.loading('🚀 正在初始化发布...')
@@ -35,49 +32,69 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 
         const commitMessage = mode === 'edit' ? `feat(blog): update post "${form.title}"` : `feat(blog): publish post "${form.title}"`
 
+        // 收集所有本地图片（去重：cover 如果已在 images 列表中则不重复添加）
+        const seenIds = new Set<string>()
         const allLocalImages: Array<{ img: Extract<ImageItem, { type: 'file' }>; id: string }> = []
 
         for (const img of images || []) {
-            if (img.type === 'file') {
+            if (img.type === 'file' && !seenIds.has(img.id)) {
+                seenIds.add(img.id)
                 allLocalImages.push({ img, id: img.id })
             }
         }
-
-        if (cover?.type === 'file') {
+        if (cover?.type === 'file' && !seenIds.has(cover.id)) {
             allLocalImages.push({ img: cover, id: cover.id })
         }
 
         toast.loading('正在准备文件...', { id: toastId })
 
-        const uploadedHashes = new Set<string>()
         let mdToUpload = form.md
         let coverPath: string | undefined
 
         const treeItems: TreeItem[] = []
 
         if (allLocalImages.length > 0) {
-            toast.loading(`📤 准备上传 ${allLocalImages.length} 张图片...`, { id: toastId })
-            let idx = 1
+            toast.loading(`📤 正在上传 ${allLocalImages.length} 张图片...`, { id: toastId })
+
+            // 同步阶段：按 hash 去重，计算每张图片的路径映射
+            const seenHashes = new Set<string>()
+            const imageMeta: Array<{
+                img: Extract<ImageItem, { type: 'file' }>
+                id: string
+                hash: string
+                publicPath: string
+                repoPath: string
+                needUpload: boolean
+            }> = []
+
             for (const { img, id } of allLocalImages) {
-                toast.loading(`📸 正在上传图片 (${idx++}/${allLocalImages.length})...`, { id: toastId })
                 const hash = img.hash || (await hashFileSHA256(img.file))
                 const ext = getFileExt(img.file.name)
                 const filename = `${hash}${ext}`
                 const publicPath = `/images/${form.slug}/${filename}`
+                const repoPath = `public/images/${form.slug}/${filename}`
+                const needUpload = !seenHashes.has(hash)
+                if (needUpload) seenHashes.add(hash)
+                imageMeta.push({ img, id, hash, publicPath, repoPath, needUpload })
+            }
 
-                if (!uploadedHashes.has(hash)) {
-                    const path = `public/images/${form.slug}/${filename}`
+            // 并行上传需要上传的图片 Blob
+            const toUpload = imageMeta.filter(m => m.needUpload)
+            const blobResults = await Promise.all(
+                toUpload.map(async ({ img, repoPath }) => {
                     const contentBase64 = await fileToBase64NoPrefix(img.file)
                     const blobData = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, contentBase64, 'base64')
-                    treeItems.push({
-                        path,
-                        mode: '100644',
-                        type: 'blob',
-                        sha: blobData.sha
-                    })
-                    uploadedHashes.add(hash)
-                }
+                    return { repoPath, sha: blobData.sha }
+                })
+            )
 
+            // 收集 tree 条目
+            for (const { repoPath, sha } of blobResults) {
+                treeItems.push({ path: repoPath, mode: '100644', type: 'blob', sha })
+            }
+
+            // 替换 markdown 中的占位符
+            for (const { id, publicPath } of imageMeta) {
                 const placeholder = `local-image:${id}`
                 mdToUpload = mdToUpload.split(`(${placeholder})`).join(`(${publicPath})`)
 
