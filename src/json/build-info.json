@@ -1,10 +1,10 @@
 {
-  "commitSha": "f309269791008c677fc79df423ab65a0756c623d",
-  "commitShort": "f309269",
-  "commitMessage": "feat(blog): update post \"我不知道啊\"",
-  "commitAuthor": "mahiro-blog[bot]",
-  "commitDate": "2026-02-28T09:38:07Z",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/f309269791008c677fc79df423ab65a0756c623d",
-  "buildTime": "2026/3/1 15:08:32",
-  "totalCommits": 177
+  "commitSha": "3956cc900708d66ff38d9fcc264f55e4ba7692e2",
+  "commitShort": "3956cc9",
+  "commitMessage": "Merge branch 'main' of https://github.com/mhya123/Mahiro-Blog",
+  "commitAuthor": "MhYa123",
+  "commitDate": "2026-03-01T15:18:51+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/3956cc900708d66ff38d9fcc264f55e4ba7692e2",
+  "buildTime": "2026/3/1 15:20:12",
+  "totalCommits": 186
 }
