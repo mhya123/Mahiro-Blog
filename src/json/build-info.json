@@ -1,10 +1,10 @@
 {
-  "commitSha": "ac54d997e862b645d173b558a5c7240d600c0d9a",
-  "commitShort": "ac54d99",
-  "commitMessage": "Merge branch 'main' of https://github.com/mhya123/Mahiro-Blog",
+  "commitSha": "d24cbbe834cad00e9400481bad3c6df69223e7fb",
+  "commitShort": "d24cbbe",
+  "commitMessage": "feat(comments): 增强评论系统配置，添加详细注释和说明",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-01T17:46:58+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/ac54d997e862b645d173b558a5c7240d600c0d9a",
-  "buildTime": "2026/3/1 17:47:32",
-  "totalCommits": 208
+  "commitDate": "2026-03-01T17:53:17+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/d24cbbe834cad00e9400481bad3c6df69223e7fb",
+  "buildTime": "2026/3/1 17:53:40",
+  "totalCommits": 210
 }
