@@ -99,11 +99,11 @@ export function WriteActions() {
 			/>
 			<input ref={mdInputRef} type='file' accept='.md' className='hidden' onChange={handleMdFileChange} />
 
-			<ul className='absolute top-4 right-6 flex items-center gap-2'>
+			<ul className='absolute top-4 right-6 z-40 flex items-center gap-2 bg-base-100/80 backdrop-blur-xl border border-base-content/10 rounded-2xl px-4 py-2 shadow-lg'>
 				{mode === 'edit' && (
 					<>
 						<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='flex items-center gap-2'>
-							<div className='rounded-lg border bg-blue-50 px-4 py-2 text-sm text-blue-700'>编辑模式</div>
+							<div className='rounded-lg border border-info/30 bg-info/10 px-4 py-2 text-sm text-info font-medium'>编辑模式</div>
 						</motion.div>
 
 						<motion.button
@@ -122,7 +122,7 @@ export function WriteActions() {
 							whileTap={{ scale: 0.95 }}
 							onClick={handleCancel}
 							disabled={saving}
-							className='btn btn-sm btn-ghost rounded-xl'>
+							className='btn btn-sm btn-ghost rounded-xl text-base-content'>
 							取消
 						</motion.button>
 					</>
@@ -133,7 +133,7 @@ export function WriteActions() {
 					animate={{ opacity: 1, scale: 1 }}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
-					className='btn btn-sm btn-ghost rounded-xl'
+					className='btn btn-sm btn-ghost rounded-xl text-base-content'
 					disabled={loading}
 					onClick={handleImportMd}>
 					导入 MD
@@ -143,7 +143,7 @@ export function WriteActions() {
 					animate={{ opacity: 1, scale: 1 }}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
-					className='btn btn-sm btn-ghost rounded-xl'
+					className='btn btn-sm btn-ghost rounded-xl text-base-content'
 					disabled={loading}
 					onClick={openPreview}>
 					预览

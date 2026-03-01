@@ -64,14 +64,14 @@ export default function WritePage({ categories = [] }: WritePageProps) {
             {isPreview ? (
                 <WritePreview form={form} coverPreviewUrl={coverPreviewUrl} onClose={closePreview} slug={slug || undefined} />
             ) : (
-                <>
+                <div className='relative'>
                     <div className='flex flex-col md:flex-row h-full justify-center gap-6 px-4 md:px-6 pt-24 pb-12'>
                         <WriteEditor />
                         <WriteSidebar categories={categories} />
                     </div>
 
                     <WriteActions />
-                </>
+                </div>
             )}
         </>
     )
