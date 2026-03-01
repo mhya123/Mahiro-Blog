@@ -118,6 +118,11 @@ export interface SiteConfig {
     size?: string;
     closable?: boolean;
   };
+  reward?: {
+    enable: boolean;
+    wechat?: string;
+    alipay?: string;
+  };
 }
 
 export interface UserConfig {

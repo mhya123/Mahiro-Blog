@@ -29,6 +29,10 @@ site:
     type: info
     size: lg
     closable: false
+  reward:
+    enable: false
+    wechat: /weixin.jpg
+    alipay: /zhifubao.jpg
   police_beian: null
   police_beian_code: 11010802033243
   police_beian_link: https://beian.mps.gov.cn/#/query/webSearch?code=11010802033243

@@ -70,6 +70,9 @@ export const SITE_POLICE_BEIAN = config.site.police_beian || "";
 export const SITE_POLICE_BEIAN_CODE = config.site.police_beian_code || "";
 export const SITE_POLICE_BEIAN_LINK = config.site.police_beian_link || "";
 
+// 赞赏配置
+export const REWARD_CONFIG = config.site.reward || { enable: false };
+
 // 多语言文本配置
 export const TRANSLATIONS = translationsConfig;
 

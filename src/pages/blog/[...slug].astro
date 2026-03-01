@@ -111,6 +111,22 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
           time={remarkPluginFrontmatter.readingTime}
         />
       </div>
+
+      <!-- Edit on GitHub -->
+      {owner && repo && (
+        <div class="mt-6 pt-4 border-t border-base-content/10 flex items-center justify-center gap-2 text-sm text-base-content/60">
+          <span>发现错误或想要改进这篇文章？</span>
+          <a
+            href={`https://github.com/${owner}/${repo}/edit/main/src/content/blog/${blog.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 font-medium transition-colors press-effect"
+          >
+            <Icon name="lucide:github" class="w-4 h-4" />
+            <span>在 GitHub 上编辑此页</span>
+          </a>
+        </div>
+      )}
     </div>
   </MainCard>
 

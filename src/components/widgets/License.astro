@@ -1,6 +1,6 @@
 ---  
 import dayjs from "@utils/dayjs";  
-import { USER_NAME, DATE_FORMAT, t, umamiConfig } from "@config";  
+import { USER_NAME, DATE_FORMAT, t, umamiConfig, REWARD_CONFIG } from "@config";  
 import type { PostData } from "@interfaces/data";  
 import { Icon } from "astro-icon/components";  
 import PostFilter from "./PostFilter.astro";  
@@ -10,7 +10,11 @@ const displayDate = pubDate ? dayjs(pubDate).format(DATE_FORMAT) : "";
   
 // 从 URL 中提取 slug  
 const slug = url ? url.toString().split('/').filter(Boolean).pop() : undefined;  
-  
+
+const rewardEnabled = REWARD_CONFIG.enable;
+const wechatQR = REWARD_CONFIG.wechat || '/weixin.jpg';
+const alipayQR = REWARD_CONFIG.alipay || '/zhifubao.jpg';
+
 const socialLinks = [  
   {  
     name: "X (Twitter)",  
@@ -129,11 +133,13 @@ const socialLinks = [
               </a>  
             </div>  
             <div class="flex gap-2">
-              <!-- Reward Button -->
-              <button class="btn btn-secondary btn-outline" onclick="reward_modal.showModal()">
-                赞赏
-                <Icon name="ri:hand-heart-line" class="w-5 h-5" />
-              </button>
+              {/* Reward Button */}
+              {rewardEnabled && (
+                <button class="btn btn-secondary btn-outline" onclick="reward_modal.showModal()">
+                  赞赏
+                  <Icon name="ri:hand-heart-line" class="w-5 h-5" />
+                </button>
+              )}
               <!-- Share Button -->  
               <button class="btn btn-primary btn-outline" onclick="share_modal.showModal()">  
                 {t("label.share")}  
@@ -213,6 +219,7 @@ const socialLinks = [
   </dialog>
 
   <!-- Reward Modal -->
+  {rewardEnabled && (
   <dialog id="reward_modal" class="modal modal-middle">
     <div class="modal-box w-11/12 max-w-4xl rounded-xl relative overflow-x-hidden">
       <h3 class="font-bold text-lg sm:text-xl mb-6 text-center">
@@ -223,7 +230,7 @@ const socialLinks = [
         <!-- WeChat -->
         <div class="flex flex-col items-center gap-2">
           <div class="w-28 h-28 md:w-44 md:h-44 bg-white rounded-xl overflow-hidden shadow-lg border border-base-300 flex items-center justify-center">
-            <img src="/weixin.jpg" alt="微信收款码" class="w-full h-full object-contain" />
+            <img src={wechatQR} alt="微信收款码" class="w-full h-full object-contain" />
           </div>
           <div class="flex items-center gap-1 md:gap-2 text-success font-bold text-xs md:text-base">
             <Icon name="ri:wechat-pay-line" class="w-4 h-4 md:w-6 md:h-6" />
@@ -234,7 +241,7 @@ const socialLinks = [
         <!-- Alipay -->
         <div class="flex flex-col items-center gap-2">
           <div class="w-28 h-28 md:w-44 md:h-44 bg-white rounded-xl overflow-hidden shadow-lg border border-base-300 flex items-center justify-center">
-            <img src="/zhifubao.jpg" alt="支付宝收款码" class="w-full h-full object-contain" />
+            <img src={alipayQR} alt="支付宝收款码" class="w-full h-full object-contain" />
           </div>
           <div class="flex items-center gap-1 md:gap-2 text-[#1677ff] font-bold text-xs md:text-base">
             <Icon name="ri:alipay-line" class="w-4 h-4 md:w-6 md:h-6" />
@@ -255,6 +262,7 @@ const socialLinks = [
       <button>{t("label.close")}</button>
     </form>
   </dialog>
+  )}
 </div>  
   
 {slug && umamiConfig.enable && (  
