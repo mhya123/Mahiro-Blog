@@ -96,6 +96,13 @@
   ],
   "src/content/blog/umamisql.md": [
     {
+      "sha": "f78981aa87ebd0a57755debfb50cc81e3a36711f",
+      "message": "feat(blog): update post \"Umami v3 数据库可视化管理与访问量修改教程\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-03-01T07:35:21Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/f78981aa87ebd0a57755debfb50cc81e3a36711f"
+    },
+    {
       "sha": "36597537b5c743de23482cad8a1a06c3589a193e",
       "message": "feat(blog): update post \"Umami v3 数据库可视化管理与访问量修改教程\"",
       "authorName": "mahiro-blog[bot]",
