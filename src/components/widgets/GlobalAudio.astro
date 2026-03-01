@@ -1,9 +1,19 @@
 ---
-import musicJson from "@/data/music.json";
-// 初始化用本地歌单（不阻塞渲染），完整歌单由客户端异步加载
-const musicList = (musicJson as any[]) || [];
-const initialPlaylist = JSON.stringify(musicList);
-const initialSong = musicList[0] || {};
+import { getAllPlaylists } from "@/data/music";
+
+const playlists = await getAllPlaylists();
+const allPlaylistsJson = JSON.stringify(playlists.map(p => ({
+    name: p.name,
+    songs: p.songs.map(s => ({
+        title: s.title,
+        artist: s.artist,
+        cover: s.cover,
+        url: s.url,
+        lrc: s.lrc || '',
+    })),
+})));
+// 默认播放第一个歌单的第一首
+const initialSong = playlists[0]?.songs[0] || {};
 ---
 <div transition:persist="mahiro-global-audio-wrapper">
     <!-- 全局音频元素，持久化 -->
@@ -60,29 +70,88 @@ const initialSong = musicList[0] || {};
     </div>
 </div>
 
-<script define:vars={{ initialPlaylist }} is:inline>
+<script define:vars={{ allPlaylistsJson }} is:inline>
+    // ─── 解析所有歌单 ───────────────────────────────
+    const _allPlaylists = JSON.parse(allPlaylistsJson);
+
+    // ─── 统一缓存管理器 ───────────────────────────────
+    const STORAGE_KEY = 'mahiro_player_state';
+    const SAVE_THROTTLE = 2000; // 节流 2s（避免 timeupdate 高频写入）
+
+    const PlayerCache = {
+        _timer: null,
+        /** 读取缓存，返回默认结构 */
+        load() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch(e) {}
+            return null;
+        },
+        /** 保存状态（节流） */
+        save(state) {
+            if (this._timer) return; // 已有一个定时器在等待
+            this._timer = setTimeout(() => {
+                this._timer = null;
+                try {
+                    // 只存轻量数据，不存完整歌单
+                    const slim = {
+                        idx: state.currentIndex ?? 0,
+                        time: Math.floor(state.currentTime ?? 0),
+                        vol: Math.round((state.volume ?? 0.7) * 100) / 100,
+                        shuffle: !!state.isShuffle,
+                        repeat: state.repeatMode ?? 'all',
+                        playlistIdx: state.playlistIdx ?? 0,
+                        v: 1, // 缓存版本号
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
+                } catch(e) {}
+            }, 0);
+        },
+        /** 立即保存（页面关闭时用） */
+        saveNow(state) {
+            if (this._timer) { clearTimeout(this._timer); this._timer = null; }
+            try {
+                const slim = {
+                    idx: state.currentIndex ?? 0,
+                    time: Math.floor(state.currentTime ?? 0),
+                    vol: Math.round((state.volume ?? 0.7) * 100) / 100,
+                    shuffle: !!state.isShuffle,
+                    repeat: state.repeatMode ?? 'all',
+                    playlistIdx: state.playlistIdx ?? 0,
+                    v: 1,
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
+            } catch(e) {}
+        },
+        /** 清理旧版缓存键 */
+        migrateOld() {
+            try {
+                localStorage.removeItem('mahiro_music_playlist');
+                localStorage.removeItem('mahiro_music_current_index');
+                localStorage.removeItem('mahiro_active_playlist_index');
+            } catch(e) {}
+        }
+    };
+
     class GlobalMusicPlayer {
         constructor() {
-            // Attempt to restore persistent playlist
-            let savedPlaylist = null;
-            try {
-                const stored = localStorage.getItem('mahiro_music_playlist');
-                if (stored) savedPlaylist = JSON.parse(stored);
-            } catch(e) { console.warn("Failed to parse saved playlist"); }
+            // 迁移旧缓存
+            PlayerCache.migrateOld();
 
-            // Initial state
-            let savedIndex = 0;
-            try {
-                const storedIdx = localStorage.getItem('mahiro_music_current_index');
-                if (storedIdx !== null) savedIndex = parseInt(storedIdx, 10);
-            } catch(e) {}
+            // 恢复缓存状态
+            const cached = PlayerCache.load();
 
-            this.playlist = (savedPlaylist && savedPlaylist.length > 0) ? savedPlaylist : JSON.parse(initialPlaylist);
-            this.currentIndex = (savedIndex >= 0 && savedIndex < this.playlist.length) ? savedIndex : 0;
+            // 根据缓存的 playlistIdx 恢复正确歌单
+            this._playlistIdx = cached?.playlistIdx ?? 0;
+            if (this._playlistIdx >= _allPlaylists.length) this._playlistIdx = 0;
+            this.playlist = _allPlaylists[this._playlistIdx]?.songs || _allPlaylists[0]?.songs || [];
+            this.currentIndex = (cached?.idx >= 0 && cached?.idx < this.playlist.length) ? cached.idx : 0;
             this.isPlaying = false;
-            this.isShuffle = false;
-            // 'all' = Loop All (Sequential), 'one' = Loop One, 'off' = No Loop (Stop at end)
-            this.repeatMode = 'all'; 
+            this.isShuffle = cached?.shuffle ?? false;
+            this.repeatMode = cached?.repeat ?? 'all';
+            this._savedVolume = cached?.vol ?? 0.7;
+            this._savedTime = cached?.time ?? 0;
             this.lyrics = [];
             this.lrcUrl = "";
             this.lastActiveIndex = -1;
@@ -91,17 +160,50 @@ const initialSong = musicList[0] || {};
             this.closeTimer = null;
             this.isDraggingProgress = false;
             this.isDraggingVolume = false;
+            this._saveThrottle = null;
 
             // Initial binding
             this.handlePageLoad();
 
-            // Load initial song if needed
+            // 加载初始歌曲（恢复进度但不自动播放）
             if (this.playlist.length > 0 && this.audio && !this.audio.src) {
-               this.loadSong(0, false);
+               this.loadSong(this.currentIndex, false);
+            }
+            
+            // 恢复音量
+            if (this.audio) {
+                this.audio.volume = this._savedVolume;
+            }
+
+            // 如果启用了随机模式，重建洗牌顺序
+            if (this.isShuffle) {
+                this.generateShuffleOrder();
             }
             
             // Listen for future navigations
             document.addEventListener('astro:page-load', () => this.handlePageLoad());
+
+            // 页面关闭时立即保存
+            window.addEventListener('beforeunload', () => {
+                this._collectAndSave(true);
+            });
+        }
+
+        /** 收集当前状态并保存 */
+        _collectAndSave(immediate = false) {
+            const state = {
+                currentIndex: this.currentIndex,
+                currentTime: this.audio?.currentTime ?? 0,
+                volume: this.audio?.volume ?? 0.7,
+                isShuffle: this.isShuffle,
+                repeatMode: this.repeatMode,
+                playlistIdx: this._playlistIdx,
+            };
+            if (immediate) {
+                PlayerCache.saveNow(state);
+            } else {
+                PlayerCache.save(state);
+            }
         }
 
         handlePageLoad() {
@@ -141,6 +243,10 @@ const initialSong = musicList[0] || {};
                 this.playerCover = document.getElementById('player-cover');
                 
                 this.bindUIEvents();
+                // 恢复音量条 UI
+                if (this.volumeBar && this.audio) {
+                    this.volumeBar.style.width = `${this.audio.volume * 100}%`;
+                }
                 // If we have lyrics loaded in memory, render them
                 if (this.lyrics.length > 0 && this.lyricsContainer) {
                      this.renderLyrics();
@@ -184,7 +290,13 @@ const initialSong = musicList[0] || {};
                 this.audio.addEventListener('ended', () => this.nextSong(true));
                 this.audio.addEventListener('play', () => { this.isPlaying = true; this.updateUI(); });
                 this.audio.addEventListener('pause', () => { this.isPlaying = false; this.updateUI(); });
-                this.audio.addEventListener('error', (e) => console.error("Audio error", e));
+                this.audio.addEventListener('error', (e) => {
+                    console.error("Audio error", e);
+                    // 播放出错时自动尝试下一首（避免卡死）
+                    if (this.playlist.length > 1) {
+                        setTimeout(() => this.nextSong(true), 1500);
+                    }
+                });
                 this.audio.dataset.hasGlobalEvents = "true";
              }
              
@@ -349,6 +461,7 @@ const initialSong = musicList[0] || {};
             const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
             this.audio.volume = pos;
             if(this.volumeBar) this.volumeBar.style.width = `${pos * 100}%`;
+            this._collectAndSave();
         }
         
         bindPlaylistEvents() {
@@ -393,42 +506,47 @@ const initialSong = musicList[0] || {};
         }
 
         loadSong(index, autoPlay = true) {
-            if(index < 0 || index >= this.playlist.length) return;
+            if(!this.playlist.length || index < 0 || index >= this.playlist.length) return;
             
             this.currentIndex = index;
-
-            // Save to localStorage
-            try {
-                localStorage.setItem('mahiro_music_current_index', this.currentIndex.toString());
-            } catch(e) {}
 
             // 如果处于随机播放模式，同步洗牌进度
             if (this.isShuffle && this.shuffleOrder && this.shuffleOrder.length === this.playlist.length) {
                 const idx = this.shuffleOrder.indexOf(index);
-                if (idx !== -1) {
-                    this.shuffleIndex = idx;
-                }
+                if (idx !== -1) this.shuffleIndex = idx;
             }
 
             const song = this.playlist[index];
-            
-            if (this.audio.src !== song.url && this.audio.src !== new URL(song.url, document.baseURI).href) {
+            const resolvedUrl = song.url ? new URL(song.url, document.baseURI).href : '';
+            const needReload = this.audio.src !== resolvedUrl;
+
+            if (needReload) {
                 this.audio.src = song.url;
-                this.lrcUrl = song.lrc || (song.url ? song.url.replace(/\.[^/.]+$/, ".lrc") : "");
-                this.lyrics = []; // Clear lyrics
-                this.hasLyrics = !!song.lrc; // 标记是否有歌词
+                this.lrcUrl = song.lrc || '';
+                this.lyrics = [];
+                
+                // 恢复保存的播放进度（仅首次加载时）
+                if (this._savedTime > 0) {
+                    const restoreTime = this._savedTime;
+                    this._savedTime = 0; // 只恢复一次
+                    this.audio.addEventListener('loadedmetadata', () => {
+                        if (restoreTime < this.audio.duration) {
+                            this.audio.currentTime = restoreTime;
+                        }
+                    }, { once: true });
+                }
             }
 
             if(autoPlay) {
-                this.audio.play().catch(e => console.error(e));
-            } else {
-                 if (this.isPlaying) this.audio.play(); 
+                this.audio.play().catch(() => {});
+            } else if (this.isPlaying) {
+                this.audio.play().catch(() => {});
             }
             
             this.updateUI();
             this.loadLyrics();
             
-             if('mediaSession' in navigator) {
+            if('mediaSession' in navigator) {
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: song.title || 'Unknown Title',
                     artist: song.artist || 'Unknown Artist',
@@ -507,6 +625,7 @@ const initialSong = musicList[0] || {};
                 this.shuffleOrder = [];
             }
             this.updateUI();
+            this._collectAndSave();
         }
 
         toggleRepeat() {
@@ -523,6 +642,7 @@ const initialSong = musicList[0] || {};
                  }
              }
              this.updateUI();
+             this._collectAndSave();
         }
 
         toggleMiniPlayer() {
@@ -600,13 +720,6 @@ const initialSong = musicList[0] || {};
                  this.miniFabIconPause?.classList.remove('hidden');
                  
                  if (this.miniFabSpin) this.miniFabSpin.style.animationPlayState = 'running';
-                  // Visualizer animation
-                  if(this.visualizerBars) {
-                      this.visualizerBars.forEach(bar => {
-                          bar.classList.add('animate-pulse');
-                          bar.style.height = Math.random() * 12 + 4 + 'px';
-                      });
-                  }
              } else {
                  this.miniIconPlay?.classList.remove('hidden');
                  this.miniIconPause?.classList.add('hidden');
@@ -615,9 +728,6 @@ const initialSong = musicList[0] || {};
                  this.miniFabIconPause?.classList.add('hidden');
 
                  if (this.miniFabSpin) this.miniFabSpin.style.animationPlayState = 'paused';
-                 if(this.visualizerBars) {
-                      this.visualizerBars.forEach(bar => bar.classList.remove('animate-pulse'));
-                  }
              }
              
              // --- Update Main Player (if exists) ---
@@ -709,12 +819,9 @@ const initialSong = musicList[0] || {};
         }
 
         updateProgress() {
-            if(!this.audio) return;
-            // Stop updating UI if user is dragging progress bar
-            if(this.isDraggingProgress) return;
+            if(!this.audio || this.isDraggingProgress) return;
             
             const { currentTime, duration } = this.audio;
-            // Only update if UI exists
             if(this.currentTimeEl) this.currentTimeEl.textContent = this.formatTime(currentTime);
             if(this.totalTimeEl && duration) this.totalTimeEl.textContent = this.formatTime(duration);
             
@@ -725,20 +832,29 @@ const initialSong = musicList[0] || {};
                 // Update Mini Player SVG Progress Ring
                 const ring = document.getElementById('mini-progress-ring');
                 if (ring) {
-                    const circumference = 2 * Math.PI * 48; // r=48
-                    const offset = circumference - (percent / 100) * circumference;
-                    ring.style.strokeDashoffset = offset;
+                    const circumference = 301.59; // 2 * π * 48
+                    ring.style.strokeDashoffset = circumference - (percent / 100) * circumference;
                 }
             }
 
             this.syncLyrics(currentTime);
+
+            // 每 30 秒自动保存播放进度
+            const now = performance.now();
+            if (!this._lastProgressSave || now - this._lastProgressSave > 30000) {
+                this._lastProgressSave = now;
+                this._collectAndSave();
+            }
             
-             // Visualizer animation
-             if(this.isPlaying && this.visualizerBars) {
-                  this.visualizerBars.forEach(bar => {
-                      bar.style.height = (Math.random() * 8 + 4) + 'px';
-                  });
-              }
+            // 可视化条：节流到约每 200ms 更新一次
+            if(this.isPlaying && this.visualizerBars) {
+                if (!this._lastVisualizerUpdate || now - this._lastVisualizerUpdate > 200) {
+                    this._lastVisualizerUpdate = now;
+                    this.visualizerBars.forEach(bar => {
+                        bar.style.height = (Math.random() * 8 + 4) + 'px';
+                    });
+                }
+            }
         }
         
         formatTime(seconds) {
@@ -749,53 +865,42 @@ const initialSong = musicList[0] || {};
         }
         
         async loadLyrics() {
-             try {
-                const currentSong = this.playlist[this.currentIndex];
-                
-                if(!this.lrcUrl) {
-                    // 如果没有生成lrcUrl，则认为是纯音乐
-                    if(this.lyricsContainer) {
-                        this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">纯音乐，请您欣赏</p>';
-                    }
+            if (!this.lyricsContainer) return;
+
+            const currentSong = this.playlist[this.currentIndex];
+            const showPureMusic = () => {
+                if (this.lyricsContainer) {
+                    this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">纯音乐，请您欣赏</p>';
+                }
+            };
+
+            if (!this.lrcUrl) {
+                showPureMusic();
+                return;
+            }
+
+            try {
+                const response = await fetch(this.lrcUrl);
+                if (!response.ok) {
+                    currentSong?.lrc
+                        ? (this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">歌词加载失败</p>')
+                        : showPureMusic();
                     return;
                 }
-                
-                // 尝试加载歌词
-                const response = await fetch(this.lrcUrl);
-                if (response.ok) {
-                    const text = await response.text();
-                    this.lyrics = this.parseLyrics(text);
-                    // 如果解析后歌词为空，且没有显式设置lrc属性，则认为是纯音乐
-                    if (this.lyrics.length === 0 && !currentSong.lrc) {
-                        if(this.lyricsContainer) {
-                            this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">纯音乐，请您欣赏</p>';
-                        }
-                        return;
-                    }
-                    this.renderLyrics();
-                } else {
-                    // 如果加载失败，且没有显式设置lrc属性，则认为是纯音乐
-                    if (!currentSong.lrc) {
-                        if(this.lyricsContainer) {
-                            this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">纯音乐，请您欣赏</p>';
-                        }
-                    } else {
-                        // 如果有显式设置lrc属性但加载失败，显示加载失败提示
-                        if(this.lyricsContainer) this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">Lyrics fetch failed</p>';
-                    }
+                const text = await response.text();
+                this.lyrics = this.parseLyrics(text);
+
+                if (this.lyrics.length === 0) {
+                    currentSong?.lrc
+                        ? (this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">暂无歌词</p>')
+                        : showPureMusic();
+                    return;
                 }
-            } catch (e) {
-                // console.error("Lyrics load failed", e);
-                const currentSong = this.playlist[this.currentIndex];
-                // 如果加载出错，且没有显式设置lrc属性，则认为是纯音乐
-                if (!currentSong.lrc) {
-                    if(this.lyricsContainer) {
-                        this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">纯音乐，请您欣赏</p>';
-                    }
-                } else {
-                    // 如果有显式设置lrc属性但加载出错，显示没有歌词提示
-                    if(this.lyricsContainer) this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">No lyrics available</p>';
-                }
+                this.renderLyrics();
+            } catch {
+                currentSong?.lrc
+                    ? (this.lyricsContainer.innerHTML = '<p class="text-neu-text-muted text-sm mt-20">歌词加载失败</p>')
+                    : showPureMusic();
             }
         }
         
@@ -889,31 +994,11 @@ const initialSong = musicList[0] || {};
         }
     }
     
-    // Initialize Singleton
+    // Initialize Singleton — 只创建一次，后续导航只重新绑定 DOM
     if (!window.globalMusicPlayer) {
         window.globalMusicPlayer = new GlobalMusicPlayer();
     } else {
-        // HMR Support: When file changes, we need to update the methods of the existing instance
-        // or replace the instance while preserving state.
-        const oldInstance = window.globalMusicPlayer;
-        const newInstance = new GlobalMusicPlayer();
-        
-        // Preserve State
-        newInstance.playlist = oldInstance.playlist;
-        newInstance.currentIndex = oldInstance.currentIndex;
-        newInstance.isPlaying = oldInstance.isPlaying;
-        newInstance.isShuffle = oldInstance.isShuffle;
-        newInstance.repeatMode = oldInstance.repeatMode;
-        newInstance.lyrics = oldInstance.lyrics;
-        newInstance.lrcUrl = oldInstance.lrcUrl;
-        newInstance.audio = oldInstance.audio;
-        newInstance.isMiniOpen = oldInstance.isMiniOpen;
-        
-        // cleanup old events/timers if necessary
-        if(oldInstance.closeTimer) clearTimeout(oldInstance.closeTimer);
-        
-        // Replace
-        window.globalMusicPlayer = newInstance;
+        // 已存在实例（SPA 导航 / HMR），只重新绑定 DOM 引用
         window.globalMusicPlayer.handlePageLoad();
     }
 </script>

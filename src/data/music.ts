@@ -4,7 +4,9 @@
  *   1. music-ids.json 中的歌单导入 (type: "netease-playlist")
  *   2. music.json 作为手动歌单（本地直接填写歌曲信息）
  *
- * 性能优化：内存缓存，同一个 dev server 生命周期内只调一次 API
+ * 性能优化：
+ *   - 内存缓存，同一个 dev server 生命周期内只调一次 API
+ *   - 多歌单并行请求
  */
 import { MUSIC_CONFIG } from "@config";
 import musicIds from './music-ids.json';
@@ -63,28 +65,32 @@ async function fetchNeteasePlaylist(playlistId: string | number): Promise<MusicI
 }
 
 /**
- * 获取所有歌单（带缓存，只请求一次 API）
+ * 获取所有歌单（带缓存，多歌单并行请求）
  */
 export async function getAllPlaylists(): Promise<Playlist[]> {
-    // 使用缓存
-    if (_cachedPlaylists) {
-        return _cachedPlaylists;
-    }
+    if (_cachedPlaylists) return _cachedPlaylists;
 
     const entries = (musicIds as any).playlists || [];
-    const playlists: Playlist[] = [];
 
-    // 1. 解析歌单导入
-    for (const entry of entries) {
-        if (entry.type === 'netease-playlist' && entry.neteaseId) {
-            const songs = await fetchNeteasePlaylist(entry.neteaseId);
-            const cover = entry.cover || songs[0]?.cover || '';
-            playlists.push({ name: entry.name, cover, songs });
-            console.log(`[Music] 歌单「${entry.name}」: ${songs.length} 首`);
-        }
+    // 并行请求所有网易云歌单
+    const neteaseEntries = entries.filter(
+        (e: any) => e.type === 'netease-playlist' && e.neteaseId
+    );
+    const fetchResults = await Promise.allSettled(
+        neteaseEntries.map((entry: any) => fetchNeteasePlaylist(entry.neteaseId))
+    );
+
+    const playlists: Playlist[] = [];
+    for (let i = 0; i < neteaseEntries.length; i++) {
+        const entry = neteaseEntries[i];
+        const result = fetchResults[i];
+        const songs = result.status === 'fulfilled' ? result.value : [];
+        const cover = entry.cover || songs[0]?.cover || '';
+        playlists.push({ name: entry.name, cover, songs });
+        console.log(`[Music] 歌单「${entry.name}」: ${songs.length} 首`);
     }
 
-    // 2. music.json 作为本地歌单
+    // music.json 作为本地歌单
     const localSongs = (musicJson as any[]) || [];
     if (localSongs.length > 0) {
         playlists.push({
@@ -95,7 +101,6 @@ export async function getAllPlaylists(): Promise<Playlist[]> {
         console.log(`[Music] 本地歌单: ${localSongs.length} 首`);
     }
 
-    // 存入缓存
     _cachedPlaylists = playlists;
     return playlists;
 }
@@ -104,5 +109,3 @@ export async function getMusicList(): Promise<MusicItem[]> {
     const playlists = await getAllPlaylists();
     return playlists.flatMap(p => p.songs);
 }
-
-export const musicList: MusicItem[] = [];

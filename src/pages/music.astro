@@ -67,151 +67,143 @@ const playlistsJson = JSON.stringify(playlists);
       const playlists = JSON.parse(playlistsJson);
       const cards = document.querySelectorAll('.playlist-card');
 
-      // 1. 读取本地记忆的选中索引
-      let activeIdx = 0;
-      try {
-          const storedIdx = localStorage.getItem('mahiro_active_playlist_index');
-          if (storedIdx !== null) activeIdx = parseInt(storedIdx, 10);
-      } catch(e) {}
-
-      // 2. 初始更新 UI 状态 (避免重绘闪烁，直接应用)
-      cards.forEach((c, idx) => {
-          if (idx === activeIdx) c.classList.add('ring-2', 'ring-primary', 'active-playlist');
-          else c.classList.remove('ring-2', 'ring-primary', 'active-playlist');
-      });
-
-      // 3. 初始同步下方播放列表数据 (不打断当前播放的音乐)
-      const initPlaylist = playlists[activeIdx] || playlists[0];
-      if (initPlaylist) {
-          const newMusicList = initPlaylist.songs.map(s => ({
-              title: s.title,
-              artist: s.artist,
-              cover: s.cover,
-              url: s.url,
-              lrc: s.lrc || '',
-          }));
-
-          const widget = document.querySelector('.music-player-widget');
-          if (widget) widget.setAttribute('data-playlist', JSON.stringify(newMusicList));
-
-          const playlistList = document.getElementById('playlist-list');
-          if (playlistList) {
-              const initialCount = Math.min(newMusicList.length, 30);
-              playlistList.innerHTML = newMusicList.slice(0, initialCount).map((s, i) => `
-                <li class="playlist-item group flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 border border-transparent transition-all cursor-pointer ${i === window.globalMusicPlayer?.currentIndex ? 'active' : ''}" data-index="${i}">
-                  <span class="font-mono text-neu-text-muted text-sm font-bold w-6 text-center group-hover:text-neu-accent transition-colors">${String(i + 1).padStart(2, '0')}</span>
-                  <div class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-neu-border/50">
-                    <img src="${s.cover || ''}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="cover"/>
-                  </div>
-                  <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
-                    <h3 class="font-bold text-neu-text truncate text-sm leading-none group-[.active]:text-neu-accent transition-colors">${s.title || 'Unknown'}</h3>
-                    <p class="text-[11px] text-neu-text-muted truncate uppercase tracking-wider">${s.artist || 'Unknown'}</p>
-                  </div>
-                </li>
-              `).join('');
-
-              playlistList.querySelectorAll('.playlist-item').forEach(item => {
-                item.addEventListener('click', () => {
-                  const index = parseInt(item.getAttribute('data-index'));
-                  if (window.globalMusicPlayer) {
-                    window.globalMusicPlayer.loadSong(index);
-                  }
-                });
-              });
-          }
-
-          const container = document.getElementById('playlist-container');
-          if (container) {
-              const countDiv = container.querySelector('.text-xs.font-mono');
-              if (countDiv) countDiv.textContent = `共 ${newMusicList.length} 首`;
-              // Custom event to setup load-more natively
-              setTimeout(() => {
-                  document.dispatchEvent(new CustomEvent('playlist-changed', { detail: { length: newMusicList.length } }));
-              }, 50);
-          }
+      // ─── 工具函数：生成歌曲列表 HTML ───
+      function renderPlaylistItems(songs, activeIndex) {
+        const count = Math.min(songs.length, 30);
+        return songs.slice(0, count).map((s, i) => `
+          <li class="playlist-item group flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 border border-transparent transition-all cursor-pointer ${i === activeIndex ? 'active' : ''}" data-index="${i}">
+            <span class="font-mono text-neu-text-muted text-sm font-bold w-6 text-center group-hover:text-neu-accent transition-colors">${String(i + 1).padStart(2, '0')}</span>
+            <div class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-neu-border/50">
+              <img src="${s.cover || ''}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="cover" loading="lazy"/>
+            </div>
+            <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+              <h3 class="font-bold text-neu-text truncate text-sm leading-none group-[.active]:text-neu-accent transition-colors">${s.title || 'Unknown'}</h3>
+              <p class="text-[11px] text-neu-text-muted truncate uppercase tracking-wider">${s.artist || 'Unknown'}</p>
+            </div>
+          </li>
+        `).join('');
       }
 
-      // 4. 绑定卡片点击事件
+      // ─── 工具函数：绑定歌曲列表点击 ───
+      function bindPlaylistClicks(listEl) {
+        listEl.querySelectorAll('.playlist-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const index = parseInt(item.getAttribute('data-index'));
+            if (window.globalMusicPlayer) window.globalMusicPlayer.loadSong(index);
+          });
+        });
+      }
+
+      // ─── 工具函数：将歌单转为播放器格式 ───
+      function toPlayerFormat(songs) {
+        return songs.map(s => ({
+          title: s.title,
+          artist: s.artist,
+          cover: s.cover,
+          url: s.url,
+          lrc: s.lrc || '',
+        }));
+      }
+
+      // ─── 工具函数：更新播放列表 DOM ───
+      function syncPlaylistDOM(songs) {
+        const widget = document.querySelector('.music-player-widget');
+        if (widget) widget.setAttribute('data-playlist', JSON.stringify(songs));
+
+        const playlistList = document.getElementById('playlist-list');
+        if (playlistList) {
+          playlistList.innerHTML = renderPlaylistItems(songs, window.globalMusicPlayer?.currentIndex ?? -1);
+          bindPlaylistClicks(playlistList);
+        }
+
+        const container = document.getElementById('playlist-container');
+        if (container) {
+          const countDiv = container.querySelector('.text-xs.font-mono');
+          if (countDiv) countDiv.textContent = `共 ${songs.length} 首`;
+
+          const oldLoadMore = document.getElementById('playlist-load-more');
+          if (oldLoadMore) oldLoadMore.remove();
+
+          // 触发 Load More 重建
+          setTimeout(() => {
+            document.dispatchEvent(new CustomEvent('playlist-changed', { detail: { length: songs.length } }));
+          }, 50);
+        }
+      }
+
+      // ─── 1. 恢复选中歌单 ───
+      let activeIdx = 0;
+      try {
+        // 优先从播放器实例读取，其次从缓存读取
+        if (window.globalMusicPlayer && window.globalMusicPlayer._playlistIdx != null) {
+          activeIdx = Math.min(window.globalMusicPlayer._playlistIdx, playlists.length - 1);
+        } else {
+          const raw = localStorage.getItem('mahiro_player_state');
+          if (raw) {
+            const state = JSON.parse(raw);
+            if (state.playlistIdx != null) activeIdx = Math.min(state.playlistIdx, playlists.length - 1);
+          }
+        }
+      } catch(e) {}
+
+      cards.forEach((c, idx) => {
+        if (idx === activeIdx) c.classList.add('ring-2', 'ring-primary', 'active-playlist');
+        else c.classList.remove('ring-2', 'ring-primary', 'active-playlist');
+      });
+
+      // ─── 2. 初始同步播放列表 ───
+      const initPlaylist = playlists[activeIdx] || playlists[0];
+      if (initPlaylist) {
+        const songs = toPlayerFormat(initPlaylist.songs);
+        // 同步播放器实例的 playlist（修复刷新后歌单不一致问题）
+        if (window.globalMusicPlayer) {
+          const player = window.globalMusicPlayer;
+          const playlistChanged = player.playlist.length !== songs.length
+            || (songs[0] && player.playlist[0]?.url !== songs[0].url);
+          if (playlistChanged) {
+            player.playlist = songs;
+            player._playlistIdx = activeIdx;
+            // 修正 currentIndex 不超过新歌单长度
+            if (player.currentIndex >= songs.length) player.currentIndex = 0;
+            if (player.isShuffle) player.generateShuffleOrder();
+            // 重新加载当前歌曲（不自动播放，保持之前的播放状态）
+            const wasPlaying = player.isPlaying;
+            player.loadSong(player.currentIndex, false);
+            if (wasPlaying && player.audio) {
+              player.audio.play().catch(() => {});
+            }
+          }
+        }
+        syncPlaylistDOM(songs);
+      }
+
+      // ─── 3. 歌单卡片点击 ───
       cards.forEach(card => {
         card.addEventListener('click', () => {
           const idx = parseInt(card.getAttribute('data-playlist-index'));
           const playlist = playlists[idx];
           if (!playlist) return;
 
-          // 更新选中状态
+          // 更新选中态
           cards.forEach(c => c.classList.remove('ring-2', 'ring-primary', 'active-playlist'));
           card.classList.add('ring-2', 'ring-primary', 'active-playlist');
 
-          // 切换到此歌单的歌曲
-          if (window.globalMusicPlayer) {
-            const newMusicList = playlist.songs.map(s => ({
-              title: s.title,
-              artist: s.artist,
-              cover: s.cover,
-              url: s.url,
-              lrc: s.lrc || '',
-            }));
-            
-            // 更新全局播放器实例
-            window.globalMusicPlayer.playlist = newMusicList;
-            if (window.globalMusicPlayer.isShuffle) {
-                window.globalMusicPlayer.generateShuffleOrder();
-            }
-            window.globalMusicPlayer.currentIndex = 0;
-            window.globalMusicPlayer.loadSong(0);
+          if (!window.globalMusicPlayer) return;
 
-            // 保存到 LocalStorage
-            try {
-                localStorage.setItem('mahiro_music_playlist', JSON.stringify(newMusicList));
-                localStorage.setItem('mahiro_active_playlist_index', idx);
-            } catch(e) { console.warn('Failed to save playlist to localStorage'); }
+          const songs = toPlayerFormat(playlist.songs);
 
-            // 更新 DOM data 属性，供 Load More 按钮使用
-            const widget = document.querySelector('.music-player-widget');
-            if (widget) {
-                widget.setAttribute('data-playlist', JSON.stringify(newMusicList));
-            }
+          // 更新播放器
+          window.globalMusicPlayer.playlist = songs;
+          if (window.globalMusicPlayer.isShuffle) window.globalMusicPlayer.generateShuffleOrder();
+          window.globalMusicPlayer.currentIndex = 0;
+          window.globalMusicPlayer.loadSong(0);
 
-            // 更新页面播放器的初始 30 首 DOM
-            const playlistList = document.getElementById('playlist-list');
-            if (playlistList) {
-              const initialCount = Math.min(newMusicList.length, 30);
-              playlistList.innerHTML = newMusicList.slice(0, initialCount).map((s, i) => `
-                <li class="playlist-item group flex items-center gap-3 p-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 border border-transparent transition-all cursor-pointer ${i === 0 ? 'active' : ''}" data-index="${i}">
-                  <span class="font-mono text-neu-text-muted text-sm font-bold w-6 text-center group-hover:text-neu-accent transition-colors">${String(i + 1).padStart(2, '0')}</span>
-                  <div class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-neu-border/50">
-                    <img src="${s.cover || ''}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="cover"/>
-                  </div>
-                  <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
-                    <h3 class="font-bold text-neu-text truncate text-sm leading-none group-[.active]:text-neu-accent transition-colors">${s.title || 'Unknown'}</h3>
-                    <p class="text-[11px] text-neu-text-muted truncate uppercase tracking-wider">${s.artist || 'Unknown'}</p>
-                  </div>
-                </li>
-              `).join('');
+          // 持久化
+          window.globalMusicPlayer._playlistIdx = idx;
+          window.globalMusicPlayer._collectAndSave(true);
 
-              // 重新绑定点击事件
-              playlistList.querySelectorAll('.playlist-item').forEach(item => {
-                item.addEventListener('click', () => {
-                  const index = parseInt(item.getAttribute('data-index'));
-                  if (window.globalMusicPlayer) {
-                    window.globalMusicPlayer.loadSong(index);
-                  }
-                });
-              });
-            }
-
-            // 更新并重置 Load More 逻辑
-            const container = document.getElementById('playlist-container');
-            if (container) {
-                const countDiv = container.querySelector('.text-xs.font-mono');
-                if (countDiv) countDiv.textContent = `共 ${newMusicList.length} 首`;
-
-                const oldLoadMore = document.getElementById('playlist-load-more');
-                if (oldLoadMore) oldLoadMore.remove();
-
-                document.dispatchEvent(new CustomEvent('playlist-changed', { detail: { length: newMusicList.length } }));
-            }
-          }
+          // 同步 DOM
+          syncPlaylistDOM(songs);
         });
       });
     });
