@@ -1,10 +1,10 @@
 {
-  "commitSha": "6a298c470bdc727f53a2d008551d03befb4c666c",
-  "commitShort": "6a298c4",
-  "commitMessage": "清理：移除不再使用的依赖项和更新 semver 版本",
+  "commitSha": "13f2ffc5fcda4a7f7d661d2e87ac9fd57a76fec3",
+  "commitShort": "13f2ffc",
+  "commitMessage": "feat(music): 添加音乐模块使用说明和折叠功能",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-01T18:55:24+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6a298c470bdc727f53a2d008551d03befb4c666c",
-  "buildTime": "2026/3/1 18:55:53",
-  "totalCommits": 223
+  "commitDate": "2026-03-01T19:05:02+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/13f2ffc5fcda4a7f7d661d2e87ac9fd57a76fec3",
+  "buildTime": "2026/3/1 19:05:31",
+  "totalCommits": 225
 }
