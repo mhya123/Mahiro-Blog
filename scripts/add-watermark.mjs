@@ -11,6 +11,47 @@ const TARGET_DIR  = 'public/images';
 const CONCURRENCY = 8;                    // 并行处理数
 const SUPPORTED   = '{jpg,jpeg,png,webp}'; // gif 不做水印（会丢帧）
 
+// ─── 字符 → SVG path 映射（等宽简化字形，不依赖任何系统字体）───
+// 每个字形基于 10×14 的网格绘制，字符间距由渲染时的 translate 控制
+const GLYPH_PATHS = {
+  'h': 'M2 0V14 M2 6Q2 4 5 4Q8 4 8 6V14',
+  't': 'M5 0V14 M2 4H8',
+  'p': 'M2 4V14 M2 4Q2 2 5 2H6Q9 2 9 5V6Q9 9 6 9H5Q2 9 2 7Z',
+  's': 'M8 5Q8 3 5 3Q2 3 2 5Q2 6.5 5 7Q8 7.5 8 9Q8 11 5 11Q2 11 2 9',
+  ':': 'M5 4V5 M5 9V10',
+  '/': 'M8 0L2 14',
+  '.': 'M5 12A1 1 0 1 0 5 14',
+  'w': 'M1 4L3 14L5 8L7 14L9 4',
+  'm': 'M1 4V14 M1 7Q1 4 3.5 4Q5 4 5 7V14 M5 7Q5 4 7.5 4Q9 4 9 7V14',
+  'a': 'M8 4V11 M8 5Q8 4 5 4Q2 4 2 7.5Q2 11 5 11Q8 11 8 9',
+  'i': 'M5 1V2 M5 4V14',
+  'r': 'M2 4V14 M2 7Q2 4 5 4H7',
+  'o': 'M5 4Q2 4 2 7V8Q2 11 5 11Q8 11 8 8V7Q8 4 5 4Z',
+  'k': 'M2 0V14 M8 4L2 9L8 14',
+  'e': 'M8 7H2V6Q2 4 5 4Q8 4 8 6V7Q2 8 2 10Q2 11 5 11Q8 11 8 10',
+  'n': 'M2 4V14 M2 6Q2 4 5 4Q8 4 8 6V14',
+  'b': 'M2 0V14 M2 5Q2 3 5 3H6Q9 3 9 6V8Q9 11 6 11H5Q2 11 2 9Z',
+  'l': 'M5 0V14',
+  'g': 'M8 4V11Q8 14 5 14Q2 14 2 12 M8 4H5Q2 4 2 7V8Q2 11 5 11H8',
+  'c': 'M8 5Q8 4 5 4Q2 4 2 7V8Q2 11 5 11Q8 11 8 10',
+  'u': 'M2 4V11Q2 14 5 14Q8 14 8 11V4',
+  'x': 'M2 4L8 14 M8 4L2 14',
+  'y': 'M2 4L5 9 M8 4L2 16',
+  'd': 'M8 0V14 M8 5Q8 3 5 3Q2 3 2 6V8Q2 11 5 11Q8 11 8 9Z',
+  '-': 'M2 7H8',
+  '_': 'M0 14H10',
+  '0': 'M5 2Q2 2 2 5V9Q2 12 5 12Q8 12 8 9V5Q8 2 5 2Z M3 11L7 3',
+  '1': 'M3 4L5 2V14 M3 14H7',
+  '2': 'M2 4Q2 2 5 2Q8 2 8 4V5Q8 7 2 11V12H8',
+  '3': 'M2 3Q2 2 5 2Q8 2 8 4V5Q8 7 5 7Q8 7 8 9V10Q8 12 5 12Q2 12 2 11',
+  '4': 'M7 2V14 M7 8H2V2L7 8',
+  '5': 'M8 2H2V7H5Q8 7 8 9V10Q8 12 5 12Q2 12 2 10',
+  '6': 'M7 2H5Q2 2 2 5V9Q2 12 5 12Q8 12 8 9V8Q8 6 5 6H2',
+  '7': 'M2 2H8L4 14',
+  '8': 'M5 2Q2 2 2 4V5Q2 7 5 7Q8 7 8 9V10Q8 12 5 12Q2 12 2 10V9Q2 7 5 7Q8 7 8 5V4Q8 2 5 2Z',
+  '9': 'M3 12H5Q8 12 8 9V5Q8 2 5 2Q2 2 2 5V6Q2 8 5 8H8',
+};
+
 // 从 mahiro.config.yaml 读取站点 URL，回退到默认值
 function getSiteUrl() {
     try {
@@ -46,31 +87,51 @@ function fileHash(buf) {
     return crypto.createHash('md5').update(buf).digest('hex');
 }
 
-// ─── SVG 水印生成（瓦片复用，体积小得多）──────────────
+// ─── SVG 水印生成（用 path 绘制文字，不依赖系统字体）──────
 function generateWatermarkSvg(width, height, text) {
-    const fontSize  = Math.max(14, Math.floor(Math.min(width, height) / 30));
+    const baseFontSize = Math.max(14, Math.floor(Math.min(width, height) / 30));
     const opacity   = 0.15;
     const rotate    = -30;
 
-    // 单个文字的估算宽高
-    const tw = text.length * fontSize * 0.6;
-    const th = fontSize * 1.2;
+    // 每个字形基于 10×14 网格，按 fontSize 缩放
+    const glyphW = 10;
+    const glyphH = 16; // 留余量给 descender (g, y, p 等)
+    const scale  = baseFontSize / 14;  // 14 是字形设计高度
+    const charW  = glyphW * scale;
+    const gap    = charW * 0.15; // 字间距
+
+    // 构建文字 path 组
+    const chars = text.toLowerCase().split('');
+    let pathsGroup = '';
+    let cursorX = 0;
+    for (const ch of chars) {
+        const d = GLYPH_PATHS[ch];
+        if (d) {
+            pathsGroup += `<path d="${d}" transform="translate(${cursorX.toFixed(1)},0) scale(${scale.toFixed(3)})"/>`;
+        }
+        cursorX += charW + gap;
+    }
+    const textTotalW = cursorX;
+    const textTotalH = glyphH * scale;
 
     // 瓦片尺寸（带间距）
-    const tileW = Math.round(tw * 1.6);
-    const tileH = Math.round(th * 5);
+    const tileW = Math.round(textTotalW * 1.5);
+    const tileH = Math.round(textTotalH * 5);
 
-    // 用 <pattern> 平铺，SVG 体积固定不随图片尺寸增长
+    // 居中偏移
+    const offsetX = (tileW - textTotalW) / 2;
+    const offsetY = (tileH - textTotalH) / 2;
+
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
   <defs>
     <pattern id="wm" width="${tileW}" height="${tileH}" patternUnits="userSpaceOnUse"
              patternTransform="rotate(${rotate})">
-      <text x="${tileW / 2}" y="${tileH / 2}"
-            fill="white" fill-opacity="${opacity}"
-            stroke="black" stroke-width="0.8" stroke-opacity="${opacity * 0.6}"
-            font-family="Arial,Helvetica,sans-serif"
-            font-size="${fontSize}" font-weight="bold"
-            text-anchor="middle" dominant-baseline="central">${text}</text>
+      <g transform="translate(${offsetX.toFixed(1)},${offsetY.toFixed(1)})"
+         fill="none"
+         stroke="white" stroke-opacity="${opacity}" stroke-width="${Math.max(1, scale * 1.2).toFixed(1)}"
+         stroke-linecap="round" stroke-linejoin="round">
+        ${pathsGroup}
+      </g>
     </pattern>
   </defs>
   <rect width="100%" height="100%" fill="url(#wm)"/>
