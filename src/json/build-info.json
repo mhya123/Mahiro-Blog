@@ -1,10 +1,10 @@
 {
-  "commitSha": "d351a0f95a6f541bf9c859c4d26888dc1e83ad4f",
-  "commitShort": "d351a0f",
-  "commitMessage": "feat(watermark): 添加字符到 SVG path 的映射以生成水印",
+  "commitSha": "6a298c470bdc727f53a2d008551d03befb4c666c",
+  "commitShort": "6a298c4",
+  "commitMessage": "清理：移除不再使用的依赖项和更新 semver 版本",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-01T18:29:35+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/d351a0f95a6f541bf9c859c4d26888dc1e83ad4f",
-  "buildTime": "2026/3/1 18:29:59",
-  "totalCommits": 220
+  "commitDate": "2026-03-01T18:55:24+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6a298c470bdc727f53a2d008551d03befb4c666c",
+  "buildTime": "2026/3/1 18:55:53",
+  "totalCommits": 223
 }
