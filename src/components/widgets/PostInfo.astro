@@ -49,6 +49,21 @@ const slug = url ? url.split('/').filter(Boolean).pop() : undefined;
   
 {!hideViews && slug && umamiConfig.enable && (  
   <script define:vars={{ slug, umamiConfig }} is:inline>
+    // 数字跳动动画
+    function _animNum(el, target, suffix, dur) {
+      if (!el) return;
+      var to = parseInt(target, 10);
+      if (isNaN(to) || to === 0) { el.textContent = target + suffix; return; }
+      var s = performance.now();
+      function tick(now) {
+        var p = Math.min((now - s) / dur, 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * ease).toLocaleString() + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
     // 获取文章浏览量统计，支持 websiteId 或 shareId
     async function fetchPostViews() {
       if (!umamiConfig.enable) {
@@ -74,8 +89,8 @@ const slug = url ? url.split('/').filter(Boolean).pop() : undefined;
             const viewsElement = document.getElementById(`page-views-${slug}`);
             const visitorsElement = document.getElementById(`page-visitors-${slug}`);
             
-            if (viewsElement) viewsElement.textContent = `${pageViews} 次`;
-            if (visitorsElement) visitorsElement.textContent = `${visits} 人`;
+            _animNum(viewsElement, pageViews, ' 次', 800);
+            _animNum(visitorsElement, visits, ' 人', 800);
           } catch (error) {
             console.error('Error fetching page views for', slug, ':', error);
             const viewsElement = document.getElementById(`page-views-${slug}`);

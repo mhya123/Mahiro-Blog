@@ -277,6 +277,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       import gsap from "gsap";
       import NProgress from "nprogress";
       import "nprogress/nprogress.css";
+      import { initAnimateValues } from "@/lib/animate-value";
 
       // 配置 NProgress
       NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.2 });
@@ -289,13 +290,75 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       // 劫持 Astro 的页面生命周期，使用 GSAP 提供顶级丝滑的阻尼进入动画
       document.addEventListener("astro:page-load", () => {
         NProgress.done();
+
         const content = document.querySelector(".page-content-animate");
+        const staggerElements = document.querySelectorAll(".onload-animation");
+        const hasStagger = staggerElements.length > 0;
+
+        // 如果页面有 .onload-animation 子元素，
+        // 容器只做位移（不做 opacity），由子元素各自控制自己的入场。
+        // 如果没有 .onload-animation（如文章详情页），容器做完整的位移+淡入。
         if (content) {
+          if (hasStagger) {
+            // 容器：只做短位移，立刻可见，不遮挡子元素动画
+            gsap.fromTo(
+              content,
+              { y: 40 },
+              { y: 0, duration: 0.6, ease: "expo.out", clearProps: "transform" }
+            );
+          } else {
+            // 无子元素交错的页面：保留原来的整体淡入
+            gsap.fromTo(
+              content,
+              { y: 80, opacity: 0 },
+              { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", clearProps: "all" }
+            );
+          }
+        }
+
+        // 交错入场动画 — .onload-animation 元素依次出现
+        if (hasStagger) {
+          const sorted = Array.from(staggerElements).sort((a, b) => {
+            const ai = Number((a as HTMLElement).dataset.staggerIndex ?? 999);
+            const bi = Number((b as HTMLElement).dataset.staggerIndex ?? 999);
+            return ai - bi;
+          });
+
           gsap.fromTo(
-            content,
-            { y: 80, opacity: 0 },
-            { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", clearProps: "all" }
+            sorted,
+            { y: 24, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.5,
+              ease: "power3.out",
+              stagger: 0.06,
+              onComplete() {
+                // 动画完成后移除 .onload-animation 类，
+                // 防止 CSS 中的 opacity:0 规则把元素重新隐藏
+                sorted.forEach((el) => el.classList.remove("onload-animation"));
+              },
+            }
           );
+        }
+
+        // 3. 数字递增动画
+        initAnimateValues();
+
+        // 4. TOC 滚动遮罩检测
+        const tocNav = document.querySelector(".toc-nav") as HTMLElement | null;
+        if (tocNav) {
+          const checkOverflow = () => {
+            if (tocNav.scrollHeight > tocNav.clientHeight) {
+              tocNav.classList.add("is-overflowing");
+            } else {
+              tocNav.classList.remove("is-overflowing");
+            }
+          };
+          checkOverflow();
+          // 监听 resize
+          const ro = new ResizeObserver(checkOverflow);
+          ro.observe(tocNav);
         }
       });
     </script>

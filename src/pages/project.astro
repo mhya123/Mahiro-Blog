@@ -22,7 +22,7 @@ const projects = [
 ---
 
 <BaseLayout title="Projects" isIndexed={false}>
-  <div class="mb-8 animate-fade-in-up">
+  <div class="mb-8 onload-animation" data-stagger-index="0">
     <h1 class="text-3xl md:text-4xl font-bold mb-4 flex items-center gap-3">
       <Icon name="lucide:folder-git-2" class="text-primary" />
       <span>My Projects</span>
@@ -32,7 +32,7 @@ const projects = [
     </p>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 onload-animation" data-stagger-index="1">
     {projects.map((project) => (
       <ProjectCard
         name={project.name}
@@ -44,19 +44,19 @@ const projects = [
     ))}
   </div>
 
-  <div class="flex justify-center mt-12 animate-fade-in-up" style="animation-delay: 0.2s;">
+  <div class="flex justify-center mt-12 onload-animation" data-stagger-index="2">
     <a
       href="https://github.com/mhya123?tab=repositories"
       target="_blank"
       rel="noopener noreferrer"
-      class="btn btn-primary btn-outline gap-2 px-8"
+      class="btn btn-primary btn-outline gap-2 px-8 press-effect"
     >
       <Icon name="lucide:github" class="w-5 h-5" />
       <span>View More on GitHub</span>
     </a>
   </div>
 
-  <div class="divider my-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+  <div class="divider my-6 onload-animation" data-stagger-index="3">
     <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
   </div>
 </BaseLayout>

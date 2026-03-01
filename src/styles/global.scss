@@ -355,9 +355,7 @@ code {
   }
 }
 
-.page-content-animate {
-  animation: fade-in-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
+/* .page-content-animate — 已由 GSAP 接管入场动画，见 BaseLayout.astro */
 
 @keyframes fadeIn {
   to {
@@ -960,6 +958,322 @@ code {
 
 .page-content-animate {
   /* GSAP will handle the entrance and exit animations */
+}
+
+/* ===================================================
+ * Onload Staggered Entry Animation System
+ * 
+ * 使用方式：给需要入场动画的元素添加 .onload-animation
+ * GSAP 在 astro:page-load 时自动处理
+ * 手动延迟：data-stagger-index="0/1/2/3..." 
+ * =================================================== */
+.onload-animation {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* 无 JS 回退：如果 GSAP 没有加载，用 CSS 动画作为后备 */
+@media (prefers-reduced-motion: no-preference) {
+  .no-js .onload-animation {
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+
+  @for $i from 0 through 20 {
+    .no-js .onload-animation[data-stagger-index="#{$i}"] {
+      animation-delay: #{$i * 0.08}s;
+    }
+  }
+}
+
+/* 用户偏好：减少动画时跳过所有动画 */
+@media (prefers-reduced-motion: reduce) {
+  .onload-animation,
+  .page-content-animate {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+/* ===================================================
+ *  Rainbow Mode — 彩虹色文字渐变动画
+ * 
+ * 给元素加 .rainbow-text 即可
+ * =================================================== */
+@keyframes rainbow-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.rainbow-text {
+  background: linear-gradient(
+    90deg,
+    #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff, #5f27cd, #ff6b6b
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow-shift 4s ease-in-out infinite;
+}
+
+/* Rainbow border variant */
+.rainbow-border {
+  position: relative;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff, #5f27cd, #ff6b6b
+    );
+    background-size: 300% 100%;
+    animation: rainbow-shift 4s ease-in-out infinite;
+    z-index: -1;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    padding: 2px;
+  }
+}
+
+/* ===================================================
+ * Pulsate Loading — 脉冲加载动画
+ * 
+ * 用于骨架屏或加载占位
+ * =================================================== */
+@keyframes pulsate {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulsate {
+  animation: pulsate 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Skeleton loader variant */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-loading {
+  background: linear-gradient(
+    90deg,
+    oklch(var(--b2)) 25%,
+    oklch(var(--b3)) 50%,
+    oklch(var(--b2)) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+/* ===================================================
+ * ✨ Shine Text — 文字光泽扫过动画
+ * 
+ * 用于标题或重要文字的高光效果
+ * =================================================== */
+@keyframes shine-sweep {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shine-text {
+  background: linear-gradient(
+    90deg,
+    oklch(var(--bc)) 0%,
+    oklch(var(--bc)) 40%,
+    oklch(var(--p)) 50%,
+    oklch(var(--bc)) 60%,
+    oklch(var(--bc)) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine-sweep 3s linear infinite;
+}
+
+/* ===================================================
+ *  Bounce — 弹跳动画
+ * 
+ * 用于代码块复制成功、通知出现等
+ * =================================================== */
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+/* ===================================================
+ *  Gradient Mask — TOC 滚动渐变遮罩
+ * 
+ * 当 TOC 内容超出可视区域时，在顶部/底部添加渐变遮罩
+ * 暗示用户可以继续滚动
+ * =================================================== */
+.toc-nav {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 5%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 5%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+/* 当内容不溢出时不需要遮罩 */
+.toc-nav:not(.is-overflowing) {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+/* ===================================================
+ *  Hover Micro-Interactions
+ * 
+ * 按压反馈、悬浮高亮、图标旋转等交互动效
+ * =================================================== */
+
+/* 按压缩小反馈 */
+.press-effect {
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* 悬浮发光效果 */
+.hover-glow {
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 0 20px oklch(var(--p) / 0.3);
+  }
+}
+
+/* 悬浮图标旋转 */
+.hover-icon-spin {
+  &:hover svg,
+  &:hover .icon {
+    animation: spin-slow 1s linear;
+  }
+}
+
+/* 涟漪效果 (CSS-only) */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: oklch(var(--p) / 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease, opacity 0.6s ease;
+    opacity: 0;
+  }
+
+  &:active::after {
+    width: 300px;
+    height: 300px;
+    opacity: 1;
+    transition: 0s;
+  }
+}
+
+/* ===================================================
+ *  Scale & Float Utility Animations
+ * =================================================== */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 呼吸灯效果 */
+@keyframes breathe {
+  0%, 100% {
+    box-shadow: 0 0 5px oklch(var(--p) / 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px oklch(var(--p) / 0.5);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* ===================================================
+ *  Number Counter Animation (配合 animate-value.ts)
+ *
+ * 给数字元素加 .counter-value 获得弹入效果
+ * =================================================== */
+.counter-value {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.counter-value.is-counting {
+  transform: scale(1.1);
 }
 
 /* 强制统一所有主题的圆角设置，防止某些主题修改圆角 */

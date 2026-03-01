@@ -114,14 +114,14 @@ const getCategoryDisplayName = (category: string): string => {
           <Icon name="material-symbols:article-outline" class="text-base text-primary"></Icon>
           <span class="text-xs">文章数</span>
         </div>
-        <div class="font-bold text-lg text-base-content">{articleCount}</div>
+        <div id="stat-articles" class="font-bold text-lg text-base-content counter-value">0</div>
       </div>
       <div class="text-center border-l border-base-content/20">
         <div class="text-xs text-base-content/50 mb-1 flex items-center justify-center gap-1">
           <Icon name="material-symbols:text-fields" class="text-base text-primary"></Icon>
           <span class="text-xs">总字数</span>
         </div>
-        <div class="font-bold text-lg text-base-content">{totalWords >= 10000 ? (totalWords / 10000).toFixed(1) + ' 万' : totalWords.toLocaleString()}</div>
+        <div id="stat-words" class="font-bold text-lg text-base-content counter-value">0</div>
       </div>
     </div>
 
@@ -272,7 +272,22 @@ const getCategoryDisplayName = (category: string): string => {
   )}  
 </div>
   
-<script is:inline define:vars={{ umamiConfig }}> 
+<script is:inline define:vars={{ umamiConfig, articleCount, totalWords }}> 
+  // 通用数字跳动动画
+  function animateNumber(el, target, duration, suffix) {
+    if (!el) return;
+    var to = parseInt(target, 10);
+    if (isNaN(to) || to === 0) { el.textContent = (target || '0') + (suffix || ''); return; }
+    var s = performance.now();
+    function tick(now) {
+      var p = Math.min((now - s) / duration, 1);
+      var ease = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      el.textContent = Math.round(to * ease).toLocaleString() + (suffix || '');
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
   // 使用 sessionStorage 来避免重复加载  
   let statsData = null;  
     
@@ -336,14 +351,13 @@ const getCategoryDisplayName = (category: string): string => {
     setTimeout(() => clearInterval(checkInterval), 10000);
   }  
     
-  // 更新统计显示  
   function updateStatsDisplay() {  
     const viewsElement = document.getElementById('site-views');
     const visitorsElement = document.getElementById('site-visitors');
     
     if (statsData && !statsData.error) {  
-      if (viewsElement) viewsElement.textContent = statsData.pageviews;
-      if (visitorsElement) visitorsElement.textContent = statsData.visitors;
+      animateNumber(viewsElement, statsData.pageviews, 1000);
+      animateNumber(visitorsElement, statsData.visitors, 1000);
     } else if (statsData && statsData.error) {
        if (viewsElement) viewsElement.textContent = '-';
        if (visitorsElement) visitorsElement.textContent = '-';
@@ -404,8 +418,14 @@ function initTagsToggle() {
 
   // 初始化函数  
   function init() {  
+    // 文章数 & 总字数 — 立刻开始跳动
+    var wordsDisplay = totalWords >= 10000 ? Math.round(totalWords / 1000) : totalWords;
+    var wordsSuffix = totalWords >= 10000 ? ' 千' : '';
+    animateNumber(document.getElementById('stat-articles'), articleCount, 1000);
+    animateNumber(document.getElementById('stat-words'), wordsDisplay, 1000, wordsSuffix);
+
     if (umamiConfig.enable) {
-      // 总是加载最新数据，以保持实时更新
+      // 访问量 & 访客数 — 异步获取后跳动（无法与上面同步，但同一行的两个会同步）
       loadSiteStats();  
     }
       

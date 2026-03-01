@@ -34,7 +34,7 @@ const pageLinks = generatePageLinks(totalPages);
   <!-- Blog Navigation Cards -->
   <CardGroup cols="2" class="grid-cols-2">
     <!-- Archives Card -->
-    <a href="/blog/archives" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent">
+    <a href="/blog/archives" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent onload-animation press-effect" data-stagger-index="0">
       <div class="card-body p-2 sm:p-4 flex flex-row items-center gap-2 sm:gap-3">
         <div class="rounded-full bg-accent/10 p-2 sm:p-3 flex-shrink-0">
           <Icon name="lucide:archive" class="w-4 h-4 sm:w-6 sm:h-6 text-accent" />
@@ -47,7 +47,7 @@ const pageLinks = generatePageLinks(totalPages);
     </a>
 
     <!-- Categories Card -->
-    <a href="/blog/categories" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent">
+    <a href="/blog/categories" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent onload-animation press-effect" data-stagger-index="1">
       <div class="card-body p-2 sm:p-4 flex flex-row items-center gap-2 sm:gap-3">
         <div class="rounded-full bg-primary/10 p-2 sm:p-3 flex-shrink-0">
           <Icon name="lucide:folder" class="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
@@ -60,7 +60,7 @@ const pageLinks = generatePageLinks(totalPages);
     </a>
 
     <!-- Tags Card -->
-    <a href="/blog/tags" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent">
+    <a href="/blog/tags" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent onload-animation press-effect" data-stagger-index="2">
       <div class="card-body p-2 sm:p-4 flex flex-row items-center gap-2 sm:gap-3">
         <div class="rounded-full bg-secondary/10 p-2 sm:p-3 flex-shrink-0">
           <Icon name="lucide:tag" class="w-4 h-4 sm:w-6 sm:h-6 text-secondary" />
@@ -73,7 +73,7 @@ const pageLinks = generatePageLinks(totalPages);
     </a>
 
     <!-- Search Card -->
-    <a href="/blog/search" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent">
+    <a href="/blog/search" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent onload-animation press-effect" data-stagger-index="3">
       <div class="card-body p-2 sm:p-4 flex flex-row items-center gap-2 sm:gap-3">
         <div class="rounded-full bg-info/10 p-2 sm:p-3 flex-shrink-0">
           <Icon name="lucide:search" class="w-4 h-4 sm:w-6 sm:h-6 text-info" />
@@ -87,26 +87,32 @@ const pageLinks = generatePageLinks(totalPages);
   </CardGroup>
 
   <!-- Announcement -->
-  <Announcement />
+  <div class="onload-animation" data-stagger-index="4">
+    <Announcement />
+  </div>
 
   <!-- Blog Post List -->
   <CardGroup cols="1">
     {
-      page.data.map((blog: Post) => (
-        <PostCard
-          title={blog.data.title}
-          image={blog.data.image}
-          description={blog.data.description}
-          url={"/blog/" + blog.slug}
-          pubDate={blog.data.pubDate}
-          badge={blog.data.badge}
-          categories={blog.data.categories}
-          tags={blog.data.tags}
-          word={blog.remarkPluginFrontmatter.totalCharCount}
-          time={blog.remarkPluginFrontmatter.readingTime}
-        />
+      page.data.map((blog: Post, index: number) => (
+        <div class="onload-animation" data-stagger-index={5 + index}>
+          <PostCard
+            title={blog.data.title}
+            image={blog.data.image}
+            description={blog.data.description}
+            url={"/blog/" + blog.slug}
+            pubDate={blog.data.pubDate}
+            badge={blog.data.badge}
+            categories={blog.data.categories}
+            tags={blog.data.tags}
+            word={blog.remarkPluginFrontmatter.totalCharCount}
+            time={blog.remarkPluginFrontmatter.readingTime}
+          />
+        </div>
       ))
     }
   </CardGroup>
-  <Pagination page={page} totalPages={totalPages} pageLinks={pageLinks} baseUrl={``} />
+  <div class="onload-animation" data-stagger-index={5 + page.data.length}>
+    <Pagination page={page} totalPages={totalPages} pageLinks={pageLinks} baseUrl={``} />
+  </div>
 </BaseLayout>

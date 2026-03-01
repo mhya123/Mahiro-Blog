@@ -37,7 +37,7 @@ const issueUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${enco
 
 <BaseLayout title="Friends" isIndexed={false}>
   <!-- Friends Section -->
-  <div class="mb-10 animate-fade-in-up">
+  <div class="mb-10 onload-animation" data-stagger-index="0">
     <h1 class="text-3xl md:text-4xl font-bold mb-4 flex items-center gap-3">
       <Icon name="lucide:users" class="text-primary" />
       <span>Friends</span>
@@ -67,12 +67,12 @@ const issueUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${enco
   </div>
 
   <!-- Divider -->
-  <div class="divider my-8 animate-fade-in-up" style="animation-delay: 0.1s;">
+  <div class="divider my-8 onload-animation" data-stagger-index="1">
     <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
   </div>
 
   <!-- 友链申请区块 -->
-  <div class="animate-fade-in-up" style="animation-delay: 0.2s;">
+  <div class="onload-animation" data-stagger-index="2">
     <h2 class="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-3">
       <Icon name="lucide:hand-metal" class="text-primary" />
       <span>友链申请</span>
@@ -140,7 +140,7 @@ const issueUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${enco
         href={applyUrl}
         target="_blank"
         rel="noopener noreferrer"
-        class="btn btn-primary btn-lg gap-2 px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+        class="btn btn-primary btn-lg gap-2 px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 press-effect"
       >
         <Icon name="lucide:git-pull-request" class="w-5 h-5" />
         前往 GitHub 提交 PR 申请

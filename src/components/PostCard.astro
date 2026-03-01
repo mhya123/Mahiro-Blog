@@ -75,7 +75,22 @@ const slug = url ? url.split('/').filter(Boolean).pop() : undefined;
         setTimeout(() => clearInterval(checkInterval), 10000);
       }
       
-      // 更新所有布局的统计数据
+      // 数字跳动动画
+      function animateNum(el, target, suffix, dur) {
+        if (!el) return;
+        var to = parseInt(target, 10);
+        if (isNaN(to) || to === 0) { el.textContent = target + suffix; return; }
+        var s = performance.now();
+        function tick(now) {
+          var p = Math.min((now - s) / dur, 1);
+          var ease = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(to * ease).toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      // 更新所有布局的统计数据（带数字跳动）
       function updateAllStats(stats) {
         const { pageViews, visits } = stats;
         
@@ -87,11 +102,10 @@ const slug = url ? url.split('/').filter(Boolean).pop() : undefined;
         const desktopViewsElement = document.getElementById(`page-views-${slug}-desktop`);
         const desktopVisitorsElement = document.getElementById(`page-visitors-${slug}-desktop`);
         
-        if (mobileViewsElement) mobileViewsElement.textContent = `${pageViews} 次`;
-        if (mobileVisitorsElement) mobileVisitorsElement.textContent = `${visits} 人`;
-        
-        if (desktopViewsElement) desktopViewsElement.textContent = `${pageViews} 次`;
-        if (desktopVisitorsElement) desktopVisitorsElement.textContent = `${visits} 人`;
+        animateNum(mobileViewsElement, pageViews, ' 次', 800);
+        animateNum(mobileVisitorsElement, visits, ' 人', 800);
+        animateNum(desktopViewsElement, pageViews, ' 次', 800);
+        animateNum(desktopVisitorsElement, visits, ' 人', 800);
       }
       
       // 页面加载完成后获取统计数据
