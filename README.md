@@ -50,7 +50,7 @@
 
 | 核心模块 | 技术选型 | 功能边界 |
 | --- | --- | --- |
-| **核心框架** | `Astro 4` 🚀 | 混合渲染、路由管理、ViewTransitions |
+| **核心框架** | `Astro 5` 🚀 | 混合渲染、路由管理、ViewTransitions |
 | **交互组件** | `React` + `Preact` | 复杂状态管理与动态 UI 渲染 |
 | **样式系统** | `Tailwind CSS` + `DaisyUI` | 原子化 CSS 与现代化 UI 组件库 |
 | **内容解析** | `MDX + Markdown` | 融合 Markdown 与 JSX 的内容引擎 |

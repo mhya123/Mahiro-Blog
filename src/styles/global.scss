@@ -17,20 +17,6 @@
   will-change: transform;
 }
 
-/* 
- * 修复首页导航卡片等使用 shadow + rounded + translate 动画时的黑色线框闪烁：
- * 强制卡片内容裁剪在圆角内，并用 filter 代替 box-shadow 避免合成层边缘伪影
- */
-.card-group .card {
-  overflow: hidden;
-  box-shadow: none !important;
-  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 4px rgb(0 0 0 / 0.06));
-  transition: filter 0.3s, transform 0.3s;
-}
-.card-group .card:hover {
-  filter: drop-shadow(0 10px 15px rgb(0 0 0 / 0.1)) drop-shadow(0 4px 6px rgb(0 0 0 / 0.08));
-}
-
 .max-w-blog {
   max-width: 72rem;
   /* 默认90% - 适合小屏幕 */
@@ -174,10 +160,18 @@
   .card-base,
   .card,
   .music-player-widget>.bg-neu-base {
-    background-color: oklch(var(--b1) / 0.7) !important;
-    backdrop-filter: blur(10px);
+    background-color: oklch(var(--b1) / 0.85) !important;
     border: 1px solid oklch(var(--bc) / 0.1);
-    /* 增加边框以增强轮廓 */
+  }
+
+  /*
+   * 仅对不参与 transform 动画的静态元素使用 backdrop-filter，
+   * 避免 Chromium 在 backdrop-filter + border-radius + GPU transform
+   * 组合下产生的黑色线框闪烁 Bug。
+   */
+  .card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   /* Just make inner neumorphic elements transparent, NO border/blur/shadow to avoid visual noise */
@@ -205,13 +199,11 @@
   }
 
   .bg-base-200 {
-    background-color: oklch(var(--b2) / 0.7) !important;
-    backdrop-filter: blur(10px);
+    background-color: oklch(var(--b2) / 0.85) !important;
   }
 
   .bg-base-300 {
-    background-color: oklch(var(--b3) / 0.7) !important;
-    backdrop-filter: blur(10px);
+    background-color: oklch(var(--b3) / 0.85) !important;
   }
 
   /* Navbar specific */
