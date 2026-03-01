@@ -1,10 +1,10 @@
 {
-  "commitSha": "8f260afbd304b1b6fea3d5f3cd3c716e193869ce",
-  "commitShort": "8f260af",
-  "commitMessage": "feat(animation): 添加更多动画效果",
+  "commitSha": "614a938589ac87e956843fcd6424069d10211ac0",
+  "commitShort": "614a938",
+  "commitMessage": "feat(reward): 添加赞赏功能配置和相关组件支持",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-01T16:58:51+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/8f260afbd304b1b6fea3d5f3cd3c716e193869ce",
-  "buildTime": "2026/3/1 16:59:23",
-  "totalCommits": 194
+  "commitDate": "2026-03-01T17:07:51+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/614a938589ac87e956843fcd6424069d10211ac0",
+  "buildTime": "2026/3/1 17:08:15",
+  "totalCommits": 196
 }
