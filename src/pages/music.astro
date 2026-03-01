@@ -9,7 +9,76 @@ const playlistsJson = JSON.stringify(playlists);
 ---
 
 <BaseLayout title="音乐" showSidebar={false} showTOC={false} isIndexed={false}>
-  <div class="max-w-5xl mx-auto py-8 px-4 space-y-8">
+    <div class="max-w-5xl mx-auto py-8 px-4 space-y-8">
+
+    <!-- 使用说明 -->
+    <div class="music-guide rounded-2xl border border-base-200 bg-base-100 shadow-sm overflow-hidden">
+      <button id="guide-toggle" class="w-full flex items-center gap-2 cursor-pointer p-4 select-none hover:bg-base-200/50 transition-colors text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <span class="font-bold text-base-content">音乐模块使用说明</span>
+        <svg id="guide-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto text-base-content/40 transition-transform duration-400 ease-[cubic-bezier(0.33,1,0.68,1)]"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div id="guide-body" class="grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.33,1,0.68,1)]" style="grid-template-rows: 0fr; opacity: 0;">
+        <div class="overflow-hidden">
+          <div class="px-4 pb-5 pt-1 text-sm text-base-content/70 space-y-4 border-t border-base-200">
+        
+        <div>
+          <h4 class="font-bold text-base-content mb-1.5 flex items-center gap-1.5">
+            <span class="text-primary">①</span> 歌单导入（网易云）
+          </h4>
+          <p>编辑 <code class="px-1.5 py-0.5 rounded bg-base-200 text-xs font-mono">src/data/music-ids.json</code>，添加网易云歌单：</p>
+          <pre class="mt-2 p-3 rounded-xl bg-base-200/70 text-xs font-mono overflow-x-auto"><code>{`{
+  "playlists": [
+    {
+      "name": "我的歌单",
+      "type": "netease-playlist",
+      "neteaseId": 你的歌单ID,
+      "cover": ""
+    }
+  ]
+}`}</code></pre>
+          <p class="mt-1.5 text-xs text-base-content/50">💡 歌单 ID 可从网易云音乐歌单链接中获取，如 <code class="px-1 py-0.5 rounded bg-base-200 font-mono">music.163.com/playlist?id=<b>123456</b></code></p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-base-content mb-1.5 flex items-center gap-1.5">
+            <span class="text-primary">②</span> 手动添加歌曲
+          </h4>
+          <p>编辑 <code class="px-1.5 py-0.5 rounded bg-base-200 text-xs font-mono">src/data/music.json</code>，直接填写歌曲信息：</p>
+          <pre class="mt-2 p-3 rounded-xl bg-base-200/70 text-xs font-mono overflow-x-auto"><code>{`[
+  {
+    "title": "歌曲名",
+    "artist": "歌手",
+    "cover": "封面图URL",
+    "url": "音频URL",
+    "lrc": "歌词URL（可选）"
+  }
+]`}</code></pre>
+          <p class="mt-1.5 text-xs text-base-content/50">💡 此文件中的歌曲会作为「本地歌单」显示</p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-base-content mb-1.5 flex items-center gap-1.5">
+            <span class="text-primary">③</span> API 配置
+          </h4>
+          <p>在 <code class="px-1.5 py-0.5 rounded bg-base-200 text-xs font-mono">mahiro.config.yaml</code> 中配置 Meting API 地址：</p>
+          <pre class="mt-2 p-3 rounded-xl bg-base-200/70 text-xs font-mono overflow-x-auto"><code>{`music:
+  api: https://api.qijieya.cn/meting  # Meting API 地址
+  autoplay: false                      # 是否自动播放`}</code></pre>
+        </div>
+
+        <div class="flex items-start gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary shrink-0 mt-0.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          <div class="text-xs space-y-1">
+            <p><b>播放器功能：</b>支持歌单切换、随机/顺序/单曲循环、歌词同步显示、音量控制、进度拖拽。</p>
+            <p><b>状态记忆：</b>播放进度、音量、播放模式、当前歌单会自动保存，刷新页面后恢复。</p>
+            <p><b>全局迷你播放器：</b>离开音乐页面后，左下角会出现迷你播放器悬浮按钮，支持悬停展开控制。</p>
+          </div>
+        </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- 歌单列表 -->
     <div id="playlist-selector">
@@ -64,6 +133,20 @@ const playlistsJson = JSON.stringify(playlists);
 
   <script is:inline define:vars={{ playlistsJson }}>
     document.addEventListener("astro:page-load", () => {
+      // ─── 使用说明折叠动画 ───
+      const guideToggle = document.getElementById('guide-toggle');
+      const guideBody = document.getElementById('guide-body');
+      const guideChevron = document.getElementById('guide-chevron');
+      if (guideToggle && guideBody) {
+        let isOpen = false;
+        guideToggle.addEventListener('click', () => {
+          isOpen = !isOpen;
+          guideBody.style.gridTemplateRows = isOpen ? '1fr' : '0fr';
+          guideBody.style.opacity = isOpen ? '1' : '0';
+          if (guideChevron) guideChevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+        });
+      }
+
       const playlists = JSON.parse(playlistsJson);
       const cards = document.querySelectorAll('.playlist-card');
 
