@@ -11,11 +11,15 @@ import { Icon } from "astro-icon/components";
 </button>
 
 <script>
-  import anime from "animejs";
+  // 采用通用的导入方式，避免 ts(1192) 没有默认导出的报错
+  import * as animejs from "animejs";
 
   document.addEventListener("astro:page-load", () => {
     const btn = document.getElementById("back-to-top");
     if (!btn) return;
+
+    // 兼容不同版本的 animejs 导出格式获取执行函数
+    const anime = (animejs as any).default || (animejs as any).anime || animejs;
 
     let isVisible = false;
 
