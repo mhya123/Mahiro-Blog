@@ -1,10 +1,10 @@
 {
-  "commitSha": "1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
-  "commitShort": "1d2b419",
-  "commitMessage": "feat(blog): update post \"极客湾2026手机大横评补档\"",
-  "commitAuthor": "mahiro-blog[bot]",
-  "commitDate": "2026-03-02T02:59:44Z",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
-  "buildTime": "2026/3/2 11:00:15",
-  "totalCommits": 241
+  "commitSha": "bf7ab90aa303458ad85981f899f2d1ae86df0d11",
+  "commitShort": "bf7ab90",
+  "commitMessage": "feat: 使用 GSAP 动画增强音乐指南并改进 UI 交互 重构音乐指南：重构了 music.astro 中的音乐指南模块，利用 GSAP 实现了更平滑的展开与折叠动画。",
+  "commitAuthor": "MhYa123",
+  "commitDate": "2026-03-02T14:24:53+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/bf7ab90aa303458ad85981f899f2d1ae86df0d11",
+  "buildTime": "2026/3/2 14:25:27",
+  "totalCommits": 243
 }
