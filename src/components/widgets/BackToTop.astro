@@ -4,7 +4,7 @@ import { Icon } from "astro-icon/components";
 
 <button
   id="back-to-top"
-  class="fixed right-6 bottom-[5.5rem] z-[90] p-3 rounded-full bg-primary/90 backdrop-blur-md text-primary-content shadow-xl opacity-0 translate-y-8 cursor-pointer pointer-events-none hover:scale-110 hover:shadow-2xl transition-all duration-300"
+  class="fixed right-6 bottom-[5.5rem] z-[90] p-3 rounded-full bg-primary/90 backdrop-blur-md text-primary-content shadow-xl opacity-0 translate-y-8 scale-90 cursor-pointer pointer-events-none hover:scale-110 hover:shadow-2xl transition-all duration-300"
   aria-label="返回顶部"
 >
   <Icon name="lucide:arrow-up" class="w-6 h-6" />
@@ -23,7 +23,10 @@ import { Icon } from "astro-icon/components";
 
     let isVisible = false;
 
-    const handleScroll = () => {
+    // 简单节流，避免滚动时频繁触发动画
+    let scrollTimeout: number | null = null;
+
+    const handleScrollRaw = () => {
       const currentScroll = window.scrollY || document.documentElement.scrollTop;
       
       // 当滑动超过 400px 时显示
@@ -33,9 +36,10 @@ import { Icon } from "astro-icon/components";
         anime({
           targets: btn,
           opacity: [0, 1],
-          translateY: [32, 0],
-          duration: 600,
-          easing: "easeOutElastic(1, .8)"
+          translateY: [24, 0],
+          scale: [0.9, 1],
+          duration: 420,
+          easing: "easeOutCubic"
         });
       } else if (currentScroll <= 400 && isVisible) {
         isVisible = false;
@@ -43,11 +47,22 @@ import { Icon } from "astro-icon/components";
         anime({
           targets: btn,
           opacity: 0,
-          translateY: 32,
-          duration: 300,
-          easing: "easeInQuad"
+          translateY: 24,
+          scale: 0.9,
+          duration: 260,
+          easing: "easeInCubic"
         });
       }
+    };
+
+    const handleScroll = () => {
+      if (scrollTimeout !== null) {
+        return;
+      }
+      scrollTimeout = window.requestAnimationFrame(() => {
+        scrollTimeout = null;
+        handleScrollRaw();
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -57,11 +72,12 @@ import { Icon } from "astro-icon/components";
     btn.addEventListener("click", () => {
       const scrollObj = { y: window.scrollY };
       
+      anime.remove(scrollObj);
       anime({
         targets: scrollObj,
         y: 0,
-        duration: 800,
-        easing: "easeInOutQuart",
+        duration: 600,
+        easing: "easeInOutCubic",
         update: function() {
           window.scrollTo(0, scrollObj.y);
         }
