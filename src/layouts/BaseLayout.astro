@@ -22,6 +22,7 @@ import GlobalAudio from "@components/widgets/GlobalAudio.astro";
 import CookieConsent from "@components/widgets/CookieConsent.astro";
 import UpdateNotifier from "@components/widgets/UpdateNotifier";
 import ReadingProgress from "@components/widgets/ReadingProgress.astro";
+import BackToTop from "@components/widgets/BackToTop.astro";
 
 const {
   title,
@@ -203,6 +204,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     <GlobalAudio />
     <CookieConsent />
     <UpdateNotifier client:only="react" />
+    <BackToTop />
 
     <!-- 其余脚本保持不变 -->
     <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>
