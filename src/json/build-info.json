@@ -1,10 +1,10 @@
 {
-  "commitSha": "bf7ab90aa303458ad85981f899f2d1ae86df0d11",
-  "commitShort": "bf7ab90",
-  "commitMessage": "feat: 使用 GSAP 动画增强音乐指南并改进 UI 交互 重构音乐指南：重构了 music.astro 中的音乐指南模块，利用 GSAP 实现了更平滑的展开与折叠动画。",
+  "commitSha": "55c57a412b5dbad15bbac190e20a103f9eda9d4c",
+  "commitShort": "55c57a4",
+  "commitMessage": "新增功能：添加自动化 PR 审核工作流程和新的项目条目",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-02T14:24:53+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/bf7ab90aa303458ad85981f899f2d1ae86df0d11",
-  "buildTime": "2026/3/2 14:25:27",
-  "totalCommits": 243
+  "commitDate": "2026-03-02T15:38:09+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/55c57a412b5dbad15bbac190e20a103f9eda9d4c",
+  "buildTime": "2026/3/2 15:38:37",
+  "totalCommits": 245
 }
