@@ -1,10 +1,10 @@
 {
-  "commitSha": "78e43bbd9dab539e2118a301a93c8d57616b530f",
-  "commitShort": "78e43bb",
-  "commitMessage": "feat(deploy): 添加 POST_PASSWORD 环境变量以支持部署",
-  "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-02T10:50:24+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/78e43bbd9dab539e2118a301a93c8d57616b530f",
-  "buildTime": "2026/3/2 10:50:54",
-  "totalCommits": 239
+  "commitSha": "1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
+  "commitShort": "1d2b419",
+  "commitMessage": "feat(blog): update post \"极客湾2026手机大横评补档\"",
+  "commitAuthor": "mahiro-blog[bot]",
+  "commitDate": "2026-03-02T02:59:44Z",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
+  "buildTime": "2026/3/2 11:00:15",
+  "totalCommits": 241
 }
