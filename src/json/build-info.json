@@ -1,10 +1,10 @@
 {
-  "commitSha": "7de3e535422115add3974063f51f92e3c782429a",
-  "commitShort": "7de3e53",
-  "commitMessage": "fix(blog): 将组件加载方式更改为 client:only=\"react\"",
+  "commitSha": "6e4ca8d3022e47895d737d4147c1d014364c6a41",
+  "commitShort": "6e4ca8d",
+  "commitMessage": "feat: 添加文章加密功能，支持密码保护文章内容",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-01T20:34:13+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/7de3e535422115add3974063f51f92e3c782429a",
-  "buildTime": "2026/3/1 20:34:41",
-  "totalCommits": 231
+  "commitDate": "2026-03-02T09:47:05+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6e4ca8d3022e47895d737d4147c1d014364c6a41",
+  "buildTime": "2026/3/2 09:47:41",
+  "totalCommits": 233
 }
