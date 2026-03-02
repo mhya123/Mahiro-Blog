@@ -2,6 +2,7 @@
 /// <reference types="astro/client" />
 
 interface ImportMetaEnv {
+  readonly POST_PASSWORD?: string;
   readonly YAML_GITHUB_CONFIG: {
     owner?: string;
     repo?: string;

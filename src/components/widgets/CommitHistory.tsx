@@ -185,7 +185,7 @@ export default function CommitHistory({ commits, maxVisible = 8 }: CommitHistory
         <>
             <button
                 type="button"
-                className="btn btn-outline btn-sm font-normal text-base-content/70 hover:text-base-content relative overflow-hidden group"
+                className="btn btn-ghost btn-sm font-normal border border-base-content/20 text-base-content/70 hover:text-base-content hover:border-base-content/40 hover:bg-base-content/10 relative overflow-hidden group"
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="View Revision History"
             >

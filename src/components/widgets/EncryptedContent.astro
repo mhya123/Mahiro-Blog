@@ -1,0 +1,23 @@
+---
+/**
+ * 加密文章包装组件
+ * 将 slot 中的文章内容渲染为 HTML 字符串，使用 AES-256-GCM 加密后
+ * 交给 PasswordGate 组件在客户端解密显示
+ */
+import PasswordGate from '@components/widgets/PasswordGate'
+import { encrypt } from '@/lib/aes256-util'
+
+interface Props {
+	password: string
+}
+
+const { password } = Astro.props
+
+// 使用 Astro.slots.render 将 slot 内容渲染为 HTML 字符串
+const htmlContent = await Astro.slots.render('default')
+
+// 构建时加密 HTML
+const encryptedHtml = await encrypt(htmlContent, password)
+---
+
+<PasswordGate client:load encryptedContent={encryptedHtml} />

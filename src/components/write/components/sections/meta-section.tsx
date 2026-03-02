@@ -104,6 +104,19 @@ export function MetaSection({ delay = 0, categories = [] }: MetaSectionProps) {
 				<div className='flex items-center gap-2 pt-1'>
 					<input
 						type='checkbox'
+						id='encrypted-check'
+						checked={form.encrypted || false}
+						onChange={e => updateForm({ encrypted: e.target.checked })}
+						className='checkbox checkbox-primary checkbox-sm'
+					/>
+					<label htmlFor='encrypted-check' className='cursor-pointer text-sm text-base-content/80 select-none'>
+						🔒 加密文章（需要密码查看）
+					</label>
+				</div>
+
+				<div className='flex items-center gap-2 pt-1'>
+					<input
+						type='checkbox'
 						id='hidden-check'
 						checked={form.hidden || false}
 						onChange={e => updateForm({ hidden: e.target.checked })}

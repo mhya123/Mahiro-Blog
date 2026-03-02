@@ -9,6 +9,7 @@ export type PublishForm = {
 	badge?: string
 	categories: string[]
 	fileFormat: 'md' | 'mdx'
+	encrypted?: boolean
 }
 
 export type ImageItem =

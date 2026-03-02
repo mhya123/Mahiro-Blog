@@ -21,8 +21,9 @@ export function stringifyFrontmatter(data: any, content: string): string {
     for (const [key, value] of Object.entries(data)) {
         if (value === undefined || value === null || value === '') continue
         if (Array.isArray(value) && value.length === 0) continue
-        // draft: false 不需要写入
+        // draft: false / encrypted: false 不需要写入
         if (key === 'draft' && value === false) continue
+        if (key === 'encrypted' && value === false) continue
         cleaned[key] = value
     }
     return `---\n${yaml.dump(cleaned)}---\n${content}`

@@ -11,10 +11,11 @@ import MainCard from "@/components/MainCard.astro";
 import Giscus from "@components/comments/Giscus.astro";
 import Waline from "@components/comments/Waline.astro";
 import CommitHistory from "@components/widgets/CommitHistory";
-import { commentsConfig, GITHUB_CONFIG, COMMIT_HISTORY_SIZE } from "@config";
+import { commentsConfig, GITHUB_CONFIG, COMMIT_HISTORY_SIZE, POST_PASSWORD } from "@config";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 import { Icon } from "astro-icon/components";
 import { getFileCommits } from "@/lib/git-log";
+import EncryptedContent from "@components/widgets/EncryptedContent.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -51,6 +52,8 @@ const displayDate = blog.data.pubDate
   : "";
 const url = new URL(`/blog/${blog.slug}`, Astro.url.origin);
 
+const isEncrypted = blog.data.encrypted === true && !!POST_PASSWORD;
+
 // 构建时获取 git 提交历史，支持从 GitHub 实时获取规避缓存
 const owner = GITHUB_CONFIG?.owner || '';
 const repo = GITHUB_CONFIG?.repo || '';
@@ -60,8 +63,8 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
 <BaseLayout
   title={blog.data.title}
   image={blog.data.image}
-  headings={headings}
-  showTOC={true}
+  headings={isEncrypted ? [] : headings}
+  showTOC={!isEncrypted}
   isPostPage={true}
 >
   <MainCard
@@ -72,7 +75,7 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
   >
     <div class="flex justify-end gap-2 mb-2">
       <CommitHistory client:only="react" commits={commits} owner={owner} repo={repo} maxVisible={COMMIT_HISTORY_SIZE} />
-      <a href={`/write?slug=${blog.slug}`} class="btn btn-outline btn-sm font-normal text-base-content/70 hover:text-base-content" aria-label="Edit Article">
+      <a href={`/write?slug=${blog.slug}`} class="btn btn-ghost btn-sm font-normal border border-base-content/20 text-base-content/70 hover:text-base-content hover:border-base-content/40 hover:bg-base-content/10" aria-label="Edit Article">
         <Icon name="lucide:edit" class="w-4 h-4" />
         <span class="hidden sm:inline">Edit</span>
       </a>
@@ -94,23 +97,40 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
 
     <!-- Article Content -->
     <div class="mt-8">
-      <div
-        id="content"
-        class="prose prose-lg prose-code:text-base max-w-none text-justify prose-headings:scroll-mt-20 prose-img:rounded-2xl prose-img:mx-auto prose-img:cursor-pointer"
-      >
-        <Content />
-        <License
-          url={url.toString()}
-          title={blog.data.title}
-          image={blog.data.image}
-          pubDate={blog.data.pubDate}
-          badge={blog.data.badge}
-          categories={blog.data.categories}
-          tags={blog.data.tags}
-          word={remarkPluginFrontmatter.totalCharCount}
-          time={remarkPluginFrontmatter.readingTime}
-        />
-      </div>
+      {isEncrypted ? (
+        <EncryptedContent password={POST_PASSWORD}>
+          <Content />
+          <License
+            url={url.toString()}
+            title={blog.data.title}
+            image={blog.data.image}
+            pubDate={blog.data.pubDate}
+            badge={blog.data.badge}
+            categories={blog.data.categories}
+            tags={blog.data.tags}
+            word={remarkPluginFrontmatter.totalCharCount}
+            time={remarkPluginFrontmatter.readingTime}
+          />
+        </EncryptedContent>
+      ) : (
+        <div
+          id="content"
+          class="prose prose-lg prose-code:text-base max-w-none text-justify prose-headings:scroll-mt-20 prose-img:rounded-2xl prose-img:mx-auto prose-img:cursor-pointer"
+        >
+          <Content />
+          <License
+            url={url.toString()}
+            title={blog.data.title}
+            image={blog.data.image}
+            pubDate={blog.data.pubDate}
+            badge={blog.data.badge}
+            categories={blog.data.categories}
+            tags={blog.data.tags}
+            word={remarkPluginFrontmatter.totalCharCount}
+            time={remarkPluginFrontmatter.readingTime}
+          />
+        </div>
+      )}
 
       <!-- Edit on GitHub -->
       {owner && repo && (

@@ -111,7 +111,7 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
         toast.loading('正在创建文章内容...', { id: toastId })
 
         const dateStr = form.date || formatDateTimeLocal()
-        const frontmatter = {
+        const frontmatter: Record<string, any> = {
             title: form.title,
             description: form.summary,
             pubDate: dateStr,
@@ -119,8 +119,10 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
             draft: form.hidden,
             tags: form.tags,
             categories: form.categories,
-            badge: form.badge
+            badge: form.badge,
+            encrypted: form.encrypted
         }
+
         const finalContent = stringifyFrontmatter(frontmatter, mdToUpload)
 
         toast.loading('📝 正在生成文章内容...', { id: toastId })

@@ -63,7 +63,8 @@ export async function loadBlog(slug: string): Promise<{ form: PublishForm, cover
         hidden: data.draft || false,
         categories: data.categories || [],
         badge: data.badge || '',
-        fileFormat
+        fileFormat,
+        encrypted: data.encrypted || false
     }
 
     return { form, cover: data.image }
