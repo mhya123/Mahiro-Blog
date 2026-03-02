@@ -54,6 +54,7 @@ jobs:
           PUBLIC_GITHUB_APP_ID: ${{ secrets.PUBLIC_GITHUB_APP_ID }}
           PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.PUBLIC_UMAMI_WEBSITE_ID }}
           PUBLIC_UMAMI_SHARE_ID: ${{ secrets.PUBLIC_UMAMI_SHARE_ID }}
+          POST_PASSWORD: ${{ secrets.POST_PASSWORD }}
 
       - name: Sync updated JSON to repository
         run: |
