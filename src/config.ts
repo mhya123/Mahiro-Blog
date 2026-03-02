@@ -3,6 +3,10 @@ import type { Config } from "@interfaces/site";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import yaml from "js-yaml";
+import { config as loadDotEnv } from "dotenv";
+
+// 加载 .env 到 process.env
+loadDotEnv({ path: path.resolve(".env") });
 
 // 配置文件路径
 const configPath = path.resolve("mahiro.config.yaml");
@@ -44,8 +48,8 @@ export const COMMIT_HISTORY_SIZE = config.site.blog.commitHistorySize ?? 8;
 // GitHub 配置
 export const GITHUB_CONFIG = config.github;
 
-// 文章加密密码（从 .env 环境变量读取，仅构建时可用，不会暴露到前端）
-export const POST_PASSWORD = import.meta.env.POST_PASSWORD || '';
+// 文章加密密码
+export const POST_PASSWORD = process.env.POST_PASSWORD || '';
 
 // 音乐配置
 export const MUSIC_CONFIG = config.music || { api: 'https://api.qijieya.cn/meting', autoplay: false, playlist: [] };
