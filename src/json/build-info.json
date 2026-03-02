@@ -1,10 +1,10 @@
 {
-  "commitSha": "7fec7c4c62540e5cacc84145d82f2c28f733b7d9",
-  "commitShort": "7fec7c4",
-  "commitMessage": "feat: 通过悬停效果、工具提示和改进的动画增强用户界面/用户体验",
+  "commitSha": "0c8197c20ff6255a636aafafabcdffaead3a7600",
+  "commitShort": "0c8197c",
+  "commitMessage": "feat: 更新 Config 页面以显示背景图片",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-02T16:39:05+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/7fec7c4c62540e5cacc84145d82f2c28f733b7d9",
-  "buildTime": "2026/3/2 16:39:36",
-  "totalCommits": 250
+  "commitDate": "2026-03-02T17:07:03+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0c8197c20ff6255a636aafafabcdffaead3a7600",
+  "buildTime": "2026/3/2 17:07:33",
+  "totalCommits": 252
 }
