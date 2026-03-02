@@ -1,10 +1,10 @@
 {
-  "commitSha": "3e78d0f2ab15220eed07ea410874b84701028194",
-  "commitShort": "3e78d0f",
-  "commitMessage": "fix(friend): 修改 WAF 拦截提示的注释内容",
+  "commitSha": "0898093f0c764daed8f705cdbee7cec9efc5f93c",
+  "commitShort": "0898093",
+  "commitMessage": "feat(config): 加载 .env 文件并更新文章加密密码读取方式",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-02T10:33:57+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/3e78d0f2ab15220eed07ea410874b84701028194",
-  "buildTime": "2026/3/2 10:34:23",
-  "totalCommits": 235
+  "commitDate": "2026-03-02T10:43:37+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0898093f0c764daed8f705cdbee7cec9efc5f93c",
+  "buildTime": "2026/3/2 10:44:08",
+  "totalCommits": 237
 }
