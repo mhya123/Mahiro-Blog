@@ -1,0 +1,10 @@
+{
+  "name": "TEST Blog",
+  "avatar": "https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg",
+  "description": "📝 基于 Astro 构建的个人博客，记录生活与技术",
+  "url": "https://www.mahiro.work",
+  "badge": "Blog",
+  "tags": ["Astro", "Blog", "TypeScript"],
+  "author": "MhYa123",
+  "github": "https://github.com/mhya123/Mahiro-Blog"
+}
