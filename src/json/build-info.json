@@ -1,10 +1,10 @@
 {
-  "commitSha": "0898093f0c764daed8f705cdbee7cec9efc5f93c",
-  "commitShort": "0898093",
-  "commitMessage": "feat(config): 加载 .env 文件并更新文章加密密码读取方式",
+  "commitSha": "78e43bbd9dab539e2118a301a93c8d57616b530f",
+  "commitShort": "78e43bb",
+  "commitMessage": "feat(deploy): 添加 POST_PASSWORD 环境变量以支持部署",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-02T10:43:37+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0898093f0c764daed8f705cdbee7cec9efc5f93c",
-  "buildTime": "2026/3/2 10:44:08",
-  "totalCommits": 237
+  "commitDate": "2026-03-02T10:50:24+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/78e43bbd9dab539e2118a301a93c8d57616b530f",
+  "buildTime": "2026/3/2 10:50:54",
+  "totalCommits": 239
 }
