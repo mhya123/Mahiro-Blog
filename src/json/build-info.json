@@ -1,10 +1,10 @@
 {
-  "commitSha": "4f881ec2b7af8facf1f772ed10ab54af712f5e21",
-  "commitShort": "4f881ec",
-  "commitMessage": "Update BackToTop.astro",
-  "commitAuthor": "A paramecium",
-  "commitDate": "2026-03-02T18:21:44+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/4f881ec2b7af8facf1f772ed10ab54af712f5e21",
-  "buildTime": "2026/3/2 18:22:09",
-  "totalCommits": 255
+  "commitSha": "338995bd76aea00c54eabcdf7ef4019debf75b06",
+  "commitShort": "338995b",
+  "commitMessage": "refactor(BackToTop): enhance scroll animation and improve performance with throttling",
+  "commitAuthor": "MhYa123",
+  "commitDate": "2026-03-02T19:00:07+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/338995bd76aea00c54eabcdf7ef4019debf75b06",
+  "buildTime": "2026/3/2 19:00:42",
+  "totalCommits": 257
 }
