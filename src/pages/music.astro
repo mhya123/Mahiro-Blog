@@ -14,15 +14,14 @@ const playlistsJson = JSON.stringify(playlists);
     <!-- 使用说明 -->
     <div class="music-guide rounded-2xl border border-base-200 bg-base-100 shadow-sm overflow-hidden">
       <button id="guide-toggle" class="w-full flex items-center gap-2 cursor-pointer p-4 select-none hover:bg-base-200/50 transition-colors text-left">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <svg id="guide-info-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
         <span class="font-bold text-base-content">音乐模块使用说明</span>
-        <svg id="guide-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto text-base-content/40 transition-transform duration-400 ease-out"><path d="m6 9 6 6 6-6"/></svg>
+        <svg id="guide-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto text-base-content/40"><path d="m6 9 6 6 6-6"/></svg>
       </button>
-      <div id="guide-body" class="grid transition-[grid-template-rows,opacity] duration-400 ease-out" style="grid-template-rows: 0fr; opacity: 0;">
-        <div class="overflow-hidden">
-          <div class="px-4 pb-5 pt-1 text-sm text-base-content/70 space-y-4 border-t border-base-200">
+      <div id="guide-body" class="overflow-hidden" style="height: 0;">
+        <div class="px-4 pb-5 pt-1 text-sm text-base-content/70 space-y-4 border-t border-base-200">
         
-        <div>
+        <div class="guide-step">
           <h4 class="font-bold text-base-content mb-1.5 flex items-center gap-1.5">
             <span class="text-primary">①</span> 歌单导入（网易云）
           </h4>
@@ -40,7 +39,7 @@ const playlistsJson = JSON.stringify(playlists);
           <p class="mt-1.5 text-xs text-base-content/50">💡 歌单 ID 可从网易云音乐歌单链接中获取，如 <code class="px-1 py-0.5 rounded bg-base-200 font-mono">music.163.com/playlist?id=<b>123456</b></code></p>
         </div>
 
-        <div>
+        <div class="guide-step">
           <h4 class="font-bold text-base-content mb-1.5 flex items-center gap-1.5">
             <span class="text-primary">②</span> 手动添加歌曲
           </h4>
@@ -57,7 +56,7 @@ const playlistsJson = JSON.stringify(playlists);
           <p class="mt-1.5 text-xs text-base-content/50">💡 此文件中的歌曲会作为「本地歌单」显示</p>
         </div>
 
-        <div>
+        <div class="guide-step">
           <h4 class="font-bold text-base-content mb-1.5 flex items-center gap-1.5">
             <span class="text-primary">③</span> API 配置
           </h4>
@@ -67,7 +66,7 @@ const playlistsJson = JSON.stringify(playlists);
   autoplay: false                      # 是否自动播放`}</code></pre>
         </div>
 
-        <div class="flex items-start gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
+        <div class="guide-step flex items-start gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary shrink-0 mt-0.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
           <div class="text-xs space-y-1">
             <p><b>播放器功能：</b>支持歌单切换、随机/顺序/单曲循环、歌词同步显示、音量控制、进度拖拽。</p>
@@ -75,7 +74,6 @@ const playlistsJson = JSON.stringify(playlists);
             <p><b>全局迷你播放器：</b>离开音乐页面后，左下角会出现迷你播放器悬浮按钮，支持悬停展开控制。</p>
           </div>
         </div>
-          </div>
         </div>
       </div>
     </div>
@@ -131,22 +129,119 @@ const playlistsJson = JSON.stringify(playlists);
     </div>
   </div>
 
-  <script is:inline define:vars={{ playlistsJson }}>
+  <script>
+    import gsap from "gsap";
+
     document.addEventListener("astro:page-load", () => {
-      // ─── 使用说明折叠动画 ───
+
+      // ─── 使用说明 GSAP 折叠动画 ───
       const guideToggle = document.getElementById('guide-toggle');
       const guideBody = document.getElementById('guide-body');
       const guideChevron = document.getElementById('guide-chevron');
+      const guideInfoIcon = document.getElementById('guide-info-icon');
+
       if (guideToggle && guideBody) {
         let isOpen = false;
+        let isAnimating = false;
+
         guideToggle.addEventListener('click', () => {
+          if (isAnimating) return;
+          isAnimating = true;
           isOpen = !isOpen;
-          guideBody.style.gridTemplateRows = isOpen ? '1fr' : '0fr';
-          guideBody.style.opacity = isOpen ? '1' : '0';
-          if (guideChevron) guideChevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+
+          if (isOpen) {
+            // 展开：先设置 height auto 获取实际高度，再动画
+            guideBody.style.height = 'auto';
+            const fullHeight = guideBody.scrollHeight;
+            guideBody.style.height = '0px';
+
+            const tl = gsap.timeline({
+              onComplete: () => {
+                guideBody.style.height = 'auto';
+                isAnimating = false;
+              }
+            });
+
+            // chevron 旋转
+            tl.to(guideChevron, {
+              rotation: 180,
+              duration: 0.4,
+              ease: 'back.out(1.7)',
+            }, 0);
+
+            // info 图标弹跳
+            if (guideInfoIcon) {
+              tl.fromTo(guideInfoIcon, { scale: 1 }, {
+                scale: 1.2,
+                duration: 0.15,
+                yoyo: true,
+                repeat: 1,
+                ease: 'power2.out',
+              }, 0);
+            }
+
+            // 面板展开
+            tl.to(guideBody, {
+              height: fullHeight,
+              duration: 0.5,
+              ease: 'expo.out',
+            }, 0);
+
+            // 步骤卡片交错入场
+            const steps = guideBody.querySelectorAll('.guide-step');
+            tl.fromTo(steps, {
+              y: 20,
+              opacity: 0,
+              scale: 0.97,
+            }, {
+              y: 0,
+              opacity: 1,
+              scale: 1,
+              duration: 0.45,
+              ease: 'power3.out',
+              stagger: 0.08,
+              clearProps: 'transform',
+            }, 0.15);
+
+          } else {
+            // 收起
+            const tl = gsap.timeline({
+              onComplete: () => {
+                isAnimating = false;
+              }
+            });
+
+            // chevron 复位
+            tl.to(guideChevron, {
+              rotation: 0,
+              duration: 0.35,
+              ease: 'power2.inOut',
+            }, 0);
+
+            // 步骤先淡出
+            const steps = guideBody.querySelectorAll('.guide-step');
+            tl.to(steps, {
+              y: -10,
+              opacity: 0,
+              duration: 0.2,
+              ease: 'power2.in',
+              stagger: 0.03,
+            }, 0);
+
+            // 面板收起
+            tl.to(guideBody, {
+              height: 0,
+              duration: 0.4,
+              ease: 'expo.inOut',
+            }, 0.1);
+          }
         });
       }
+    });
+  </script>
 
+  <script is:inline define:vars={{ playlistsJson }}>
+    document.addEventListener("astro:page-load", () => {
       const playlists = JSON.parse(playlistsJson);
       const cards = document.querySelectorAll('.playlist-card');
 

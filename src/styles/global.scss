@@ -283,11 +283,11 @@ code {
 }
 
 .btn-category {
-  @apply bg-primary/5 hover:bg-primary text-primary hover:text-primary-content border-none hover:scale-110;
+  @apply bg-primary/5 hover:bg-primary text-primary hover:text-primary-content border-none;
 }
 
 .btn-tag {
-  @apply bg-secondary/5 hover:bg-secondary text-secondary hover:text-secondary-content border-none hover:scale-110;
+  @apply bg-secondary/5 hover:bg-secondary text-secondary hover:text-secondary-content border-none;
 }
 
 .btn-copy {
@@ -419,22 +419,18 @@ code {
 // Category card component
 .category {
   &-card {
-    @apply opacity-0 translate-y-5;
-    animation: fadeIn 0.8s ease-out forwards;
-
-    // Generate animation delays
-    @for $i from 0 through 100 {
-      &[data-index="#{$i}"] {
-        animation-delay: #{0.1 + ($i * 0.05)}s;
-      }
-    }
+    /* anime.js animateCategoryCards() 接管入场动画 */
+    opacity: 0;
+    transform: translateY(20px);
   }
 
   &-inner {
-    @apply rounded-2xl overflow-hidden bg-base-100 shadow-md border border-base-300/20 transition-transform duration-300 ease-in-out;
+    @apply rounded-2xl overflow-hidden bg-base-100 shadow-md border border-base-300/20;
+    /* hover 由 anime.js bindElasticHover() 接管 */
+    transition: box-shadow 0.3s ease;
 
     &:hover {
-      @apply -translate-y-1 shadow-lg;
+      @apply shadow-lg;
     }
 
     &.expanded {
@@ -596,18 +592,13 @@ code {
   }
 
   &-item {
-    @apply relative opacity-0 translate-y-2 inline-flex items-center gap-2 rounded-full;
-    animation: fadeIn 0.8s ease-out forwards;
+    @apply relative inline-flex items-center gap-2 rounded-full;
+    /* anime.js animateTagItems() 接管入场动画 */
+    opacity: 0;
+    transform: translateY(8px);
 
     // Height fix - improved tag height
     @apply h-auto py-0;
-
-    // Apply staggered animation with loop
-    @for $i from 0 through 100 {
-      &[data-index="#{$i}"] {
-        animation-delay: #{0.05 + ($i * 0.02)}s;
-      }
-    }
   }
 
   &-content {
@@ -762,10 +753,12 @@ code {
   }
 
   &-card {
-    @apply block p-5 bg-base-100 border border-base-content/20 rounded-xl shadow-sm transition-transform duration-300;
+    @apply block p-5 bg-base-100 border border-base-content/20 rounded-xl shadow-sm;
+    /* hover translateY 由 anime.js bindElasticHover() 接管 */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
 
     &:hover {
-      @apply -translate-y-1 shadow-md border-primary/50 bg-base-200;
+      @apply shadow-md border-primary/50 bg-base-200;
 
       .archive-title {
         @apply text-primary;
@@ -1184,18 +1177,18 @@ code {
  * 按压反馈、悬浮高亮、图标旋转等交互动效
  * =================================================== */
 
-/* 按压缩小反馈 */
+/* 按压缩小反馈 — 弹性回弹曲线 */
 .press-effect {
-  transition: transform 0.15s ease;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   &:active {
     transform: scale(0.95);
   }
 }
 
-/* 悬浮发光效果 */
+/* 悬浮发光效果 — 柔和过渡 */
 .hover-glow {
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   &:hover {
     box-shadow: 0 0 20px oklch(var(--p) / 0.3);
@@ -1225,7 +1218,7 @@ code {
     border-radius: 50%;
     background: oklch(var(--p) / 0.2);
     transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease, opacity 0.6s ease;
+    transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     opacity: 0;
   }
 

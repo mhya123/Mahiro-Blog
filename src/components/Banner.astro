@@ -155,62 +155,84 @@ const initialRandomImage = isRandomEnabled
   </div>
 </div>
 
-<!-- 打字机效果脚本 -->
+<!-- 打字机效果脚本（anime.js splitText） -->
 <script define:vars={{ TYPEWRITER_TEXTS, useTypewriter }} is:inline>
-  // @ts-nocheck
+  window.__TYPEWRITER_TEXTS = TYPEWRITER_TEXTS;
+  window.__USE_TYPEWRITER = useTypewriter;
+</script>
+<script>
+  import { createTimeline, splitText, stagger, animate } from "animejs";
+
   document.addEventListener("astro:page-load", () => {
-    if (!useTypewriter || !TYPEWRITER_TEXTS || TYPEWRITER_TEXTS.length === 0) {
-      return;
+    const texts = (window as any).__TYPEWRITER_TEXTS as string[] | undefined;
+    const useTypewriter = (window as any).__USE_TYPEWRITER as boolean | undefined;
+
+    if (!useTypewriter || !texts || texts.length === 0) return;
+
+    const el = document.getElementById("typewriter-text");
+    if (!el) return;
+
+    let index = 0;
+    let cancelled = false;
+
+    async function playNext() {
+      if (cancelled) return;
+
+      const text = texts![index];
+
+      // 1. 写入文本并用 splitText 拆分为字符
+      el!.textContent = text;
+
+      const split = splitText(el!, { chars: true });
+      const chars = split.chars;
+
+      // 初始隐藏所有字符
+      chars.forEach((c: HTMLElement) => {
+        c.style.opacity = "0";
+        c.style.display = "inline-block";
+      });
+
+      // 2. 入场动画 — 字符逐个淡入 + 上移（打字效果）
+      await animate(chars, {
+        opacity: [0, 1],
+        translateY: ["0.4em", "0em"],
+        duration: 600,
+        delay: stagger(60),
+        ease: "out(3)",
+      }).then();
+
+      // 3. 停留 2.5s
+      await new Promise(r => setTimeout(r, 2500));
+      if (cancelled) return;
+
+      // 4. 离场动画 — 字符逐个淡出 + 下移（删除效果）
+      await animate(chars, {
+        opacity: [1, 0],
+        translateY: ["0em", "-0.3em"],
+        duration: 400,
+        delay: stagger(25, { from: "last" }),
+        ease: "in(2)",
+      }).then();
+
+      // 5. 清理 splitText，恢复原始 DOM
+      split.revert();
+      el!.textContent = "";
+
+      // 短暂停顿后下一句
+      await new Promise(r => setTimeout(r, 300));
+      if (cancelled) return;
+
+      index = (index + 1) % texts!.length;
+      playNext();
     }
 
-    const typewriterElement = document.getElementById("typewriter-text");
-    if (!typewriterElement) return;
+    // 延迟 500ms 后开始
+    setTimeout(playNext, 500);
 
-    let currentTextIndex = 0;
-    let currentCharIndex = 0;
-    let isDeleting = false;
-    let typeSpeed = 150;
-    let deleteSpeed = 50;
-    let pauseTime = 2500;
-
-    function typeWriter() {
-      const currentText = TYPEWRITER_TEXTS[currentTextIndex];
-
-      if (isDeleting) {
-        typewriterElement.textContent = currentText.substring(
-          0,
-          currentCharIndex - 1,
-        );
-        currentCharIndex--;
-
-        if (currentCharIndex === 0) {
-          isDeleting = false;
-          currentTextIndex = (currentTextIndex + 1) % TYPEWRITER_TEXTS.length;
-          setTimeout(typeWriter, 300);
-          return;
-        }
-
-        setTimeout(typeWriter, deleteSpeed);
-      } else {
-        typewriterElement.textContent = currentText.substring(
-          0,
-          currentCharIndex + 1,
-        );
-        currentCharIndex++;
-
-        if (currentCharIndex === currentText.length) {
-          setTimeout(() => {
-            isDeleting = true;
-            typeWriter();
-          }, pauseTime);
-          return;
-        }
-
-        setTimeout(typeWriter, typeSpeed);
-      }
-    }
-
-    setTimeout(typeWriter, 500);
+    // 页面切换前清理
+    document.addEventListener("astro:before-swap", () => {
+      cancelled = true;
+    }, { once: true });
   });
 </script>
 
@@ -397,6 +419,29 @@ const initialRandomImage = isRandomEnabled
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* 打字机光标闪烁 */
+  #typewriter-text {
+    position: relative;
+    display: inline-block;
+    min-width: 2px;
+  }
+
+  #typewriter-text::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: currentColor;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink-caret 0.75s step-end infinite;
+  }
+
+  @keyframes blink-caret {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
   }
 
   .waves {

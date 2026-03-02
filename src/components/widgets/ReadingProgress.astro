@@ -1,0 +1,107 @@
+---
+/**
+ * ReadingProgress — 阅读进度条
+ * 
+ * 在页面顶部固定一根极细的进度条，随着滚动平滑变长。
+ * 仅在有 #content（文章详情页）时显示。
+ * 使用 anime.js Animatable 做丝滑的宽度过渡。
+ */
+---
+
+<!-- 进度条 DOM -->
+<div id="reading-progress-bar" class="reading-progress-bar" aria-hidden="true"></div>
+
+<script>
+  import { animate } from 'animejs'
+
+  document.addEventListener('astro:page-load', () => {
+    const bar = document.getElementById('reading-progress-bar')
+    if (!bar) return
+
+    const content = document.getElementById('content')
+    if (!content) {
+      bar.style.display = 'none'
+      return
+    }
+
+    bar.style.display = 'block'
+
+    let currentWidth = 0
+    let rafId: number | null = null
+
+    function updateProgress() {
+      const rect = content!.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+      // 文章顶部到视口顶部的距离（负值表示已滚过）
+      const scrolled = -rect.top
+      // 总可滚动高度 = 文章高度 - 一屏高度
+      const total = rect.height - windowHeight
+
+      let progress = 0
+      if (total > 0) {
+        progress = Math.min(Math.max(scrolled / total, 0), 1)
+      } else {
+        // 文章不够长，直接 100%
+        progress = rect.top <= 0 ? 1 : 0
+      }
+
+      const targetWidth = progress * 100
+
+      // 用 anime.js 做丝滑过渡
+      if (Math.abs(targetWidth - currentWidth) > 0.1) {
+        animate(bar!, {
+          width: `${targetWidth}%`,
+          duration: 150,
+          ease: 'out(2)',
+        })
+        currentWidth = targetWidth
+      }
+    }
+
+    // 用 rAF 节流的 scroll 监听
+    function onScroll() {
+      if (rafId) return
+      rafId = requestAnimationFrame(() => {
+        updateProgress()
+        rafId = null
+      })
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    // 初始更新
+    updateProgress()
+
+    // 页面切换前清理
+    document.addEventListener('astro:before-swap', () => {
+      window.removeEventListener('scroll', onScroll)
+      if (rafId) cancelAnimationFrame(rafId)
+    }, { once: true })
+  })
+</script>
+
+<style>
+  .reading-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    z-index: 9999;
+    pointer-events: none;
+    display: none;
+    border-radius: 0 2px 2px 0;
+
+    /* 渐变色进度条 */
+    background: linear-gradient(
+      90deg,
+      oklch(var(--p)) 0%,
+      oklch(var(--s)) 50%,
+      oklch(var(--a)) 100%
+    );
+
+    /* 微光效果 */
+    box-shadow:
+      0 0 8px oklch(var(--p) / 0.4),
+      0 0 2px oklch(var(--p) / 0.2);
+  }
+</style>

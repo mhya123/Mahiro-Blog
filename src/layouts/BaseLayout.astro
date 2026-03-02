@@ -21,6 +21,7 @@ import MobileTOC from "@components/widgets/MobileTOC.astro";
 import GlobalAudio from "@components/widgets/GlobalAudio.astro";
 import CookieConsent from "@components/widgets/CookieConsent.astro";
 import UpdateNotifier from "@components/widgets/UpdateNotifier";
+import ReadingProgress from "@components/widgets/ReadingProgress.astro";
 
 const {
   title,
@@ -173,6 +174,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
   >
     {showBanner && <Banner title={bannerTitle} subtitle={bannerSubtitle} />}
     <Navbar />
+    <ReadingProgress />
     <div class={`max-w-blog mx-auto w-full flex-grow page-content-animate ${showBanner ? 'mt-8' : 'mt-24'}`}>
       <div
         class={`grid grid-cols-1 ${showSidebar ? "md:grid-cols-5 lg:grid-cols-4" : ""} gap-4 px-4 pb-4 h-full`}
@@ -219,65 +221,15 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       });
     </script>
 
-    <script is:inline>
-      document.addEventListener("astro:page-load", () => {
-        document.querySelectorAll(".btn-copy").forEach((button) => {
-          button.addEventListener("click", async () => {
-            const codeBlock = button.closest(".mahiro-code");
-            const code = codeBlock.querySelector("code").textContent;
-            const copyIcon = button.querySelector(
-              ".mahiro-code-toolbar-copy-icon",
-            );
-            const successIcon = button.querySelector(
-              ".mahiro-code-toolbar-copy-success",
-            );
-            try {
-              await navigator.clipboard.writeText(code);
-              copyIcon.classList.add("hidden");
-              successIcon.classList.remove("hidden");
-              button.classList.add("copy-success");
-              setTimeout(() => {
-                copyIcon.classList.remove("hidden");
-                successIcon.classList.add("hidden");
-                button.classList.remove("copy-success");
-              }, 2000);
-            } catch (err) {
-              console.error("Failed to copy:", err);
-            }
-          });
-        });
-      });
-    </script>
-
-    <style is:inline>
-      .btn-copy {
-        position: relative;
-        overflow: hidden;
-      }
-      .copy-success {
-        animation: pulse 0.5s ease-in-out;
-      }
-  .mahiro-code-toolbar-copy-success svg {
-        color: #10b981;
-      }
-      @keyframes pulse {
-        0% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.1);
-        }
-        100% {
-          transform: scale(1);
-        }
-      }
-    </style>
-
     <script>
-      import gsap from "gsap";
       import NProgress from "nprogress";
       import "nprogress/nprogress.css";
       import { initAnimateValues } from "@/lib/animate-value";
+      import { initClickParticles } from "@/lib/click-particles";
+      import { initScrollReveal } from "@/lib/scroll-reveal";
+      import { initHoverEffects } from "@/lib/hover-effects";
+      import { initPageEntrance } from "@/lib/page-entrance";
+      import { initSmoothTransitions } from "@/lib/smooth-transitions";
 
       // 配置 NProgress
       NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.2 });
@@ -287,65 +239,29 @@ const bannerSubtitle = pageConfig?.subtitle || "";
         NProgress.start();
       });
 
-      // 劫持 Astro 的页面生命周期，使用 GSAP 提供顶级丝滑的阻尼进入动画
+      // 劫持 Astro 的页面生命周期，使用 anime.js 驱动入场动画
       document.addEventListener("astro:page-load", () => {
         NProgress.done();
 
-        const content = document.querySelector(".page-content-animate");
-        const staggerElements = document.querySelectorAll(".onload-animation");
-        const hasStagger = staggerElements.length > 0;
+        // 1. 页面入场动画（Banner 标题淡入 + 容器位移 + 交错加载）
+        initPageEntrance();
 
-        // 如果页面有 .onload-animation 子元素，
-        // 容器只做位移（不做 opacity），由子元素各自控制自己的入场。
-        // 如果没有 .onload-animation（如文章详情页），容器做完整的位移+淡入。
-        if (content) {
-          if (hasStagger) {
-            // 容器：位移 + 淡入，由子元素各自控制自己的交错入场
-            gsap.fromTo(
-              content,
-              { y: 40, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.6, ease: "expo.out", clearProps: "transform" }
-            );
-          } else {
-            // 无子元素交错的页面：整体位移+淡入
-            gsap.fromTo(
-              content,
-              { y: 80, opacity: 0 },
-              { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", clearProps: "transform" }
-            );
-          }
-        }
-
-        // 交错入场动画 — .onload-animation 元素依次出现
-        if (hasStagger) {
-          const sorted = Array.from(staggerElements).sort((a, b) => {
-            const ai = Number((a as HTMLElement).dataset.staggerIndex ?? 999);
-            const bi = Number((b as HTMLElement).dataset.staggerIndex ?? 999);
-            return ai - bi;
-          });
-
-          gsap.fromTo(
-            sorted,
-            { y: 24, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.5,
-              ease: "power3.out",
-              stagger: 0.06,
-              onComplete() {
-                // 动画完成后移除 .onload-animation 类，
-                // 防止 CSS 中的 opacity:0 规则把元素重新隐藏
-                sorted.forEach((el) => el.classList.remove("onload-animation"));
-              },
-            }
-          );
-        }
-
-        // 3. 数字递增动画
+        // 2. 数字递增动画
         initAnimateValues();
 
-        // 4. TOC 滚动遮罩检测
+        // 3. 点击粒子特效
+        initClickParticles();
+
+        // 4. 滚动入场动画
+        initScrollReveal();
+
+        // 5. 悬浮 & 点击交互特效
+        initHoverEffects();
+
+        // 6. 全局柔和过渡（弹性 hover、侧边栏入场、导航栏平滑等）
+        initSmoothTransitions();
+
+        // 7. TOC 滚动遮罩检测
         const tocNav = document.querySelector(".toc-nav") as HTMLElement | null;
         if (tocNav) {
           const checkOverflow = () => {

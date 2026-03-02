@@ -33,7 +33,7 @@ const typedMenu = SITE_MENU as MenuItem[];
 ---      
       
 <!-- 桌面端透明导航栏 -->      
-<nav class="fixed top-0 left-0 right-0 z-50 hidden lg:block transition-opacity duration-500 opacity-100 pointer-events-auto" id="navbar-desktop">      
+<nav class="fixed top-0 left-0 right-0 z-50 hidden lg:block opacity-100 pointer-events-auto" id="navbar-desktop">      
   <div class="max-w-blog mx-auto px-4">      
     <!-- 透明背景，添加毛玻璃效果 -->      
     <div id="navbar-bg" class="bg-base-100/80 backdrop-blur-xl border border-white/20 px-4 xl:px-6 py-2 xl:py-2.5 rounded-full shadow-2xl transition-all duration-300 w-full">      
@@ -104,7 +104,7 @@ const typedMenu = SITE_MENU as MenuItem[];
 </nav>      
       
 <!-- 移动端顶部悬浮导航栏 -->
-<nav id="navbar-mobile" class="fixed top-0 left-0 right-0 z-50 lg:hidden transition-all duration-500 ease-in-out">
+<nav id="navbar-mobile" class="fixed top-0 left-0 right-0 z-50 lg:hidden">
   <div class="max-w-blog mx-auto px-2 pt-2">
     <div class="flex items-center gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full">
       {typedMenu.map((item) => {
@@ -171,58 +171,5 @@ const typedMenu = SITE_MENU as MenuItem[];
     </div>
   </div>
 </nav>
-      
-<script>      
-  document.addEventListener("astro:page-load", () => {
-    // 导航栏淡入淡出逻辑
-    let lastScrollY = window.scrollY;
-    const navbarDesktop = document.getElementById("navbar-desktop");
-    const navbarMobile = document.getElementById("navbar-mobile");
-    const navbarBg = document.getElementById("navbar-bg");
-    const navItems = document.querySelectorAll(".nav-item");
 
-    function handleScroll() {
-      const currentScrollY = window.scrollY;
-      const isScrollingDown = currentScrollY > lastScrollY && currentScrollY > 50;
-      const isScrolledPastBanner = currentScrollY > 100; // 假设 Banner 高度至少 100px，或者根据实际情况调整
-
-      // 桌面端处理
-      if (navbarDesktop) {
-        if (isScrollingDown) {
-          navbarDesktop.classList.add("opacity-0", "pointer-events-none");
-          navbarDesktop.classList.remove("opacity-100", "pointer-events-auto");
-        } else {
-          navbarDesktop.classList.remove("opacity-0", "pointer-events-none");
-          navbarDesktop.classList.add("opacity-100", "pointer-events-auto");
-        }
-      }
-
-      // 移动端处理
-      if (navbarMobile) {
-        if (isScrollingDown) {
-          // 向下滑动隐藏：向上平移并透明
-          navbarMobile.classList.add("-translate-y-32", "opacity-0", "pointer-events-none");
-        } else {
-          // 向上滑动显示：恢复原位
-          navbarMobile.classList.remove("-translate-y-32", "opacity-0", "pointer-events-none");
-        }
-      }
-
-      lastScrollY = currentScrollY;
-    }
-
-    let ticking = false;
-    window.addEventListener("scroll", () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    });
-    
-    // 初始化执行一次以设置正确状态
-    handleScroll();
-  });
-</script>
+<!-- 导航栏滚动隐藏/显示逻辑已迁移至 src/lib/smooth-transitions.ts（anime.js 驱动） -->
