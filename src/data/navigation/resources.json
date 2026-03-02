@@ -1,0 +1,86 @@
+{
+  "title": "Useful Resources",
+  "icon": "lucide:bookmark",
+  "items": [
+    {
+      "name": "Astro",
+      "avatar": "https://img.xiaozhangya.xin/file/Logo/HXADhsBn.png",
+      "description": "Astro是一个现代化的静态网站生成器",
+      "url": "https://docs.astro.build",
+      "category": "文档",
+      "id": "RES001"
+    },
+    {
+      "name": "Tailwind",
+      "avatar": "https://img.xiaozhangya.xin/file/Logo/mrp0EiyB.png",
+      "description": "Tailwind CSS是一个功能类优先的CSS框架",
+      "url": "https://tailwindcss.com/docs",
+      "category": "文档",
+      "id": "RES002"
+    },
+    {
+      "name": "DaisyUI",
+      "avatar": "https://img.xiaozhangya.xin/file/Logo/WEl6nL3H.svg",
+      "description": "DaisyUI是一个基于Tailwind CSS的组件库",
+      "url": "https://daisyui.com/components/",
+      "category": "UI 框架",
+      "id": "RES003"
+    },
+    {
+      "name": "TypeScript",
+      "avatar": "https://img.xiaozhangya.xin/file/Logo/FL3XpMDh.png",
+      "description": "TypeScript是JavaScript的超集",
+      "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+      "category": "文档",
+      "id": "RES004"
+    },
+    {
+      "name": "MDN Web Docs",
+      "avatar": "https://developer.mozilla.org/favicon-48x48.bc390275e955dacb2e65.png",
+      "description": "最权威的 Web 技术文档，前端开发者的圣经",
+      "url": "https://developer.mozilla.org/zh-CN/",
+      "category": "文档",
+      "id": "RES005"
+    },
+    {
+      "name": "React",
+      "avatar": "https://react.dev/favicon-32x32.png",
+      "description": "用于构建用户界面的 JavaScript 库",
+      "url": "https://react.dev/",
+      "category": "文档",
+      "id": "RES006"
+    },
+    {
+      "name": "Vue.js",
+      "avatar": "https://vuejs.org/logo.svg",
+      "description": "渐进式 JavaScript 框架",
+      "url": "https://cn.vuejs.org/",
+      "category": "文档",
+      "id": "RES007"
+    },
+    {
+      "name": "Next.js",
+      "avatar": "https://nextjs.org/favicon.ico",
+      "description": "React 全栈框架，支持 SSR/SSG",
+      "url": "https://nextjs.org/docs",
+      "category": "文档",
+      "id": "RES008"
+    },
+    {
+      "name": "Node.js",
+      "avatar": "https://nodejs.org/static/images/favicons/favicon.png",
+      "description": "基于 V8 引擎的 JavaScript 运行时",
+      "url": "https://nodejs.org/zh-cn",
+      "category": "文档",
+      "id": "RES009"
+    },
+    {
+      "name": "Vite",
+      "avatar": "https://vite.dev/logo.svg",
+      "description": "下一代前端构建工具，极速热更新",
+      "url": "https://vite.dev/",
+      "category": "构建工具",
+      "id": "RES010"
+    }
+  ]
+}

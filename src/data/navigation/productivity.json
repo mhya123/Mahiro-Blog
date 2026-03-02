@@ -1,0 +1,54 @@
+{
+  "title": "效率提升",
+  "icon": "lucide:rocket",
+  "items": [
+    {
+      "name": "Notion",
+      "avatar": "https://www.notion.so/images/favicon.ico",
+      "description": "全能的笔记与知识管理工具",
+      "url": "https://www.notion.so/",
+      "category": "笔记",
+      "id": "EFF001"
+    },
+    {
+      "name": "Obsidian",
+      "avatar": "https://obsidian.md/favicon.ico",
+      "description": "本地优先的 Markdown 知识库",
+      "url": "https://obsidian.md/",
+      "category": "笔记",
+      "id": "EFF002"
+    },
+    {
+      "name": "Raycast",
+      "avatar": "https://www.raycast.com/favicon-production.png",
+      "description": "Mac 上的高效启动器与效率工具",
+      "url": "https://www.raycast.com/",
+      "category": "效率",
+      "id": "EFF003"
+    },
+    {
+      "name": "Bitwarden",
+      "avatar": "https://bitwarden.com/favicon.ico",
+      "description": "开源免费的密码管理器",
+      "url": "https://bitwarden.com/",
+      "category": "安全",
+      "id": "EFF004"
+    },
+    {
+      "name": "Excalidraw",
+      "avatar": "https://excalidraw.com/favicon.ico",
+      "description": "手绘风格的在线白板协作工具",
+      "url": "https://excalidraw.com/",
+      "category": "协作",
+      "id": "EFF005"
+    },
+    {
+      "name": "Snipaste",
+      "avatar": "https://www.snipaste.com/favicon.ico",
+      "description": "简洁强大的截图贴图工具",
+      "url": "https://www.snipaste.com/",
+      "category": "截图",
+      "id": "EFF006"
+    }
+  ]
+}

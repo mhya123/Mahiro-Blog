@@ -1,0 +1,62 @@
+{
+  "title": "设计创意",
+  "icon": "lucide:palette",
+  "items": [
+    {
+      "name": "Figma",
+      "avatar": "https://static.figma.com/app/icon/1/favicon.png",
+      "description": "强大的在线协作设计工具",
+      "url": "https://www.figma.com/",
+      "category": "设计工具",
+      "id": "DES001"
+    },
+    {
+      "name": "Unsplash",
+      "avatar": "https://unsplash.com/favicon-32x32.png",
+      "description": "海量免费高质量图片素材",
+      "url": "https://unsplash.com/",
+      "category": "图片素材",
+      "id": "DES003"
+    },
+    {
+      "name": "Google Fonts",
+      "avatar": "https://www.gstatic.com/images/icons/material/apps/fonts/1x/catalog/v5/favicon.svg",
+      "description": "免费开源的 Web 字体库",
+      "url": "https://fonts.google.com/",
+      "category": "字体",
+      "id": "DES004"
+    },
+    {
+      "name": "Coolors",
+      "avatar": "https://i.mahiro.work/i/2026/03/02/otempa.png",
+      "description": "快速生成美观的配色方案",
+      "url": "https://coolors.co/",
+      "category": "配色工具",
+      "id": "DES005"
+    },
+    {
+      "name": "Excalidraw",
+      "avatar": "https://excalidraw.com/favicon.ico",
+      "description": "手绘风格的白板与图表工具",
+      "url": "https://excalidraw.com/",
+      "category": "白板绘图",
+      "id": "DES006"
+    },
+    {
+      "name": "Squoosh",
+      "avatar": "https://squoosh.app/c/favicon-c9cf50ef.ico",
+      "description": "Google 出品的在线图片压缩工具",
+      "url": "https://squoosh.app/",
+      "category": "图片工具",
+      "id": "DES007"
+    },
+    {
+      "name": "TinyPNG",
+      "avatar": "https://tinypng.com/images/favicon.ico",
+      "description": "智能压缩 PNG 和 JPEG 图片",
+      "url": "https://tinypng.com/",
+      "category": "图片工具",
+      "id": "DES008"
+    }
+  ]
+}

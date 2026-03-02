@@ -6,6 +6,45 @@ import { NAV_DATA } from "../data/navData";
 
 // 扁平化所有数据以供搜索和"全部"分类使用
 const allItems = NAV_DATA.flatMap(category => category.items);
+
+// 导航资源 PR 申请链接（跳转到分类文件夹，用户自由选择要编辑的分类 JSON）
+const applyUrl = `https://github.com/mhya123/Mahiro-Blog/tree/main/src/data/navigation`;
+
+const issueTemplate = `### 导航资源收录申请
+
+请严格按照下方 JSON 格式填写资源信息（不需要修改反引号）：
+
+#### 方式一：往已有分类添加资源（推荐）
+请说明要添加到哪个分类（如"开发工具"、"AI 工具"、"设计创意"、"在线服务"、"学习资源"、"效率办公"等），并在该分类的 \`items\` 数组末尾追加：
+\`\`\`json
+{
+  "name": "资源名称",
+  "avatar": "https://资源图标URL",
+  "description": "资源简短描述",
+  "url": "https://资源链接",
+  "category": "子分类标签"
+}
+\`\`\`
+
+#### 方式二：新增一整个分类（仅在现有分类不适合时使用）
+\`\`\`json
+{
+  "title": "分类名称",
+  "icon": "lucide:图标名",
+  "items": [
+    {
+      "name": "资源名称",
+      "avatar": "https://资源图标URL",
+      "description": "资源简短描述",
+      "url": "https://资源链接",
+      "category": "子分类标签",
+      "id": "XXX001"
+    }
+  ]
+}
+\`\`\`
+`;
+const issueUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${encodeURIComponent("导航收录: 资源名称")}&body=${encodeURIComponent(issueTemplate)}`;
 ---
 
 <BaseLayout title="导航" isIndexed={false}>
@@ -75,99 +114,257 @@ const allItems = NAV_DATA.flatMap(category => category.items);
         <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
       </div>
 
+      <!-- 导航资源提交区块 -->
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-3">
+          <Icon name="lucide:plus-circle" class="text-primary" />
+          <span>提交资源</span>
+        </h2>
+        <p class="text-base-content/70 text-base mb-6">
+          发现了好用的工具或网站？欢迎通过 GitHub PR 提交，机器人会自动审核并合并！
+        </p>
+
+        <div class="bg-base-100 rounded-2xl border border-base-200 p-6 md:p-8 mb-6">
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <Icon name="lucide:info" class="w-5 h-5 text-primary" />
+            收录要求
+          </h3>
+          <ul class="space-y-3 text-base-content/80 text-sm">
+            <li class="flex items-start gap-2">
+              <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+              <span>资源链接能够正常访问</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+              <span>资源有实际使用价值（非钓鱼/广告站）</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+              <span>不包含违规/恶意/侵权内容</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+              <span>提供有效的图标 URL</span>
+            </li>
+          </ul>
+
+          <div class="divider my-4"></div>
+
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <Icon name="lucide:file-json" class="w-5 h-5 text-primary" />
+            JSON 格式（往已有分类添加资源）
+          </h3>
+          <p class="text-sm text-base-content/60 mb-3">
+            选择一个已有的分类文件（如 <code>dev-tools.json</code>、<code>ai-tools.json</code> 等），在其 <code>items</code> 数组末尾追加一项：
+          </p>
+          <div class="bg-base-200/50 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+            <pre class="whitespace-pre text-base-content/80">{JSON.stringify({
+  name: "资源名称",
+  avatar: "https://资源图标URL",
+  description: "资源简短描述",
+  url: "https://资源链接",
+  category: "子分类标签"
+}, null, 2)}</pre>
+          </div>
+        </div>
+
+        <!-- 提示 -->
+        <div class="alert alert-warning mb-4 flex items-center gap-2 text-sm">
+          <Icon name="lucide:alert-triangle" class="w-5 h-5 shrink-0" />
+          <span><strong>操作说明：</strong> 点击按钮后会进入分类文件夹，选择对应的分类 JSON 文件（如 <code>dev-tools.json</code>、<code>ai-tools.json</code> 等），点击编辑按钮，在 <code>items</code> 数组末尾追加您的资源，然后提交 PR 即可。</span>
+        </div>
+
+        <!-- Issue 备用通道 -->
+        <div class="alert alert-info mb-6 flex items-start gap-2 text-sm">
+          <Icon name="lucide:info" class="w-5 h-5 shrink-0 mt-0.5" />
+          <div>
+            <strong>不熟悉 PR？</strong>
+            <p class="mt-1">也可以通过 <a href={issueUrl} target="_blank" rel="noopener noreferrer" class="link font-bold">提交 Issue</a> 来申请收录，管理员会人工审核处理。</p>
+          </div>
+        </div>
+
+        <!-- 申请按钮 -->
+        <div class="flex justify-center">
+          <a
+            href={applyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary btn-lg gap-2 px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 press-effect"
+          >
+            <Icon name="lucide:folder-open" class="w-5 h-5" />
+            前往 GitHub 选择分类并提交
+          </a>
+        </div>
+      </div>
+
+      <div class="divider my-6">
+        <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
+      </div>
+
     </div>
   </div>
 </BaseLayout>
 
-<script>
-  // 简单的客户端搜索和过滤逻辑
-  document.addEventListener('astro:page-load', () => {
-    const searchInput = document.getElementById('search-input') as HTMLInputElement;
-    const categoryBtns = document.querySelectorAll('.category-btn');
-    const resourceItems = document.querySelectorAll('.resource-item');
-    const noResults = document.getElementById('no-results');
-    
-    let currentCategory = 'all';
-    let currentSearch = '';
-
-    function filterItems() {
-      let visibleCount = 0;
-
-      resourceItems.forEach(item => {
-        const itemCategory = (item as HTMLElement).dataset.category; // 这里其实是具体的子分类，我们需要匹配大分类
-        // 由于数据结构扁平化了，我们需要一种方式知道item属于哪个大分类。
-        // 简单起见，我们重新遍历数据或者在渲染时把大分类也加上。
-        // 让我们修改上面的渲染逻辑，把大分类加到 data-parent-category 属性中。
-      });
-    }
-  });
+<!-- 把 navData 注入到 window，供模块化脚本读取 -->
+<script is:inline define:vars={{ navData: NAV_DATA }}>
+  window.__NAV_DATA = navData;
 </script>
 
-<!-- 重新实现带逻辑的脚本 -->
-<script is:inline define:vars={{ navData: NAV_DATA }}>
+<!-- anime.js 驱动的搜索与分类过滤 -->
+<script>
+  import { animate, stagger } from 'animejs';
+
   document.addEventListener('astro:page-load', () => {
-    const searchInput = document.getElementById('search-input');
-    const categoryBtns = document.querySelectorAll('.category-btn');
-    const resourceItems = document.querySelectorAll('.resource-item');
+    const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+    const categoryBtns = document.querySelectorAll<HTMLElement>('.category-btn');
+    const resourceItems = document.querySelectorAll<HTMLElement>('.resource-item');
     const noResults = document.getElementById('no-results');
-    
-    // 构建 item name -> parent category 的映射
-    const itemParentCategoryMap = {};
-    navData.forEach(cat => {
-      cat.items.forEach(item => {
-        itemParentCategoryMap[item.name] = cat.title;
-      });
-    });
+    const grid = document.getElementById('resources-grid');
+    if (!grid) return;
 
     let currentCategory = 'all';
     let currentSearch = '';
+    let isAnimating = false;
 
-    function updateVisibility() {
-      let visibleCount = 0;
-      
+    // ─── 用 anime.js 做卡片离场 + 入场 ───────────────
+
+    async function animateFilter() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      // 收集当前可见和将要可见的元素
+      const toHide: HTMLElement[] = [];
+      const toShow: HTMLElement[] = [];
+
       resourceItems.forEach(item => {
-        const name = item.dataset.name;
-        const desc = item.dataset.desc;
-        // 获取该项目的父分类（大分类）
-        // 注意：这里我们通过 data-name 反查，或者更简单地，在渲染时直接把 parent category 写入 dom
-        const parentCategory = item.dataset.parentCategory;
-        
+        const name = item.dataset.name || '';
+        const desc = item.dataset.desc || '';
+        const parentCategory = item.dataset.parentCategory || '';
+
         const matchesSearch = name.includes(currentSearch) || desc.includes(currentSearch);
         const matchesCategory = currentCategory === 'all' || parentCategory === currentCategory;
+        const shouldShow = matchesSearch && matchesCategory;
+        const isVisible = item.style.display !== 'none';
 
-        if (matchesSearch && matchesCategory) {
-          item.style.display = '';
-          visibleCount++;
-        } else {
+        if (!shouldShow && isVisible) {
+          toHide.push(item);
+        } else if (shouldShow && !isVisible) {
+          toShow.push(item);
+        } else if (!shouldShow) {
           item.style.display = 'none';
         }
       });
 
-      if (noResults) {
-        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      // 第 1 步：离场动画（当前可见但需要隐藏的）
+      if (toHide.length > 0) {
+        await new Promise<void>(resolve => {
+          animate(toHide, {
+            opacity: [1, 0],
+            scale: [1, 0.92],
+            translateY: ['0px', '12px'],
+            duration: 250,
+            delay: stagger(20),
+            ease: 'in(2)',
+            onComplete() {
+              toHide.forEach(el => {
+                el.style.display = 'none';
+                el.style.opacity = '';
+                el.style.transform = '';
+              });
+              resolve();
+            }
+          });
+        });
       }
+
+      // 第 2 步：入场动画（需要显示的新卡片）
+      if (toShow.length > 0) {
+        toShow.forEach(el => {
+          el.style.display = '';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(20px) scale(0.95)';
+        });
+
+        await new Promise<void>(resolve => {
+          animate(toShow, {
+            opacity: [0, 1],
+            scale: [0.95, 1],
+            translateY: ['20px', '0px'],
+            duration: 450,
+            delay: stagger(40, { start: 50 }),
+            ease: 'out(3)',
+            onComplete() {
+              toShow.forEach(el => {
+                el.style.opacity = '';
+                el.style.transform = '';
+              });
+              resolve();
+            }
+          });
+        });
+      }
+
+      // 更新无结果提示
+      const visibleCount = Array.from(resourceItems).filter(
+        item => item.style.display !== 'none'
+      ).length;
+
+      if (noResults) {
+        if (visibleCount === 0) {
+          noResults.style.display = 'block';
+          noResults.style.opacity = '0';
+          animate(noResults, {
+            opacity: [0, 1],
+            translateY: ['16px', '0px'],
+            duration: 400,
+            ease: 'out(3)',
+          });
+        } else {
+          noResults.style.display = 'none';
+        }
+      }
+
+      isAnimating = false;
     }
 
-    // 搜索事件
-    searchInput?.addEventListener('input', (e) => {
-      currentSearch = e.target.value.toLowerCase();
-      updateVisibility();
+    // ─── 初始显示所有卡片 ─────────────────────────────
+    resourceItems.forEach(item => {
+      item.style.display = '';
     });
 
-    // 分类点击事件
+    // ─── 分类按钮点击事件 ─────────────────────────────
     categoryBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        // 更新按钮状态
+        if (isAnimating) return;
+
+        // 当前按钮做弹性缩放反馈
+        animate(btn, {
+          scale: [1, 0.92, 1.06, 1],
+          duration: 400,
+          ease: 'out(3)',
+        });
+
+        // 更新按钮样式
         categoryBtns.forEach(b => {
-          b.classList.remove('bg-primary', 'text-primary-content', 'font-bold');
+          b.classList.remove('bg-primary', 'text-primary-content', 'font-bold', 'shadow-md');
           b.classList.add('bg-base-100', 'text-base-content/60', 'font-medium');
         });
         btn.classList.remove('bg-base-100', 'text-base-content/60', 'font-medium');
-        btn.classList.add('bg-primary', 'text-primary-content', 'font-bold');
+        btn.classList.add('bg-primary', 'text-primary-content', 'font-bold', 'shadow-md');
 
-        currentCategory = btn.dataset.category;
-        updateVisibility();
+        currentCategory = btn.dataset.category || 'all';
+        animateFilter();
       });
+    });
+
+    // ─── 搜索输入事件 (debounce) ──────────────────────
+    let searchTimer: ReturnType<typeof setTimeout>;
+    searchInput?.addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        currentSearch = (e.target as HTMLInputElement).value.toLowerCase();
+        animateFilter();
+      }, 200);
     });
   });
 </script>

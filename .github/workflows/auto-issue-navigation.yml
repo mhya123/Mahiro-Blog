@@ -1,0 +1,237 @@
+name: Admin Navigation Issue Audit
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit-issue:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.title, '导航收录')
+    steps:
+      - name: 导航 Issue 自动化审核
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.issue.number;
+            const issue_body = context.payload.issue.body || '';
+            const issue_title = context.payload.issue.title || '';
+
+            // ================= 常量定义区 =================
+            const LABELS = {
+              BASE: '导航收录',
+              RUNNING: '审核中',
+              PASSED: '审核通过',
+              NEEDS_MANUAL: '需人工审核',
+              NEED_FIX: '待修改',
+              SITE_OK: '资源正常',
+              SITE_ERR: '资源异常',
+              AVATAR_OK: '图标正常',
+              AVATAR_ERR: '图标异常'
+            };
+
+            const MSG = {
+              TITLE_ERR: '占位符拦截：系统检测到您的标题或 JSON 内容中依然包含默认的"资源名称"，请务必修改为真实信息。',
+              JSON_MISSING_ERR: '未在 Issue 中找到合法的 JSON 代码块。请确保您的 JSON 数据包裹在 ```json 和 ``` 之间。',
+              JSON_PARSE_ERR: 'JSON 解析失败，请检查文件格式是否符合完全正确的 JSON 规范。',
+              ITEM_KEY_ERR: '资源 JSON 缺少必填字段，必须包含：name, avatar, description, url, category。',
+              SSRF_BLOCK: '安全拦截：目标 URL 疑似指向内网或保留 IP。',
+              SUCCESS: `🎉 **预审通过！**\n\n感谢您提交的导航资源收录申请！系统已检测到资源信息有效。\n\n已打上 \`审核通过\` 标签，仓库管理员 @${owner} 稍后会将您的资源添加入库，请耐心等待。`,
+              NEEDS_MANUAL: `🤖 **自动化初审遇到了困难 (需人工干预)**\n\n您好！感谢提交申请。由于无法正常访问部分资源链接（可能为网络或安全策略原因），系统已自动打上 \`需人工审核\` 标签，并通知了仓库管理员 @${owner}。\n\n管理员将在近期手动核实，请耐心等待！`,
+              REJECT: `您好！感谢对本站的关注。\n\n您提交的内容存在格式问题（详情请见上方审核报告），系统已暂时 **关闭** 此 Issue。\n\n### 💡 正确格式：\n**新建分类：**\n\`\`\`json\n{\n  "title": "分类名称",\n  "icon": "lucide:图标名",\n  "items": [\n    {\n      "name": "资源名称",\n      "avatar": "https://资源图标URL",\n      "description": "资源简短描述",\n      "url": "https://资源链接",\n      "category": "子分类标签"\n    }\n  ]\n}\n\`\`\`\n**单个资源：**\n\`\`\`json\n{\n  "name": "资源名称",\n  "avatar": "https://资源图标URL",\n  "description": "资源简短描述",\n  "url": "https://资源链接",\n  "category": "子分类标签"\n}\n\`\`\`\n\n**请修正后重新提交一个新的 Issue。**`
+            };
+
+            // ================= 辅助函数 =================
+            async function createComment(body) {
+              const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+              const footer = `\n\n---\n*🤖 该评论由 Action 自动化发送，无需回复。 [查看构建日志](${runUrl})*`;
+              await github.rest.issues.createComment({ owner, repo, issue_number, body: body + footer });
+            }
+
+            async function ensureLabel(name, color = 'ededed') {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (e) {
+                if (e.status === 404) {
+                  await github.rest.issues.createLabel({ owner, repo, name, color });
+                }
+              }
+            }
+
+            function getLabelColor(name) {
+              const greenLabels = ['审核通过', '资源正常', '图标正常'];
+              const redLabels = ['待修改', '资源异常', '图标异常'];
+              const orangeLabels = ['需人工审核'];
+              if (greenLabels.includes(name)) return '0e8a16';
+              if (redLabels.includes(name)) return 'd93f0b';
+              if (orangeLabels.includes(name)) return 'd93f0b';
+              return '0969da';
+            }
+
+            let _labelCache = null;
+            async function getLabelCache() {
+              if (!_labelCache) {
+                const current = await github.rest.issues.get({ owner, repo, issue_number });
+                _labelCache = new Set((current.data.labels || []).map(l => l.name));
+              }
+              return _labelCache;
+            }
+
+            async function manageLabels(addList = [], removeList = []) {
+              const currentLabels = await getLabelCache();
+              for (const name of addList) {
+                if (!currentLabels.has(name)) {
+                  await ensureLabel(name, getLabelColor(name));
+                  await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [name] });
+                  currentLabels.add(name);
+                }
+              }
+              for (const name of removeList) {
+                if (currentLabels.has(name)) {
+                  try {
+                    await github.rest.issues.removeLabel({ owner, repo, issue_number, name });
+                    currentLabels.delete(name);
+                  } catch (e) { /* ignore */ }
+                }
+              }
+            }
+
+            function isSafeUrl(urlStr) {
+              try {
+                const u = new URL(urlStr);
+                if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+                const h = u.hostname;
+                if (/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|::1)/i.test(h)) return false;
+                return true;
+              } catch { return false; }
+            }
+
+            async function fetchWithTimeout(url, timeoutMs = 10000, { headOnly = false } = {}) {
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), timeoutMs);
+              try {
+                const res = await fetch(url, {
+                  method: headOnly ? 'HEAD' : 'GET',
+                  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+                  signal: controller.signal,
+                  redirect: 'follow'
+                });
+                return { ok: res.ok, status: res.status };
+              } catch (e) {
+                return { ok: false, error: e.message };
+              } finally {
+                clearTimeout(timer);
+              }
+            }
+
+            // ================= 核心执行逻辑 =================
+            await manageLabels([LABELS.BASE, LABELS.RUNNING], []);
+            const reportData = [];
+            let fatalError = false;
+            let blockedByWaf = false;
+
+            try {
+              // 0. 标题防呆校验
+              if (issue_title.includes('资源名称')) {
+                throw new Error(MSG.TITLE_ERR);
+              }
+
+              // 1. 提取 JSON 代码块
+              const jsonMatch = issue_body.match(/```json\s+([\s\S]+?)\s+```/i);
+              if (!jsonMatch || !jsonMatch[1]) {
+                throw new Error(MSG.JSON_MISSING_ERR);
+              }
+              
+              const contentStr = jsonMatch[1].trim();
+              let json;
+              try { json = JSON.parse(contentStr); } catch { throw new Error(MSG.JSON_PARSE_ERR); }
+
+              // 2. 判断是完整分类还是单个资源
+              let itemsToCheck = [];
+
+              if (json.title && json.items && Array.isArray(json.items)) {
+                // 完整分类格式
+                if (json.items.some(i => i.name === '资源名称')) {
+                  throw new Error(MSG.TITLE_ERR);
+                }
+                itemsToCheck = json.items;
+                reportData.push({ item: 'JSON 格式', status: '✅ 通过', detail: `分类格式，分类名: "${json.title}"，包含 ${json.items.length} 个资源` });
+              } else if (json.name && json.url) {
+                // 单个资源格式
+                if (json.name === '资源名称') {
+                  throw new Error(MSG.TITLE_ERR);
+                }
+                itemsToCheck = [json];
+                reportData.push({ item: 'JSON 格式', status: '✅ 通过', detail: `单资源格式，资源名: "${json.name}"` });
+              } else {
+                throw new Error(MSG.JSON_PARSE_ERR);
+              }
+
+              // 3. 校验每个 item 的必填字段
+              const requiredKeys = ['name', 'avatar', 'description', 'url', 'category'];
+              for (let i = 0; i < itemsToCheck.length; i++) {
+                const item = itemsToCheck[i];
+                const missingKeys = requiredKeys.filter(k => !item[k] || typeof item[k] !== 'string');
+                if (missingKeys.length > 0) {
+                  throw new Error(`${MSG.ITEM_KEY_ERR} 第 ${i + 1} 项 "${item.name || '未知'}" 缺失: ${missingKeys.join(', ')}`);
+                }
+              }
+
+              // 4. 安全防护 SSRF
+              for (const item of itemsToCheck) {
+                if (!isSafeUrl(item.url) || !isSafeUrl(item.avatar)) {
+                  throw new Error(MSG.SSRF_BLOCK);
+                }
+              }
+
+              // 5. 网络测试（最多 5 个）
+              const testItems = itemsToCheck.slice(0, 5);
+              const fetchTasks = testItems.flatMap(item => [
+                fetchWithTimeout(item.avatar, 8000, { headOnly: true }),
+                fetchWithTimeout(item.url, 8000, { headOnly: true })
+              ]);
+              const results = await Promise.all(fetchTasks);
+
+              let failCount = 0;
+              for (let i = 0; i < testItems.length; i++) {
+                const avatarRes = results[i * 2];
+                const siteRes = results[i * 2 + 1];
+                if (!avatarRes.ok) failCount++;
+                if (!siteRes.ok) failCount++;
+              }
+
+              if (failCount === 0) {
+                reportData.push({ item: '连通性检测', status: '✅ 正常', detail: `${testItems.length} 个资源全部可达` });
+                await manageLabels([LABELS.SITE_OK, LABELS.AVATAR_OK]);
+              } else {
+                blockedByWaf = true;
+                reportData.push({ item: '连通性检测', status: '⚠️ 异常', detail: `${failCount} 个链接无法访问（可能为 WAF 拦截）` });
+              }
+
+            } catch (err) {
+              fatalError = true;
+              reportData.push({ item: '前置校验拦截', status: '❌ 未通过', detail: err.message });
+            }
+
+            // ================= 报告生成与最终动作 =================
+            let markdownTable = `### 🔍 导航资源自动化审核报告\n\n| 检查项目 | 状态 | 详细说明 |\n| :--- | :--- | :--- |\n`;
+            reportData.forEach(r => { markdownTable += `| **${r.item}** | ${r.status} | ${r.detail} |\n`; });
+
+            if (fatalError) {
+              await manageLabels([LABELS.NEED_FIX], [LABELS.RUNNING]);
+              await createComment(`${markdownTable}\n\n---\n\n${MSG.REJECT}`);
+              await github.rest.issues.update({ owner, repo, issue_number, state: 'closed' });
+            } else if (blockedByWaf) {
+              await manageLabels([LABELS.NEEDS_MANUAL], [LABELS.RUNNING]);
+              await createComment(`${markdownTable}\n\n---\n\n${MSG.NEEDS_MANUAL}`);
+            } else {
+              await manageLabels([LABELS.PASSED], [LABELS.RUNNING]);
+              await createComment(`${markdownTable}\n\n---\n\n${MSG.SUCCESS}`);
+            }

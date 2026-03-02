@@ -1,0 +1,86 @@
+{
+  "title": "开发工具",
+  "icon": "lucide:code",
+  "items": [
+    {
+      "name": "Umami",
+      "avatar": "https://img.xiaozhangya.xin/file/Logo/1753850918996_umami.png",
+      "description": "网站访问统计分析平台",
+      "url": "https://us.umami.is/dashboard",
+      "category": "统计分析",
+      "id": "DEV001"
+    },
+    {
+      "name": "Vercel",
+      "avatar": "https://img.xiaozhangya.xin/file/Logo/1753851435981_Vercel.png",
+      "description": "现代化的前端部署平台",
+      "url": "https://vercel.com/login?next=%2Fmhya123-projects",
+      "category": "部署托管",
+      "id": "DEV002"
+    },
+    {
+      "name": "Iconify",
+      "avatar": "https://iconify.design/favicon.ico",
+      "description": "海量图标库和图标搜索工具",
+      "url": "https://iconify.design/",
+      "category": "图标设计",
+      "id": "DEV003"
+    },
+    {
+      "name": "Iconfont",
+      "avatar": "https://img.xiaozhangya.xin/file/Logo/DEPF9Ovv.png",
+      "description": "阿里巴巴图标库",
+      "url": "https://www.iconfont.cn/",
+      "category": "图标设计",
+      "id": "DEV004"
+    },
+    {
+      "name": "Shields",
+      "avatar": "https://shields.io/img/logo.png",
+      "description": "为项目生成各种徽章",
+      "url": "https://shields.io/",
+      "category": "徽章工具",
+      "id": "DEV005"
+    },
+    {
+      "name": "Clarity",
+      "avatar": "https://picbed.xiaozhangya.xin/picbed/20250726225237829.png",
+      "description": "微软的用户行为分析工具",
+      "url": "https://clarity.microsoft.com/",
+      "category": "用户分析",
+      "id": "DEV006"
+    },
+    {
+      "name": "VSCode",
+      "avatar": "https://code.visualstudio.com/favicon.ico",
+      "description": "微软出品的强大代码编辑器",
+      "url": "https://code.visualstudio.com/",
+      "category": "编辑器",
+      "id": "DEV007"
+    },
+    {
+      "name": "Regex101",
+      "avatar": "https://regex101.com/favicon.ico",
+      "description": "在线正则表达式测试和调试工具",
+      "url": "https://regex101.com/",
+      "category": "正则工具",
+      "id": "DEV010"
+    },
+    {
+      "name": "DevToys",
+      "avatar": "https://devtoys.app/favicon.ico",
+      "description": "开发者的瑞士军刀，多合一工具箱",
+      "url": "https://devtoys.app/",
+      "category": "工具箱",
+      "id": "DEV011"
+    },
+    {
+      "name": "Can I Use",
+      "avatar": "https://caniuse.com/img/favicon-128.png",
+      "description": "浏览器兼容性查询",
+      "url": "https://caniuse.com/",
+      "category": "兼容性",
+      "id": "DEV012"
+    }
+  ]
+}

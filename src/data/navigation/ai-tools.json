@@ -1,0 +1,70 @@
+{
+  "title": "AI 工具",
+  "icon": "lucide:brain",
+  "items": [
+    {
+      "name": "ChatGPT",
+      "avatar": "https://cdn.oaistatic.com/assets/favicon-miwirzcw.ico",
+      "description": "OpenAI 的 AI 对话助手",
+      "url": "https://chat.openai.com/",
+      "category": "AI 对话",
+      "id": "AI001"
+    },
+    {
+      "name": "Claude",
+      "avatar": "https://i.mahiro.work/i/2026/03/02/nxjjr8.svg",
+      "description": "Anthropic 的 AI 助手，擅长长文本与代码",
+      "url": "https://claude.ai/",
+      "category": "AI 对话",
+      "id": "AI002"
+    },
+    {
+      "name": "Gemini",
+      "avatar": "https://www.gstatic.com/lamda/images/gemini_favicon_f069958c85030456e93de685481c559f160ea06b.png",
+      "description": "Google 的多模态 AI 模型",
+      "url": "https://gemini.google.com/",
+      "category": "AI 对话",
+      "id": "AI003"
+    },
+    {
+      "name": "GitHub Copilot",
+      "avatar": "https://github.githubassets.com/favicons/favicon.svg",
+      "description": "AI 代码补全与编程助手",
+      "url": "https://github.com/features/copilot",
+      "category": "AI 编程",
+      "id": "AI004"
+    },
+    {
+      "name": "Cursor",
+      "avatar": "https://www.cursor.com/favicon.ico",
+      "description": "AI 原生代码编辑器",
+      "url": "https://www.cursor.com/",
+      "category": "AI 编程",
+      "id": "AI005"
+    },
+    {
+      "name": "V0",
+      "avatar": "https://i.mahiro.work/i/2026/03/02/nxjo2o.svg",
+      "description": "Vercel 推出的 AI UI 生成器",
+      "url": "https://v0.dev/",
+      "category": "AI 设计",
+      "id": "AI006"
+    },
+    {
+      "name": "Perplexity",
+      "avatar": "https://i.mahiro.work/i/2026/03/02/nyb1fm.svg",
+      "description": "AI 驱动的智能搜索引擎",
+      "url": "https://www.perplexity.ai/",
+      "category": "AI 搜索",
+      "id": "AI007"
+    },
+    {
+      "name": "Midjourney",
+      "avatar": "https://i.mahiro.work/i/2026/03/02/nyb3xm.svg",
+      "description": "AI 艺术与图像生成工具",
+      "url": "https://www.midjourney.com/",
+      "category": "AI 绘画",
+      "id": "AI008"
+    }
+  ]
+}

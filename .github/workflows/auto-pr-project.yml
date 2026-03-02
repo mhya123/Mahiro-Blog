@@ -1,0 +1,254 @@
+name: Admin Project Audit
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'src/data/projects/**.json'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 项目收录自动化审核与合并
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+            const head_sha = context.payload.pull_request.head.sha;
+
+            // ================= 常量定义区 =================
+            const LABELS = {
+              BASE: '项目收录',
+              RUNNING: '审核中',
+              PASSED: '审核通过',
+              NEED_FIX: '待修改',
+              SITE_OK: '站点正常',
+              SITE_ERR: '站点异常',
+              AVATAR_OK: '图标正常',
+              AVATAR_ERR: '图标异常'
+            };
+
+            const MSG = {
+              PR_MULTI_FILES: 'PR 必须仅包含 1 个文件的变更。',
+              PR_PATH_ERR: '修改路径必须严格限制在 `src/data/projects/` 目录下，且文件扩展名必须是 `.json`。',
+              PR_FILENAME_ERR: '文件名校验失败：请不要直接使用模板默认的 `你的项目名.json`，请将其重命名为您的项目名称。',
+              PR_ACTION_ERR: '只允许新增 (added) 或修改 (modified) 文件。',
+              TEMPLATE_ERR: '内容校验未通过：系统检测到您的 JSON 文件中依然包含默认的占位符"项目名称"，请务必将其修改为您真实的项目信息后再提交。',
+              JSON_PARSE_ERR: 'JSON 解析失败，请检查文件格式是否符合规范。',
+              JSON_KEY_ERR: 'JSON 缺少必填字段，必须包含：name, avatar, description, url, badge, author。',
+              SSRF_BLOCK: '安全拦截：目标 URL 疑似指向内网或保留 IP。',
+              SUCCESS: `🎉 **审核通过！**\n\n感谢提交！系统已确认项目信息有效，现在为您自动执行合并 (Squash Merge)，预计需要 3 分钟才能在主站上生效。`,
+              REJECT: `您好！感谢对本站的关注。\n\n由于自动化审核未能通过（详情请见上方审核报告），为了保持仓库 PR 队列的整洁，系统已暂时 **关闭** 此 PR。\n\n### 💡 正确的 JSON 格式参考：\n请确保您提交的文件内容严格符合以下格式，并将文件名改为 \`您的项目名.json\`。\n\n\`\`\`json\n{\n  "name": "项目名称",\n  "avatar": "https://项目图标URL",\n  "description": "项目简短描述",\n  "url": "https://项目主页URL",\n  "badge": "Web",\n  "tags": ["标签1", "标签2"],\n  "author": "您的名字",\n  "github": "https://github.com/仓库地址 (选填)"\n}\n\`\`\`\n\n**请您参考上方的错误报告与正确格式修正后，直接提交建立一个新的 PR，期待您的加入！**`
+            };
+
+            // ================= 辅助函数 =================
+            async function createComment(body) {
+              const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+              const footer = `\n\n---\n*🤖 该评论由 Action 自动化发送，无需回复。 [查看构建日志](${runUrl})*`;
+              await github.rest.issues.createComment({ owner, repo, issue_number: pull_number, body: body + footer });
+            }
+
+            async function ensureLabel(name, color = 'ededed') {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (e) {
+                if (e.status === 404) {
+                  await github.rest.issues.createLabel({ owner, repo, name, color });
+                }
+              }
+            }
+
+            function getLabelColor(name) {
+              const greenLabels = ['审核通过', '站点正常', '图标正常'];
+              const redLabels = ['待修改', '站点异常', '图标异常'];
+              if (greenLabels.includes(name)) return '0e8a16';
+              if (redLabels.includes(name)) return 'd93f0b';
+              return '6f42c1'; // 紫色（区分于友链的蓝色）
+            }
+
+            let _labelCache = null;
+            async function getLabelCache() {
+              if (!_labelCache) {
+                const current = await github.rest.issues.get({ owner, repo, issue_number: pull_number });
+                _labelCache = new Set((current.data.labels || []).map(l => l.name));
+              }
+              return _labelCache;
+            }
+
+            async function manageLabels(addList = [], removeList = []) {
+              const currentLabels = await getLabelCache();
+              for (const name of addList) {
+                if (!currentLabels.has(name)) {
+                  await ensureLabel(name, getLabelColor(name));
+                  await github.rest.issues.addLabels({ owner, repo, issue_number: pull_number, labels: [name] });
+                  currentLabels.add(name);
+                }
+              }
+              for (const name of removeList) {
+                if (currentLabels.has(name)) {
+                  try {
+                    await github.rest.issues.removeLabel({ owner, repo, issue_number: pull_number, name });
+                    currentLabels.delete(name);
+                  } catch (e) { /* ignore */ }
+                }
+              }
+            }
+
+            function isSafeUrl(urlStr) {
+              try {
+                const u = new URL(urlStr);
+                if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+                const h = u.hostname;
+                if (/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|::1)/i.test(h)) return false;
+                return true;
+              } catch { return false; }
+            }
+
+            async function fetchWithTimeout(url, timeoutMs = 10000, { headOnly = false } = {}) {
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), timeoutMs);
+              try {
+                const res = await fetch(url, {
+                  method: headOnly ? 'HEAD' : 'GET',
+                  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+                  signal: controller.signal,
+                  redirect: 'follow'
+                });
+                return { ok: res.ok, status: res.status };
+              } catch (e) {
+                return { ok: false, error: e.message };
+              } finally {
+                clearTimeout(timer);
+              }
+            }
+
+            // ================= 核心执行逻辑 =================
+            await manageLabels([LABELS.BASE, LABELS.RUNNING], []);
+            const reportData = [];
+            let isFailed = false;
+            let applyProjectName = "未知项目";
+
+            try {
+              // 1. 获取 PR 文件列表
+              const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number });
+              
+              if (files.length !== 1) throw new Error(MSG.PR_MULTI_FILES);
+              const file = files[0];
+              
+              if (!file.filename.startsWith('src/data/projects/') || !file.filename.endsWith('.json')) {
+                throw new Error(MSG.PR_PATH_ERR);
+              }
+              if (file.filename.endsWith('/你的项目名.json')) {
+                throw new Error(MSG.PR_FILENAME_ERR);
+              }
+              if (file.status !== 'added' && file.status !== 'modified') {
+                throw new Error(MSG.PR_ACTION_ERR);
+              }
+
+              // 2. 读取文件内容进行 JSON 格式检查
+              const prHead = context.payload.pull_request.head;
+              const { data: fileData } = await github.rest.repos.getContent({
+                owner: prHead.repo.owner.login,
+                repo: prHead.repo.name,
+                path: file.filename,
+                ref: head_sha
+              });
+              const contentStr = Buffer.from(fileData.content, 'base64').toString('utf-8');
+              
+              let json;
+              try { json = JSON.parse(contentStr); } catch { throw new Error(MSG.JSON_PARSE_ERR); }
+
+              if (json.name && json.name.includes('项目名称')) {
+                throw new Error(MSG.TEMPLATE_ERR);
+              }
+
+              const requiredKeys = ['name', 'avatar', 'description', 'url', 'badge', 'author'];
+              const missingKeys = requiredKeys.filter(k => !json[k] || typeof json[k] !== 'string');
+              if (missingKeys.length > 0) throw new Error(`${MSG.JSON_KEY_ERR} 缺失: ${missingKeys.join(', ')}`);
+              
+              applyProjectName = json.name.trim();
+              
+              reportData.push({ item: 'JSON 格式', status: '✅ 通过', detail: '字段校验完整且规范' });
+
+              // 3. 安全防护 SSRF
+              if (!isSafeUrl(json.url) || !isSafeUrl(json.avatar)) {
+                throw new Error(MSG.SSRF_BLOCK);
+              }
+              if (json.github && !isSafeUrl(json.github)) {
+                throw new Error(MSG.SSRF_BLOCK);
+              }
+
+              // 4. 并发发起网络请求
+              const fetchTasks = [
+                fetchWithTimeout(json.avatar, 10000, { headOnly: true }), // [0] 测图标
+                fetchWithTimeout(json.url, 10000, { headOnly: true })     // [1] 测主站存活
+              ];
+
+              const results = await Promise.all(fetchTasks);
+              const avatarRes = results[0];
+              const siteRes = results[1];
+
+              // 验证图标
+              if (avatarRes.ok) {
+                reportData.push({ item: '图标连通性', status: '✅ 正常', detail: `状态码: ${avatarRes.status}` });
+                await manageLabels([LABELS.AVATAR_OK]);
+              } else {
+                isFailed = true;
+                reportData.push({ item: '图标连通性', status: '❌ 失败', detail: avatarRes.error || `状态码: ${avatarRes.status}` });
+                await manageLabels([LABELS.AVATAR_ERR]);
+              }
+
+              // 验证站点
+              if (siteRes.ok) {
+                reportData.push({ item: '站点连通性', status: '✅ 正常', detail: `状态码: ${siteRes.status}` });
+                await manageLabels([LABELS.SITE_OK]);
+              } else {
+                isFailed = true;
+                reportData.push({ item: '站点连通性', status: '❌ 失败', detail: siteRes.error || `状态码: ${siteRes.status}` });
+                await manageLabels([LABELS.SITE_ERR]);
+              }
+
+            } catch (err) {
+              isFailed = true;
+              reportData.push({ item: '前置校验拦截', status: '❌ 未通过', detail: err.message });
+            }
+
+            // ================= 报告生成与最终动作 =================
+            let markdownTable = `### 🔍 项目收录自动化审核报告\n\n| 检查项目 | 状态 | 详细说明 |\n| :--- | :--- | :--- |\n`;
+            reportData.forEach(r => { markdownTable += `| **${r.item}** | ${r.status} | ${r.detail} |\n`; });
+
+            if (isFailed) {
+              await manageLabels([LABELS.NEED_FIX], [LABELS.RUNNING]);
+              await createComment(`${markdownTable}\n\n---\n\n${MSG.REJECT}`);
+              await github.rest.pulls.update({ owner, repo, pull_number, state: 'closed' });
+              core.setFailed('自动化审核未通过，已关闭 PR。');
+            } else {
+              await manageLabels([LABELS.PASSED], [LABELS.RUNNING]);
+              await createComment(`${markdownTable}\n\n---\n\n${MSG.SUCCESS}`);
+              
+              const nowTime = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+              const commitTitle = `✨ 收录项目: ${applyProjectName}`;
+              const commitMsg = `${applyProjectName} 由 ${context.payload.pull_request.user.login} 在 ${nowTime} 提交，由 Action 自动审核通过并合并。`;
+
+              try {
+                await github.rest.pulls.merge({ 
+                  owner, 
+                  repo, 
+                  pull_number, 
+                  merge_method: 'squash',
+                  commit_title: commitTitle,
+                  commit_message: commitMsg
+                });
+              } catch (mergeErr) {
+                await createComment(`⚠️ 自动合并失败: ${mergeErr.message}\n\n请仓库管理员手动合并此 PR。`);
+              }
+            }

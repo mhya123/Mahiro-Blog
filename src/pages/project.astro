@@ -3,46 +3,77 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Icon } from "astro-icon/components";
 import ProjectCard from "@/components/mdx/ProjectCard.astro";
 
-const projects = [
-  {
-    name: "Mahiro's HomePage",
-    avatar: "https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg",
-    description: "🏠 我的个人主页，展示个人信息和作品集",
-    url: "https://www.mahiro.work",
-    badge: "Web"
-  },
-  {
-    name: "Mahiro Blog",
-    avatar: "https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg",
-    description: " 基于 Astro 构建的个人博客，记录生活与技术",
-    url: "https://blog.mahiro.work",
-    badge: "Blog"
-  }
-];
+// 使用 import.meta.glob 自动加载所有项目 JSON 文件（与友链同模式）
+const projectModules = import.meta.glob<{ default: any }>('/src/data/projects/*.json', { eager: true });
+const projects = Object.entries(projectModules)
+  .filter(([_, mod]) => mod?.default)
+  .map(([_, mod]) => mod.default);
+
+// 项目 PR 申请链接：引导用户直接在仓库中新建 JSON 文件提交 PR
+const applyUrl = `https://github.com/mhya123/Mahiro-Blog/new/main/src/data/projects?filename=你的项目名.json&value=${encodeURIComponent(JSON.stringify({
+  "name": "项目名称",
+  "avatar": "https://项目图标URL",
+  "description": "项目简短描述",
+  "url": "https://项目主页URL",
+  "badge": "Web",
+  "tags": ["标签1", "标签2"],
+  "author": "您的名字",
+  "github": "https://github.com/你的仓库地址 (选填)"
+}, null, 2))}`;
+
+const issueTemplate = `### 项目收录申请
+
+请严格按照下方 JSON 格式填写您的项目信息（不需要修改反引号）：
+需要将: "项目名称" , 修改为正确的项目名.
+\`\`\`json
+{
+  "name": "项目名称",
+  "avatar": "https://项目图标URL",
+  "description": "项目简短描述",
+  "url": "https://项目主页URL",
+  "badge": "Web",
+  "tags": ["标签1", "标签2"],
+  "author": "您的名字",
+  "github": "https://github.com/你的仓库地址 (选填)"
+}
+\`\`\`
+`;
+const issueUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${encodeURIComponent("项目收录: 项目名称")}&body=${encodeURIComponent(issueTemplate)}`;
 ---
 
 <BaseLayout title="Projects" isIndexed={false}>
+  <!-- Projects Section -->
   <div class="mb-8 onload-animation" data-stagger-index="0">
     <h1 class="text-3xl md:text-4xl font-bold mb-4 flex items-center gap-3">
       <Icon name="lucide:folder-git-2" class="text-primary" />
-      <span>My Projects</span>
+      <span>Projects</span>
     </h1>
     <p class="text-base-content/70 text-lg">
-      这里展示了我的一些个人项目、工具和实验性作品。
+      这里收录了各种优质的开源项目、工具和实验性作品。欢迎通过 GitHub PR 提交你的项目！
     </p>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 onload-animation" data-stagger-index="1">
-    {projects.map((project) => (
-      <ProjectCard
-        name={project.name}
-        avatar={project.avatar}
-        description={project.description}
-        url={project.url}
-        badge={project.badge}
-      />
-    ))}
-  </div>
+  {projects.length > 0 ? (
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 onload-animation" data-stagger-index="1">
+      {projects.map((project) => (
+        <ProjectCard
+          name={project.name}
+          avatar={project.avatar}
+          description={project.description}
+          url={project.url}
+          badge={project.badge}
+          tags={project.tags}
+          author={project.author}
+          github={project.github}
+        />
+      ))}
+    </div>
+  ) : (
+    <div class="text-center py-12 text-base-content/50 onload-animation" data-stagger-index="1">
+      <Icon name="lucide:folder-open" class="w-16 h-16 mx-auto mb-4 opacity-30" />
+      <p class="text-lg">暂时还没有项目，快来提交第一个吧！</p>
+    </div>
+  )}
 
   <div class="flex justify-center mt-12 onload-animation" data-stagger-index="2">
     <a
@@ -56,7 +87,96 @@ const projects = [
     </a>
   </div>
 
-  <div class="divider my-6 onload-animation" data-stagger-index="3">
+  <!-- Divider -->
+  <div class="divider my-8 onload-animation" data-stagger-index="3">
+    <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
+  </div>
+
+  <!-- 项目提交区块 -->
+  <div class="onload-animation" data-stagger-index="4">
+    <h2 class="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-3">
+      <Icon name="lucide:plus-circle" class="text-primary" />
+      <span>提交项目</span>
+    </h2>
+    <p class="text-base-content/70 text-base mb-6">
+      想要展示你的项目？只需在 GitHub 上提交一个 PR，机器人会自动审核并合并！
+    </p>
+
+    <!-- 申请信息卡片 -->
+    <div class="bg-base-100 rounded-2xl border border-base-200 p-6 md:p-8 mb-6">
+      <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <Icon name="lucide:info" class="w-5 h-5 text-primary" />
+        收录要求
+      </h3>
+      <ul class="space-y-3 text-base-content/80 text-sm">
+        <li class="flex items-start gap-2">
+          <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+          <span>项目主页能够正常访问</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+          <span>项目有实质内容（非空白/测试项目）</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+          <span>不包含违规/恶意/侵权内容</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <Icon name="lucide:check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+          <span>提供有效的项目图标 URL</span>
+        </li>
+      </ul>
+
+      <div class="divider my-4"></div>
+
+      <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <Icon name="lucide:file-json" class="w-5 h-5 text-primary" />
+        JSON 格式
+      </h3>
+      <div class="bg-base-200/50 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+        <pre class="whitespace-pre text-base-content/80">{JSON.stringify({
+  name: "项目名称",
+  avatar: "https://项目图标URL",
+  description: "项目简短描述",
+  url: "https://项目主页URL",
+  badge: "Web / Tool / Blog / App ...",
+  tags: ["标签1", "标签2"],
+  author: "您的名字",
+  github: "https://github.com/仓库地址 (选填)"
+}, null, 2)}</pre>
+      </div>
+    </div>
+
+    <!-- 提示 -->
+    <div class="alert alert-warning mb-4 flex items-center gap-2 text-sm">
+      <Icon name="lucide:alert-triangle" class="w-5 h-5 shrink-0" />
+      <span><strong>不要忘了改文件名！</strong> 请将默认的 <code>你的项目名.json</code> 改为您的项目名称，例如 <code>MyProject.json</code>。</span>
+    </div>
+
+    <!-- Issue 备用通道 -->
+    <div class="alert alert-info mb-6 flex items-start gap-2 text-sm">
+      <Icon name="lucide:info" class="w-5 h-5 shrink-0 mt-0.5" />
+      <div>
+        <strong>不熟悉 PR？</strong>
+        <p class="mt-1">也可以通过 <a href={issueUrl} target="_blank" rel="noopener noreferrer" class="link font-bold">提交 Issue</a> 来申请收录，管理员会人工审核处理。</p>
+      </div>
+    </div>
+
+    <!-- 申请按钮 -->
+    <div class="flex justify-center">
+      <a
+        href={applyUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-primary btn-lg gap-2 px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 press-effect"
+      >
+        <Icon name="lucide:git-pull-request" class="w-5 h-5" />
+        前往 GitHub 提交 PR
+      </a>
+    </div>
+  </div>
+
+  <div class="divider my-6 onload-animation" data-stagger-index="5">
     <Icon name="lucide:heart" class="w-12 h-12 text-primary/50" />
   </div>
 </BaseLayout>
