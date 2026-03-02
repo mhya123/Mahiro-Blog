@@ -1,10 +1,10 @@
 {
-  "commitSha": "3a8ebd95ed3e9c7a392a0789fda2e3f610d594b6",
-  "commitShort": "3a8ebd9",
-  "commitMessage": "fix: 更新 Mahiro Blog 的 URL 为正确的地址",
+  "commitSha": "7fec7c4c62540e5cacc84145d82f2c28f733b7d9",
+  "commitShort": "7fec7c4",
+  "commitMessage": "feat: 通过悬停效果、工具提示和改进的动画增强用户界面/用户体验",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-02T15:46:35+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/3a8ebd95ed3e9c7a392a0789fda2e3f610d594b6",
-  "buildTime": "2026/3/2 15:47:02",
-  "totalCommits": 248
+  "commitDate": "2026-03-02T16:39:05+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/7fec7c4c62540e5cacc84145d82f2c28f733b7d9",
+  "buildTime": "2026/3/2 16:39:36",
+  "totalCommits": 250
 }
