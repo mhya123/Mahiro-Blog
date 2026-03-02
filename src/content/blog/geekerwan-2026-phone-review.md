@@ -1,7 +1,8 @@
 ---
 title: 极客湾2026手机大横评补档
 description: 极客湾2026手机大横评珍贵视频补档，值得收藏的年度手机综合评测
-pubDate: 2026-03-01
+pubDate: 2026-03-01T08:00
+image: /images/geekerwan-2026-phone-review/90f5d128c9b9eb5d.png
 tags:
   - 科技
   - 视频
