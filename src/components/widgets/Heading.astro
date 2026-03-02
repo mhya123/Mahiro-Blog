@@ -2,8 +2,8 @@
 const { url, title } = Astro.props;
 ---
 
-<a href={url} target="_self" class="block hover:-translate-y-0.5 transition-transform duration-300">
-  <h2 id={title} class="mahiro-heading">
+<a href={url} target="_self" class="group block hover:-translate-y-0.5 transition-all duration-300">
+  <h2 id={title} class="mahiro-heading group-hover:opacity-90">
     {title}
   </h2>
 </a>

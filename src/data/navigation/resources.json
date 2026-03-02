@@ -35,14 +35,6 @@
       "id": "RES004"
     },
     {
-      "name": "MDN Web Docs",
-      "avatar": "https://developer.mozilla.org/favicon-48x48.bc390275e955dacb2e65.png",
-      "description": "最权威的 Web 技术文档，前端开发者的圣经",
-      "url": "https://developer.mozilla.org/zh-CN/",
-      "category": "文档",
-      "id": "RES005"
-    },
-    {
       "name": "React",
       "avatar": "https://react.dev/favicon-32x32.png",
       "description": "用于构建用户界面的 JavaScript 库",

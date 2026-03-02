@@ -279,19 +279,29 @@ code {
 }
 
 .mahiro-heading {
-  @apply text-lg md:text-2xl leading-tight pt-0 font-bold text-base-content bg-clip-text bg-gradient-to-r from-primary to-secondary duration-300 hover:text-transparent;
+  @apply text-lg md:text-2xl leading-tight pt-0 font-bold text-base-content bg-clip-text bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] duration-500 hover:text-transparent hover:bg-[position:right_center];
 }
 
 .btn-category {
-  @apply bg-primary/5 hover:bg-primary text-primary hover:text-primary-content border-none;
+  @apply bg-primary/5 hover:bg-primary text-primary hover:text-primary-content border-none transition-all duration-200 hover:shadow-md;
 }
 
 .btn-tag {
-  @apply bg-secondary/5 hover:bg-secondary text-secondary hover:text-secondary-content border-none;
+  @apply bg-secondary/5 hover:bg-secondary text-secondary hover:text-secondary-content border-none transition-all duration-200 hover:shadow-md;
 }
 
 .btn-copy {
   @apply px-1 text-base-content/80;
+}
+
+/* PostCard 悬浮效果 — 微妙上浮 + 阴影增强 */
+.post-card-link {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  }
 }
 
 .mahiro-code {
@@ -1186,6 +1196,20 @@ code {
   }
 }
 
+/* 悬浮上浮效果 — 柔和提升 */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.12);
+  }
+
+  &:active {
+    transform: translateY(-2px) scale(0.98);
+  }
+}
+
 /* 悬浮发光效果 — 柔和过渡 */
 .hover-glow {
   transition: box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -1258,6 +1282,38 @@ code {
 
 .animate-breathe {
   animation: breathe 3s ease-in-out infinite;
+}
+
+/* 按钮闪光效果 — 一道光从左扫到右 */
+@keyframes shine-sweep {
+  0% { left: -75%; }
+  100% { left: 125%; }
+}
+
+.btn-shine-effect {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transform: skewX(-25deg);
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    animation: shine-sweep 0.6s ease-in-out;
+  }
 }
 
 /* ===================================================

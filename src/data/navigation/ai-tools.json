@@ -4,7 +4,7 @@
   "items": [
     {
       "name": "ChatGPT",
-      "avatar": "https://cdn.oaistatic.com/assets/favicon-miwirzcw.ico",
+      "avatar": "https://i.mahiro.work/i/2026/03/02/ppuaxn.ico",
       "description": "OpenAI 的 AI 对话助手",
       "url": "https://chat.openai.com/",
       "category": "AI 对话",
@@ -28,7 +28,7 @@
     },
     {
       "name": "GitHub Copilot",
-      "avatar": "https://github.githubassets.com/favicons/favicon.svg",
+      "avatar": "https://i.mahiro.work/i/2026/03/02/ppy1h7.svg",
       "description": "AI 代码补全与编程助手",
       "url": "https://github.com/features/copilot",
       "category": "AI 编程",
@@ -36,7 +36,7 @@
     },
     {
       "name": "Cursor",
-      "avatar": "https://www.cursor.com/favicon.ico",
+      "avatar": "https://i.mahiro.work/i/2026/03/02/pq3jf5.ico",
       "description": "AI 原生代码编辑器",
       "url": "https://www.cursor.com/",
       "category": "AI 编程",

@@ -1,106 +1,165 @@
 ---
 import { Icon } from "astro-icon/components";
-import { USER_NAME, USER_SITE, USER_FOOTER_SOCIAL_ICONS, SITE_ICP, SITE_ICP_LINK, SITE_POLICE_BEIAN, SITE_POLICE_BEIAN_LINK, GITHUB_CONFIG } from "@config";
+import { USER_NAME, USER_SITE, USER_FOOTER_SOCIAL_ICONS, SITE_ICP, SITE_ICP_LINK, SITE_POLICE_BEIAN, SITE_POLICE_BEIAN_LINK, GITHUB_CONFIG, SITE_TITLE, SITE_DESCRIPTION } from "@config";
 import { getBuildInfo } from "@/lib/build-info";
 import dayjs from "@utils/dayjs";
+import { getAllPosts } from "@utils/blogUtils";
 
 const owner = GITHUB_CONFIG?.owner || '';
 const repo = GITHUB_CONFIG?.repo || '';
 const buildInfo = await getBuildInfo(owner, repo);
+const allPosts = await getAllPosts();
+const totalPosts = allPosts.length;
+const startYear = 2025;
+const currentYear = new Date().getFullYear();
+const yearDisplay = startYear === currentYear ? `${currentYear}` : `${startYear}–${currentYear}`;
 ---
 
-<footer class="footer bg-base-100 py-2 px-4 md:p-10 rounded-xl shadow-lg gap-y-2 md:gap-4">
-  <aside>
-    <svg
-      width="32"
-      height="32"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      fill-rule="evenodd"
-      clip-rule="evenodd"
-      class="fill-current md:w-[50px] md:h-[50px]"
-      aria-label="Logo"
-      role="img"
-    >
-      <path
-        d="M22.672 15.226l-2.432.811.841 2.515c.33 1.019-.209 2.127-1.23 2.456-1.15.325-2.148-.321-2.463-1.226l-.84-2.518-5.013 1.677.84 2.517c.391 1.203-.434 2.542-1.831 2.542-.88 0-1.601-.564-1.86-1.314l-.842-2.516-2.431.809c-1.135.328-2.145-.317-2.463-1.229-.329-1.018.211-2.127 1.231-2.456l2.432-.809-1.621-4.823-2.432.808c-1.355.384-2.558-.59-2.558-1.839 0-.817.509-1.582 1.327-1.846l2.433-.809-.842-2.515c-.33-1.02.211-2.129 1.232-2.458 1.02-.329 2.13.209 2.461 1.229l.842 2.515 5.011-1.677-.839-2.517c-.403-1.238.484-2.553 1.843-2.553.819 0 1.585.509 1.85 1.326l.841 2.517 2.431-.81c1.02-.33 2.131.211 2.461 1.229.332 1.018-.21 2.126-1.23 2.456l-2.433.809 1.622 4.823 2.433-.809c1.242-.401 2.557.484 2.557 1.838 0 .819-.51 1.583-1.328 1.847m-8.992-6.428l-5.01 1.675 1.619 4.828 5.011-1.674-1.62-4.829z"
-      ></path>
-    </svg>
-    <p class="text-xs md:text-base">
-      Powered by <a href="https://github.com/mhya123/Mahiro-Blog" target="_blank" class="font-bold">Mahiro - Blog</a>
-      <br />
-      Copyright ©
-      <a href={USER_SITE} target="_blank" class="font-bold">{USER_NAME}</a>
-      2025–{new Date().getFullYear()}
-      <br />
-      All rights reserved
-    </p>
-  </aside>
-  <nav>
-  <span class="footer-title text-xs md:text-sm">Social</span>
+<footer class="bg-base-100 py-6 px-4 md:px-10 md:py-8 rounded-2xl shadow-lg flex flex-col gap-6">
+  <!-- 上半部分：品牌 + 导航 + 社交 三栏 -->
+  <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+    
+    <!-- 左栏：品牌信息 -->
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <Icon name="lucide:heart" class="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-base-content">{SITE_TITLE}</h3>
+          <p class="text-xs text-base-content/50">{SITE_DESCRIPTION}</p>
+        </div>
+      </div>
+      <p class="text-xs text-base-content/40 leading-relaxed">
+        Powered by
+        <a href="https://github.com/mhya123/Mahiro-Blog" target="_blank" class="text-primary/70 hover:text-primary hover:underline underline-offset-2 transition-colors">Mahiro-Blog</a>
+        · Built with
+        <a href="https://astro.build" target="_blank" class="hover:text-primary transition-colors">Astro</a>
+        &
+        <a href="https://tailwindcss.com" target="_blank" class="hover:text-primary transition-colors">Tailwind CSS</a>
+      </p>
+      <!-- 站点统计 -->
+      <div class="flex items-center gap-3 text-xs text-base-content/40">
+        <span class="flex items-center gap-1">
+          <Icon name="lucide:file-text" class="w-3 h-3" />
+          {totalPosts} 篇文章
+        </span>
+        <span class="flex items-center gap-1">
+          <Icon name="lucide:git-commit-horizontal" class="w-3 h-3" />
+          {buildInfo.totalCommits} 次提交
+        </span>
+      </div>
+    </div>
 
-  {/* 社交按钮行 */}
-  <div class="grid grid-flow-col gap-3 md:gap-4">
-    {
-      USER_FOOTER_SOCIAL_ICONS.map((icon) => {
-        let href = icon.href;
-        if (
-          (icon.svg.includes('mail') ||
-            (icon.svg.includes('at-line') && !icon.svg.includes('wechat'))) &&
-          !href.startsWith('mailto:')
-        ) {
-          href = `mailto:${href}`;
-        } else if (icon.svg.includes('qq') && /^\d+$/.test(href)) {
-          href = `tencent://message/?uin=${href}&Site=&Menu=yes`;
+    <!-- 中栏：快速导航 -->
+    <div class="flex flex-col gap-2">
+      <span class="footer-title text-xs opacity-60 mb-0">导航</span>
+      <div class="grid grid-cols-2 gap-x-6 gap-y-1">
+        <a href="/" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
+          <Icon name="lucide:home" class="w-3 h-3 shrink-0" />首页
+        </a>
+        <a href="/about" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
+          <Icon name="lucide:user" class="w-3 h-3 shrink-0" />关于
+        </a>
+        <a href="/friend" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
+          <Icon name="lucide:users" class="w-3 h-3 shrink-0" />友链
+        </a>
+        <a href="/project" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
+          <Icon name="lucide:folder-kanban" class="w-3 h-3 shrink-0" />项目
+        </a>
+        <a href="/navigation" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
+          <Icon name="lucide:compass" class="w-3 h-3 shrink-0" />导航
+        </a>
+        <a href="/rss.xml" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
+          <Icon name="ri:rss-line" class="w-3 h-3 shrink-0" />RSS
+        </a>
+      </div>
+    </div>
+
+    <!-- 右栏：社交 + 备案 -->
+    <div class="flex flex-col gap-2">
+      <span class="footer-title text-xs opacity-60 mb-0">社交</span>
+      <div class="flex flex-wrap gap-1">
+        {
+          USER_FOOTER_SOCIAL_ICONS.map((icon) => {
+            let href = icon.href;
+            if (
+              (icon.svg.includes('mail') ||
+                (icon.svg.includes('at-line') && !icon.svg.includes('wechat'))) &&
+              !href.startsWith('mailto:')
+            ) {
+              href = `mailto:${href}`;
+            } else if (icon.svg.includes('qq') && /^\d+$/.test(href)) {
+              href = `tencent://message/?uin=${href}&Site=&Menu=yes`;
+            }
+            return (
+              <div class="tooltip" data-tip={icon.title}>
+                <a href={href} aria-label={icon.ariaLabel} class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-primary hover:bg-primary/10 transition-all duration-300">
+                  <Icon name={icon.svg} class="text-lg" />
+                </a>
+              </div>
+            );
+          })
         }
-        return (
-          <div class="tooltip" data-tip={icon.title}>
-            <a href={href} aria-label={icon.ariaLabel}>
-              <Icon name={icon.svg} class="text-xl md:text-xl" />
-            </a>
-          </div>
-        );
-      })
-    }
+        <div class="tooltip" data-tip="RSS Feed">
+          <a href="/rss.xml" aria-label="RSS Feed" class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-primary hover:bg-primary/10 transition-all duration-300">
+            <Icon name="ri:rss-line" class="text-lg" />
+          </a>
+        </div>
+      </div>
 
-    <div class="tooltip" data-tip="RSS Feed">
-      <a href="/rss.xml" aria-label="RSS Feed">
-        <Icon name="ri:rss-line" class="text-xl md:text-xl" />
-      </a>
+      {/* ICP 和公安备案信息 */}
+      {(SITE_ICP || SITE_POLICE_BEIAN) && (
+        <div class="mt-1 text-xs flex flex-col gap-0.5 text-base-content/40">
+          {SITE_ICP && (
+            <a
+              href={SITE_ICP_LINK}
+              target="_blank"
+              rel="noopener"
+              class="font-semibold hover:text-primary transition-colors duration-200"
+            >
+              {SITE_ICP}
+            </a>
+          )}
+          {SITE_POLICE_BEIAN && (
+            <a
+              href={SITE_POLICE_BEIAN_LINK}
+              target="_blank"
+              rel="noopener"
+              class="font-semibold hover:text-primary transition-colors duration-200 flex items-center gap-1"
+            >
+              <Icon name="ri:shield-check-line" class="text-xs" />
+              {SITE_POLICE_BEIAN}
+            </a>
+          )}
+        </div>
+      )}
     </div>
   </div>
 
-  {/* ICP 和公安备案信息 */}
-  {(SITE_ICP || SITE_POLICE_BEIAN) && (
-    <div class="mt-2 text-xs md:text-sm flex flex-col gap-1">
-      {SITE_ICP && (
-        <a
-          href={SITE_ICP_LINK}
-          target="_blank"
-          rel="noopener"
-          class="font-bold hover:text-primary transition-colors"
-        >
-          {SITE_ICP}
-        </a>
-      )}
-      {SITE_POLICE_BEIAN && (
-        <a
-          href={SITE_POLICE_BEIAN_LINK}
-          target="_blank"
-          rel="noopener"
-          class="font-bold hover:text-primary transition-colors flex items-center gap-1"
-        >
-          <Icon name="ri:shield-check-line" class="text-sm" />
-          {SITE_POLICE_BEIAN}
-        </a>
-      )}
+  <!-- 底部分割线 + 版权 -->
+  <div class="w-full border-t border-base-content/10 pt-4 mt-2">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-base-content/40">
+      <div class="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+        <span>&copy; {yearDisplay}</span>
+        <a href={USER_SITE} target="_blank" class="font-bold hover:text-primary transition-colors">{USER_NAME}</a>
+        <span class="opacity-50 px-1">|</span>
+        <div class="tooltip tooltip-top" data-tip="署名-非商业性使用-相同方式共享 4.0 国际">
+          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors flex items-center gap-1">
+            <Icon name="ri:creative-commons-line" class="text-sm" />
+            <span>CC BY-NC-SA 4.0</span>
+          </a>
+        </div>
+      </div>
+      <p class="flex items-center gap-1.5">
+        Crafted with <Icon name="lucide:heart" class="w-3 h-3 text-red-500 fill-red-500 animate-pulse inline" /> by {USER_NAME}
+      </p>
     </div>
-  )}
-</nav>
+  </div>
 </footer>
 
 <!-- 构建信息 -->
-<div class="bg-base-100 rounded-xl shadow-lg mt-4 px-4 py-3">
+<div class="bg-base-100 rounded-2xl shadow-lg mt-4 px-4 py-3">
   <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-base-content/50">
     <div class="flex items-center gap-3 flex-wrap">
       <span class="flex items-center gap-1">
@@ -117,7 +176,7 @@ const buildInfo = await getBuildInfo(owner, repo);
         href={buildInfo.commitUrl}
         target="_blank"
         rel="noopener"
-        class="flex items-center gap-1 hover:text-primary transition-colors"
+        class="flex items-center gap-1 hover:text-primary transition-colors duration-200"
       >
         <Icon name="lucide:git-commit-horizontal" class="w-3.5 h-3.5" />
         <span class="font-mono font-bold">{buildInfo.commitShort}</span>

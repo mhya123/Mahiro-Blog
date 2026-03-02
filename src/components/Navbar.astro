@@ -29,7 +29,16 @@ type MenuItem = {
 };      
       
 // Ensure the menu is properly typed      
-const typedMenu = SITE_MENU as MenuItem[];      
+const typedMenu = SITE_MENU as MenuItem[];
+
+// 判断菜单项是否激活
+function isMenuActive(item: MenuItem): boolean {
+  if (item.subItems) {
+    return item.subItems.some(sub => currentPath === sub.href || (sub.href !== '/' && currentPath.startsWith(sub.href)));
+  }
+  if (item.href === '/') return currentPath === '/';
+  return currentPath === item.href || currentPath.startsWith(item.href);
+}
 ---      
       
 <!-- 桌面端透明导航栏 -->      
@@ -41,61 +50,84 @@ const typedMenu = SITE_MENU as MenuItem[];
 
         <!-- 左侧：品牌标识 -->        
         <div class="flex-none pr-2">
-          <a href="/" class="flex items-center space-x-2 hover:scale-105 transition-transform duration-300">        
-            <span class="text-2xl xl:text-3xl font-bold tracking-tight text-primary transition-all">{SITE_TITLE}</span>        
+          <a href="/" class="group flex items-center space-x-2 transition-transform duration-300">        
+            <span class="text-2xl xl:text-3xl font-bold tracking-tight text-primary transition-all group-hover:tracking-wide">{SITE_TITLE}</span>        
           </a>      
         </div>
               
-        <!-- 中间：桌面端水平菜单 - 自适应宽度防止溢出并支持隐藏的横向滚动 -->      
+        <!-- 中间：桌面端水平菜单 -->      
         <div class="flex-1 flex justify-center min-w-0 mx-1 xl:mx-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">      
-          <div class="flex items-center space-x-0 xl:space-x-2 shrink-0 py-1">      
-          {typedMenu.map((item) => (      
-            item.subItems ? (      
+          <div class="flex items-center space-x-1 xl:space-x-1.5 shrink-0 py-1">      
+          {typedMenu.map((item) => {
+            const active = isMenuActive(item);
+            return item.subItems ? (      
               <div class="dropdown dropdown-hover shrink-0">      
-                <div tabindex="0" role="button" class="nav-item btn btn-ghost btn-sm h-8 xl:h-10 px-2 xl:px-3 text-sm xl:text-base font-bold rounded-xl hover:bg-white/10 transition-all duration-200 text-base-content dark:text-white inline-flex items-center justify-center gap-1 xl:gap-2 whitespace-nowrap">      
-                  <Icon name={item.svg} class="w-4 h-4 xl:w-5 xl:h-5 transition-all shrink-0" />
+                <div tabindex="0" role="button" class:list={[
+                  "nav-link relative btn btn-ghost btn-sm h-9 xl:h-10 px-3 xl:px-4 text-sm xl:text-base font-bold rounded-2xl transition-all duration-300 inline-flex items-center justify-center gap-1.5 xl:gap-2 whitespace-nowrap",
+                  active 
+                    ? "text-primary bg-primary/10 hover:bg-primary/15" 
+                    : "text-base-content/70 hover:text-primary hover:bg-primary/8"
+                ]}>
+                  <Icon name={item.svg} class="w-4 h-4 xl:w-[1.15rem] xl:h-[1.15rem] transition-all shrink-0" />
                   <span>{item.text}</span>
+                  <Icon name="lucide:chevron-down" class="w-3 h-3 opacity-50 transition-transform duration-300 group-hover:rotate-180" />
+                  {active && <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />}
                 </div>      
-                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl border border-base-200 w-52 mt-2 text-base-content">      
-                  {item.subItems.map((subItem) => (      
-                    <li>      
-                      <a       
-                        href={subItem.href}       
-                        target={subItem.target || "_self"}       
-                        class="px-4 py-2 hover:bg-base-200 rounded-xl text-base font-bold transition-all duration-200 flex items-center gap-2"      
-                      >      
-                        <Icon name={subItem.svg} class="w-4 h-4" />
-                        {subItem.text}      
-                      </a>      
-                    </li>      
-                  ))}      
+                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-xl bg-base-100/95 backdrop-blur-xl rounded-2xl border border-base-200/50 w-52 mt-2 text-base-content animate-in fade-in slide-in-from-top-2 duration-200">      
+                  {item.subItems.map((subItem) => {
+                    const subActive = currentPath === subItem.href;
+                    return (
+                      <li>      
+                        <a       
+                          href={subItem.href}       
+                          target={subItem.target || "_self"}       
+                          class:list={[
+                            "px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2.5",
+                            subActive 
+                              ? "text-primary bg-primary/10" 
+                              : "hover:bg-base-200/80 hover:text-primary"
+                          ]}
+                        >      
+                          <Icon name={subItem.svg} class="w-4 h-4 shrink-0" />
+                          {subItem.text}
+                          {subActive && <span class="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                        </a>      
+                      </li>
+                    );
+                  })}      
                 </ul>      
               </div>      
             ) : (      
               <a       
                 href={item.href}       
                 target={item.target || "_self"}       
-                class="nav-item shrink-0 btn btn-ghost btn-sm h-8 xl:h-10 px-2 xl:px-3 text-sm xl:text-base font-bold rounded-xl hover:bg-white/10 transition-all duration-200 text-base-content dark:text-white inline-flex items-center justify-center gap-1 xl:gap-2 whitespace-nowrap"      
+                class:list={[
+                  "nav-link shrink-0 relative btn btn-ghost btn-sm h-9 xl:h-10 px-3 xl:px-4 text-sm xl:text-base font-bold rounded-2xl transition-all duration-300 inline-flex items-center justify-center gap-1.5 xl:gap-2 whitespace-nowrap",
+                  active 
+                    ? "text-primary bg-primary/10 hover:bg-primary/15" 
+                    : "text-base-content/70 hover:text-primary hover:bg-primary/8"
+                ]}
               >      
-                <Icon name={item.svg} class="w-4 h-4 xl:w-5 xl:h-5 transition-all shrink-0" />
-                {item.text}      
+                <Icon name={item.svg} class="w-4 h-4 xl:w-[1.15rem] xl:h-[1.15rem] transition-all shrink-0" />
+                {item.text}
+                {active && <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />}
               </a>      
-            )      
-          ))}      
+            );
+          })}      
           </div>
         </div>      
               
         <!-- 右侧：工具栏 -->      
-        <div class="flex-none flex items-center space-x-0 xl:space-x-2 transition-all">      
-          <a href="/config" class="btn btn-ghost btn-circle btn-sm hover:bg-white/10 text-primary" aria-label="Config">
+        <div class="flex-none flex items-center space-x-0 xl:space-x-1 transition-all">      
+          <a href="/config" class="btn btn-ghost btn-circle btn-sm hover:bg-primary/10 text-base-content/60 hover:text-primary transition-colors duration-200" aria-label="Config">
             <Icon name="material-symbols:settings-outline" class="w-4 h-4 xl:w-5 xl:h-5" />
           </a>
-          <div class="scale-90 xl:scale-100 transition-transform origin-right flex items-center space-x-0 xl:space-x-2">
+          <div class="scale-90 xl:scale-100 transition-transform origin-right flex items-center space-x-0 xl:space-x-1">
             <ThemeSelector />
             <FontSelector />
             <BannerSettings />
             <!-- 主题切换 -->      
-            <ThemeToggle className="btn btn-ghost btn-circle btn-sm hover:bg-white/10 text-primary" />      
+            <ThemeToggle className="btn btn-ghost btn-circle btn-sm hover:bg-primary/10 text-base-content/60 hover:text-primary transition-colors duration-200" />      
           </div>
         </div>      
       </div>      
@@ -106,7 +138,9 @@ const typedMenu = SITE_MENU as MenuItem[];
 <!-- 移动端顶部悬浮导航栏 -->
 <nav id="navbar-mobile" class="fixed top-0 left-0 right-0 z-50 lg:hidden">
   <div class="max-w-blog mx-auto px-2 pt-2">
-    <div class="flex items-center gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full">
+    <div class="relative flex items-center px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full">
+      <!-- 导航菜单项（可滚动区域） -->
+      <div class="flex items-center gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex-1 min-w-0">
       {typedMenu.map((item) => {
         const isChildActive = item.subItems?.some(sub => currentPath === sub.href || (sub.href !== '/' && currentPath.startsWith(sub.href)));
         const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href)) || isChildActive;
@@ -163,9 +197,10 @@ const typedMenu = SITE_MENU as MenuItem[];
           </a>
         );
       })}
+      </div>
 
-      {/* 移动端设置菜单 */}
-      <div class="shrink-0 relative flex items-center justify-center w-10 h-10 ml-auto">
+      {/* 移动端设置菜单（放在 overflow 容器外，避免 dropdown 被裁剪） */}
+      <div class="shrink-0 relative flex items-center justify-center w-10 h-10 ml-2">
           <MobileSettings />
       </div>
     </div>

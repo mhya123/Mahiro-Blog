@@ -90,7 +90,7 @@ if (badge) {
           </div>
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="font-bold text-lg text-base-content group-hover:text-primary transition-colors duration-300 line-clamp-1">{name}</h3>
+          <h3 class="font-bold text-lg text-base-content group-hover:text-primary transition-colors duration-300 line-clamp-1" title={name}>{name}</h3>
           <div class="text-xs text-base-content/40 truncate font-mono mt-0.5">
             {new URL(url).hostname}
           </div>
@@ -118,7 +118,7 @@ if (badge) {
       </div>
 
       <!-- 描述文本 -->
-      <p class="text-sm text-base-content/70 leading-relaxed line-clamp-3 flex-grow">
+      <p class="text-sm text-base-content/70 leading-relaxed line-clamp-3 flex-grow" title={description}>
         {description}
       </p>
     </div>
