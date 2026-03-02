@@ -1,10 +1,10 @@
 {
-  "commitSha": "6e4ca8d3022e47895d737d4147c1d014364c6a41",
-  "commitShort": "6e4ca8d",
-  "commitMessage": "feat: 添加文章加密功能，支持密码保护文章内容",
+  "commitSha": "3e78d0f2ab15220eed07ea410874b84701028194",
+  "commitShort": "3e78d0f",
+  "commitMessage": "fix(friend): 修改 WAF 拦截提示的注释内容",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-02T09:47:05+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6e4ca8d3022e47895d737d4147c1d014364c6a41",
-  "buildTime": "2026/3/2 09:47:41",
-  "totalCommits": 233
+  "commitDate": "2026-03-02T10:33:57+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/3e78d0f2ab15220eed07ea410874b84701028194",
+  "buildTime": "2026/3/2 10:34:23",
+  "totalCommits": 235
 }
