@@ -4,15 +4,17 @@ import { Icon } from "astro-icon/components";
 
 <button
   id="back-to-top"
-  class="fixed right-6 bottom-[5.5rem] z-[90] p-3 rounded-full bg-primary/90 backdrop-blur-md text-primary-content shadow-xl opacity-0 translate-y-8 scale-90 cursor-pointer pointer-events-none hover:scale-110 hover:shadow-2xl transition-all duration-300"
+  class="fixed right-6 bottom-[5.5rem] z-[90] p-3 rounded-full bg-primary/90 backdrop-blur-md text-primary-content shadow-xl opacity-0 translate-y-8 scale-90 cursor-pointer pointer-events-none transition-shadow duration-300 hover:shadow-2xl"
   aria-label="返回顶部"
 >
   <Icon name="lucide:arrow-up" class="w-6 h-6" />
 </button>
 
 <script>
-  // 采用通用的导入方式，避免 ts(1192) 没有默认导出的报错
   import * as animejs from "animejs";
+
+  // 在顶层作用域声明 handler，以便在 Astro 页面切换时进行清理
+  let scrollHandler: (() => void) | null = null;
 
   document.addEventListener("astro:page-load", () => {
     const btn = document.getElementById("back-to-top");
@@ -22,66 +24,120 @@ import { Icon } from "astro-icon/components";
     const anime = (animejs as any).default || (animejs as any).anime || animejs;
 
     let isVisible = false;
-
-    // 简单节流，避免滚动时频繁触发动画
     let scrollTimeout: number | null = null;
+
+    // 显示动画 - 使用更柔和的 Elastic 弹性效果
+    const showAnimation = () => {
+      anime.remove(btn); // 移除正在进行的冲突动画
+      btn.style.pointerEvents = "auto";
+      anime({
+        targets: btn,
+        opacity: 1,
+        translateY: 0,
+        scale: 1,
+        duration: 800,
+        easing: "easeOutElastic(1, .6)" 
+      });
+    };
+
+    // 隐藏动画 - 稍微干脆一点的收缩退出
+    const hideAnimation = () => {
+      anime.remove(btn);
+      btn.style.pointerEvents = "none";
+      anime({
+        targets: btn,
+        opacity: 0,
+        translateY: 24,
+        scale: 0.9,
+        duration: 300,
+        easing: "easeInQuart"
+      });
+    };
 
     const handleScrollRaw = () => {
       const currentScroll = window.scrollY || document.documentElement.scrollTop;
-      
-      // 当滑动超过 400px 时显示
+
       if (currentScroll > 400 && !isVisible) {
         isVisible = true;
-        btn.style.pointerEvents = "auto";
-        anime({
-          targets: btn,
-          opacity: [0, 1],
-          translateY: [24, 0],
-          scale: [0.9, 1],
-          duration: 420,
-          easing: "easeOutCubic"
-        });
+        showAnimation();
       } else if (currentScroll <= 400 && isVisible) {
         isVisible = false;
-        btn.style.pointerEvents = "none";
-        anime({
-          targets: btn,
-          opacity: 0,
-          translateY: 24,
-          scale: 0.9,
-          duration: 260,
-          easing: "easeInCubic"
+        hideAnimation();
+      }
+    };
+
+    // 性能优化：使用 requestAnimationFrame 进行节流
+    scrollHandler = () => {
+      if (!scrollTimeout) {
+        scrollTimeout = window.requestAnimationFrame(() => {
+          handleScrollRaw();
+          scrollTimeout = null;
         });
       }
     };
 
-    const handleScroll = () => {
-      if (scrollTimeout !== null) {
-        return;
-      }
-      scrollTimeout = window.requestAnimationFrame(() => {
-        scrollTimeout = null;
-        handleScrollRaw();
-      });
-    };
+    // 初始化检查并绑定事件
+    window.addEventListener("scroll", scrollHandler, { passive: true });
+    handleScrollRaw(); 
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // 初始化检查
-
-    // 点击流畅滑回顶部
-    btn.addEventListener("click", () => {
-      const scrollObj = { y: window.scrollY };
-      
-      anime.remove(scrollObj);
+    // 悬停动画：微微上浮并放大，使用 easeOutBack 增加灵动感
+    btn.addEventListener("mouseenter", () => {
+      if (!isVisible) return; 
+      anime.remove(btn);
       anime({
-        targets: scrollObj,
-        y: 0,
-        duration: 600,
-        easing: "easeInOutCubic",
-        update: function() {
-          window.scrollTo(0, scrollObj.y);
+        targets: btn,
+        scale: 1.15,
+        translateY: -3,
+        duration: 400,
+        easing: "easeOutBack"
+      });
+    });
+
+    // 离开动画：平滑恢复原位
+    btn.addEventListener("mouseleave", () => {
+      if (!isVisible) return;
+      anime.remove(btn);
+      anime({
+        targets: btn,
+        scale: 1,
+        translateY: 0,
+        duration: 400,
+        easing: "easeOutCirc"
+      });
+    });
+
+    // 点击流畅滑回顶部 - 直接操控滚动容器的 scrollTop
+    btn.addEventListener("click", () => {
+      // 获取当前浏览器的滚动容器
+      const scrollElement = window.document.scrollingElement || window.document.documentElement || window.document.body;
+      
+      anime.remove(scrollElement);
+      anime({
+        targets: scrollElement,
+        scrollTop: 0,
+        duration: 800,
+        easing: "easeInOutQuart",
+        complete: () => {
+          // 滚动完成后，给按钮一个被“按压”后弹起的完成反馈
+          if (isVisible) {
+            anime.remove(btn);
+            anime({
+              targets: btn,
+              scale: [0.85, 1],
+              duration: 400,
+              easing: "easeOutBack"
+            });
+          }
         }
       });
     });
+  });
+
+  // 在页面内容被替换前，清理滚动事件，防止监听器堆积
+  document.addEventListener("astro:before-swap", () => {
+    if (scrollHandler) {
+      window.removeEventListener("scroll", scrollHandler);
+      scrollHandler = null;
+    }
   });
 </script>
