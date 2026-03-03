@@ -2,6 +2,7 @@
 title: 谷歌云 (GCP) 服务器 SSH 免密连接与提权指南
 pubDate: 2026-03-03T16:55
 image: /images/gcp-help/8a43cfbb14304c46.jpeg
+description: 详细讲解 GCP 的常见问题与解决方案
 ---
 # 谷歌云 (GCP) 服务器 SSH 免密连接与提权指南
 
