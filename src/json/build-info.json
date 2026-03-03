@@ -1,10 +1,10 @@
 {
-  "commitSha": "54109d594166cbbcba2c330c89db28cc8baff9c8",
-  "commitShort": "54109d5",
-  "commitMessage": "feat(blog): update post \"测试文章 v2 —— 更新通知测试\"",
-  "commitAuthor": "mahiro-blog[bot]",
-  "commitDate": "2026-03-03T06:54:16Z",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/54109d594166cbbcba2c330c89db28cc8baff9c8",
-  "buildTime": "2026/3/3 14:54:41",
-  "totalCommits": 261
+  "commitSha": "68edf4268609917f35cbefaa9add606495450eef",
+  "commitShort": "68edf42",
+  "commitMessage": "Add description to GCP SSH guide",
+  "commitAuthor": "A paramecium",
+  "commitDate": "2026-03-03T17:38:26+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/68edf4268609917f35cbefaa9add606495450eef",
+  "buildTime": "2026/3/3 17:38:51",
+  "totalCommits": 264
 }

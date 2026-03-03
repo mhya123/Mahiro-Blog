@@ -1,4 +1,36 @@
 {
+  "src/content/blog/gcp-help.md": [
+    {
+      "sha": "68edf4268609917f35cbefaa9add606495450eef",
+      "message": "Add description to GCP SSH guide",
+      "authorName": "A paramecium",
+      "date": "2026-03-03T17:38:26+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/68edf4268609917f35cbefaa9add606495450eef"
+    },
+    {
+      "sha": "a68a6a3029ed4badb7d86eaeb3e08a0bdf1b726b",
+      "message": "feat(blog): publish post \"谷歌云 (GCP) 服务器 SSH 免密连接与提权指南\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-03-03T08:57:48Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/a68a6a3029ed4badb7d86eaeb3e08a0bdf1b726b"
+    }
+  ],
+  "src/content/blog/geekerwan-2026-phone-review.md": [
+    {
+      "sha": "1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
+      "message": "feat(blog): update post \"极客湾2026手机大横评补档\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-03-02T02:59:44Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/1d2b419a0256540adae7b0e8de7b671a1ef5a54c"
+    },
+    {
+      "sha": "d34e7922597811a2f57b95474ea974ec59e5f36e",
+      "message": "feat(blog): 添加极客湾2026手机大横评补档内容",
+      "authorName": "MhYa123",
+      "date": "2026-03-01T19:58:02+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d34e7922597811a2f57b95474ea974ec59e5f36e"
+    }
+  ],
   "src/content/blog/loookme.md": [
     {
       "sha": "582daa35e725d04840d5837fdfcd52990b0c4f93",
@@ -48,22 +80,6 @@
       "authorName": "mahiro-blog[bot]",
       "date": "2026-02-28T05:07:57Z",
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/4cc186bc81e0a5aa32026b9c74b13b86e9d475b5"
-    }
-  ],
-  "src/content/blog/geekerwan-2026-phone-review.md": [
-    {
-      "sha": "1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
-      "message": "feat(blog): update post \"极客湾2026手机大横评补档\"",
-      "authorName": "mahiro-blog[bot]",
-      "date": "2026-03-02T02:59:44Z",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/1d2b419a0256540adae7b0e8de7b671a1ef5a54c"
-    },
-    {
-      "sha": "d34e7922597811a2f57b95474ea974ec59e5f36e",
-      "message": "feat(blog): 添加极客湾2026手机大横评补档内容",
-      "authorName": "MhYa123",
-      "date": "2026-03-01T19:58:02+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d34e7922597811a2f57b95474ea974ec59e5f36e"
     }
   ],
   "src/content/blog/test.md": [
