@@ -1,10 +1,10 @@
 {
-  "commitSha": "0e78021bd7757efcb18fcce34be4b5f37b58f6d9",
-  "commitShort": "0e78021",
-  "commitMessage": "feat: 更新 Footer 组件以包含更多技术栈信息；优化 BackToTop 和 ScrollToTop 组件的动画效果和性能",
-  "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-03T09:54:05+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0e78021bd7757efcb18fcce34be4b5f37b58f6d9",
-  "buildTime": "2026/3/3 09:54:34",
-  "totalCommits": 259
+  "commitSha": "54109d594166cbbcba2c330c89db28cc8baff9c8",
+  "commitShort": "54109d5",
+  "commitMessage": "feat(blog): update post \"测试文章 v2 —— 更新通知测试\"",
+  "commitAuthor": "mahiro-blog[bot]",
+  "commitDate": "2026-03-03T06:54:16Z",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/54109d594166cbbcba2c330c89db28cc8baff9c8",
+  "buildTime": "2026/3/3 14:54:41",
+  "totalCommits": 261
 }
