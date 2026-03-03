@@ -1,10 +1,10 @@
 {
-  "commitSha": "338995bd76aea00c54eabcdf7ef4019debf75b06",
-  "commitShort": "338995b",
-  "commitMessage": "refactor(BackToTop): enhance scroll animation and improve performance with throttling",
+  "commitSha": "0e78021bd7757efcb18fcce34be4b5f37b58f6d9",
+  "commitShort": "0e78021",
+  "commitMessage": "feat: 更新 Footer 组件以包含更多技术栈信息；优化 BackToTop 和 ScrollToTop 组件的动画效果和性能",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-02T19:00:07+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/338995bd76aea00c54eabcdf7ef4019debf75b06",
-  "buildTime": "2026/3/2 19:00:42",
-  "totalCommits": 257
+  "commitDate": "2026-03-03T09:54:05+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0e78021bd7757efcb18fcce34be4b5f37b58f6d9",
+  "buildTime": "2026/3/3 09:54:34",
+  "totalCommits": 259
 }
