@@ -1,0 +1,13 @@
+{
+  "name": "项目名称",
+  "avatar": "https://项目图标URL",
+  "description": "项目简短描述",
+  "url": "https://项目主页URL",
+  "badge": "Web",
+  "tags": [
+    "标签1",
+    "标签2"
+  ],
+  "author": "您的名字",
+  "github": "https://github.com/你的仓库地址 (选填)"
+}
