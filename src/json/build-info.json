@@ -1,10 +1,10 @@
 {
-  "commitSha": "68edf4268609917f35cbefaa9add606495450eef",
-  "commitShort": "68edf42",
-  "commitMessage": "Add description to GCP SSH guide",
-  "commitAuthor": "A paramecium",
-  "commitDate": "2026-03-03T17:38:26+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/68edf4268609917f35cbefaa9add606495450eef",
-  "buildTime": "2026/3/3 17:38:51",
-  "totalCommits": 264
+  "commitSha": "db3d5b4da2dc06a8b394f11f3260ff8e0e9ca24a",
+  "commitShort": "db3d5b4",
+  "commitMessage": "feat(blog): update post \"谷歌云 (GCP) 服务器 SSH 免密连接与提权指南\"",
+  "commitAuthor": "mahiro-blog[bot]",
+  "commitDate": "2026-03-04T06:50:24Z",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/db3d5b4da2dc06a8b394f11f3260ff8e0e9ca24a",
+  "buildTime": "2026/3/4 14:50:52",
+  "totalCommits": 266
 }
