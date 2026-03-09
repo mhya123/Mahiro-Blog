@@ -23,10 +23,10 @@ import { Icon } from "astro-icon/components";
 <script>
   import { animate, remove } from "animejs";
 
-  let scrollHandler = null;
-  let clickHandler = null;
-  let rafId = null;
-  let scrollTweenState = null;
+  let scrollHandler: (() => void) | null = null;
+  let clickHandler: (() => void) | null = null;
+  let rafId: number | null = null;
+  let scrollTweenState: { y: number } | null = null;
 
   document.addEventListener("astro:page-load", () => {
     const btn = document.getElementById("back-to-top");
@@ -109,7 +109,7 @@ import { Icon } from "astro-icon/components";
       });
     };
 
-    const setVisible = (shouldShow) => {
+    const setVisible = (shouldShow: boolean) => {
       if (shouldShow === isVisible) return;
 
       isVisible = shouldShow;
