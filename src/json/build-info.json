@@ -1,10 +1,10 @@
 {
-  "commitSha": "db3d5b4da2dc06a8b394f11f3260ff8e0e9ca24a",
-  "commitShort": "db3d5b4",
-  "commitMessage": "feat(blog): update post \"谷歌云 (GCP) 服务器 SSH 免密连接与提权指南\"",
-  "commitAuthor": "mahiro-blog[bot]",
-  "commitDate": "2026-03-04T06:50:24Z",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/db3d5b4da2dc06a8b394f11f3260ff8e0e9ca24a",
-  "buildTime": "2026/3/4 14:50:52",
-  "totalCommits": 266
+  "commitSha": "84e3f9abbfff5af6fd819e9764e5a8476a4b2b22",
+  "commitShort": "84e3f9a",
+  "commitMessage": "chore(cookie-consent): remove unnecessary comment about React hydration",
+  "commitAuthor": "MhYa123",
+  "commitDate": "2026-03-09T19:31:06+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/84e3f9abbfff5af6fd819e9764e5a8476a4b2b22",
+  "buildTime": "2026/3/9 19:31:42",
+  "totalCommits": 268
 }
