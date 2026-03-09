@@ -4,140 +4,200 @@ import { Icon } from "astro-icon/components";
 
 <button
   id="back-to-top"
-  class="fixed right-6 bottom-[5.5rem] z-[90] p-3 rounded-full bg-primary/90 backdrop-blur-md text-primary-content shadow-xl opacity-0 translate-y-8 scale-90 cursor-pointer pointer-events-none transition-shadow duration-300 hover:shadow-2xl"
+  class="group fixed right-6 bottom-[5.5rem] z-[90] grid h-12 w-12 place-items-center rounded-full border border-primary-content/10 bg-primary/85 text-primary-content shadow-[0_18px_40px_-20px_oklch(var(--p)/0.9)] opacity-0 pointer-events-none backdrop-blur-xl will-change-[transform,opacity] transition-[box-shadow,background-color,border-color,transform] duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:bg-primary hover:shadow-[0_24px_48px_-20px_oklch(var(--p)/1)] active:scale-95"
   aria-label="返回顶部"
 >
-  <Icon name="lucide:arrow-up" class="w-6 h-6" />
+  <span
+    id="back-to-top-glow"
+    class="pointer-events-none absolute inset-0 rounded-full bg-primary/35 opacity-0 blur-md"
+    aria-hidden="true"
+  ></span>
+  <span
+    id="back-to-top-icon"
+    class="relative z-10 flex items-center justify-center"
+  >
+    <Icon name="lucide:arrow-up" class="h-5 w-5" />
+  </span>
 </button>
 
 <script>
-  import * as animejs from "animejs";
+  import { animate, remove } from "animejs";
 
-  // 在顶层作用域声明 handler，以便在 Astro 页面切换时进行清理
-  let scrollHandler: (() => void) | null = null;
+  let scrollHandler = null;
+  let clickHandler = null;
+  let rafId = null;
+  let scrollTweenState = null;
 
   document.addEventListener("astro:page-load", () => {
     const btn = document.getElementById("back-to-top");
-    if (!btn) return;
-
-    // 兼容不同版本的 animejs 导出格式获取执行函数
-    const anime = (animejs as any).default || (animejs as any).anime || animejs;
+    const glow = document.getElementById("back-to-top-glow");
+    const icon = document.getElementById("back-to-top-icon");
+    if (!btn || !glow || !icon) return;
 
     let isVisible = false;
-    let scrollTimeout: number | null = null;
 
-    // 显示动画 - 使用更柔和的 Elastic 弹性效果
-    const showAnimation = () => {
-      anime.remove(btn); // 移除正在进行的冲突动画
-      btn.style.pointerEvents = "auto";
-      anime({
-        targets: btn,
-        opacity: 1,
-        translateY: 0,
-        scale: 1,
-        duration: 800,
-        easing: "easeOutElastic(1, .6)" 
+    const stopAnimations = () => {
+      remove(btn);
+      remove(glow);
+      remove(icon);
+      if (scrollTweenState) {
+        remove(scrollTweenState);
+      }
+    };
+
+    const playShowAnimation = () => {
+      animate(btn, {
+        opacity: [0, 1],
+        translateY: [22, 0],
+        scale: [0.82, 1],
+        rotate: [-10, 0],
+        duration: 520,
+        ease: "outBack(1.4)",
+      });
+
+      animate(icon, {
+        translateY: [8, 0],
+        scale: [0.75, 1],
+        duration: 480,
+        ease: "outBack(1.6)",
+      });
+
+      animate(glow, {
+        opacity: [0, 0.45, 0],
+        scale: [0.7, 1.65],
+        duration: 700,
+        ease: "outCubic",
       });
     };
 
-    // 隐藏动画 - 稍微干脆一点的收缩退出
-    const hideAnimation = () => {
-      anime.remove(btn);
-      btn.style.pointerEvents = "none";
-      anime({
-        targets: btn,
+    const playHideAnimation = () => {
+      animate(btn, {
         opacity: 0,
-        translateY: 24,
+        translateY: 18,
         scale: 0.9,
-        duration: 300,
-        easing: "easeInQuart"
+        rotate: 0,
+        duration: 180,
+        ease: "inQuad",
       });
-    };
 
-    const handleScrollRaw = () => {
-      const currentScroll = window.scrollY || document.documentElement.scrollTop;
-
-      if (currentScroll > 400 && !isVisible) {
-        isVisible = true;
-        showAnimation();
-      } else if (currentScroll <= 400 && isVisible) {
-        isVisible = false;
-        hideAnimation();
-      }
-    };
-
-    // 性能优化：使用 requestAnimationFrame 进行节流
-    scrollHandler = () => {
-      if (!scrollTimeout) {
-        scrollTimeout = window.requestAnimationFrame(() => {
-          handleScrollRaw();
-          scrollTimeout = null;
-        });
-      }
-    };
-
-    // 初始化检查并绑定事件
-    window.addEventListener("scroll", scrollHandler, { passive: true });
-    handleScrollRaw(); 
-
-    // 悬停动画：微微上浮并放大，使用 easeOutBack 增加灵动感
-    btn.addEventListener("mouseenter", () => {
-      if (!isVisible) return; 
-      anime.remove(btn);
-      anime({
-        targets: btn,
-        scale: 1.15,
-        translateY: -3,
-        duration: 400,
-        easing: "easeOutBack"
-      });
-    });
-
-    // 离开动画：平滑恢复原位
-    btn.addEventListener("mouseleave", () => {
-      if (!isVisible) return;
-      anime.remove(btn);
-      anime({
-        targets: btn,
-        scale: 1,
+      animate(icon, {
         translateY: 0,
-        duration: 400,
-        easing: "easeOutCirc"
+        scale: 0.92,
+        duration: 180,
+        ease: "inQuad",
       });
-    });
+    };
 
-    // 点击流畅滑回顶部 - 直接操控滚动容器的 scrollTop
-    btn.addEventListener("click", () => {
-      // 获取当前浏览器的滚动容器
-      const scrollElement = window.document.scrollingElement || window.document.documentElement || window.document.body;
-      
-      anime.remove(scrollElement);
-      anime({
-        targets: scrollElement,
-        scrollTop: 0,
-        duration: 800,
-        easing: "easeInOutQuart",
-        complete: () => {
-          // 滚动完成后，给按钮一个被“按压”后弹起的完成反馈
-          if (isVisible) {
-            anime.remove(btn);
-            anime({
-              targets: btn,
-              scale: [0.85, 1],
-              duration: 400,
-              easing: "easeOutBack"
-            });
-          }
-        }
+    const playClickAnimation = () => {
+      animate(btn, {
+        scale: [1, 0.9, 1.02],
+        duration: 260,
+        ease: "outBack(1.5)",
       });
-    });
+
+      animate(icon, {
+        translateY: [0, -6, 0],
+        duration: 320,
+        ease: "outQuad",
+      });
+
+      animate(glow, {
+        opacity: [0, 0.5, 0],
+        scale: [0.8, 1.9],
+        duration: 520,
+        ease: "outCubic",
+      });
+    };
+
+    const setVisible = (shouldShow) => {
+      if (shouldShow === isVisible) return;
+
+      isVisible = shouldShow;
+      stopAnimations();
+      btn.style.pointerEvents = shouldShow ? "auto" : "none";
+
+      if (shouldShow) {
+        playShowAnimation();
+        return;
+      }
+
+      playHideAnimation();
+    };
+
+    const updateVisibility = () => {
+      const currentScroll = window.scrollY || document.documentElement.scrollTop;
+      setVisible(currentScroll > 420);
+    };
+
+    scrollHandler = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        updateVisibility();
+        rafId = null;
+      });
+    };
+
+    clickHandler = () => {
+      const currentY = window.scrollY || document.documentElement.scrollTop;
+      if (currentY <= 0) return;
+
+      stopAnimations();
+      playClickAnimation();
+      scrollTweenState = { y: currentY };
+
+      animate(scrollTweenState, {
+        y: 0,
+        duration: Math.min(950, Math.max(480, currentY * 0.42)),
+        ease: "inOutQuart",
+        onUpdate: () => {
+          window.scrollTo(0, scrollTweenState.y);
+        },
+        onComplete: () => {
+          scrollTweenState = null;
+        },
+      });
+    };
+
+    window.addEventListener("scroll", scrollHandler, { passive: true });
+    btn.addEventListener("click", clickHandler);
+    updateVisibility();
   });
 
-  // 在页面内容被替换前，清理滚动事件，防止监听器堆积
   document.addEventListener("astro:before-swap", () => {
+    const btn = document.getElementById("back-to-top");
+    const glow = document.getElementById("back-to-top-glow");
+    const icon = document.getElementById("back-to-top-icon");
+
     if (scrollHandler) {
       window.removeEventListener("scroll", scrollHandler);
       scrollHandler = null;
+    }
+
+    if (btn && clickHandler) {
+      btn.removeEventListener("click", clickHandler);
+      clickHandler = null;
+    }
+
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+
+    if (btn) {
+      remove(btn);
+    }
+
+    if (glow) {
+      remove(glow);
+    }
+
+    if (icon) {
+      remove(icon);
+    }
+
+    if (scrollTweenState) {
+      remove(scrollTweenState);
+      scrollTweenState = null;
     }
   });
 </script>
