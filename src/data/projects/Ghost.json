@@ -1,0 +1,10 @@
+{
+  "name": "Ghost",
+  "avatar": "https://www.google.com/s2/favicons?domain=ghost.org&sz=128",
+  "description": "成熟的开源博客、会员订阅与 Newsletter 平台。",
+  "url": "https://ghost.org/",
+  "badge": "Publishing",
+  "tags": ["Blog", "Newsletter", "Membership"],
+  "author": "Ghost",
+  "github": "https://github.com/TryGhost/Ghost"
+}

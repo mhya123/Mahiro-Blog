@@ -1,0 +1,10 @@
+{
+  "name": "Nuxt",
+  "avatar": "https://www.google.com/s2/favicons?domain=nuxt.com&sz=128",
+  "description": "基于 Vue 的全栈框架，覆盖 SSR、SSG 和服务端能力。",
+  "url": "https://nuxt.com/",
+  "badge": "Framework",
+  "tags": ["Vue", "Full-Stack", "SSR"],
+  "author": "Nuxt",
+  "github": "https://github.com/nuxt/nuxt"
+}

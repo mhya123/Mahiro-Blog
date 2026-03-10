@@ -1,0 +1,10 @@
+{
+  "name": "Kubernetes",
+  "avatar": "https://www.google.com/s2/favicons?domain=kubernetes.io&sz=128",
+  "description": "事实标准级的容器编排平台，适用于云原生应用部署与管理。",
+  "url": "https://kubernetes.io/",
+  "badge": "Infrastructure",
+  "tags": ["Containers", "Cloud Native", "DevOps"],
+  "author": "Kubernetes",
+  "github": "https://github.com/kubernetes/kubernetes"
+}

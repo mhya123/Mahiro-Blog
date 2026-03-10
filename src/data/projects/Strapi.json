@@ -1,0 +1,10 @@
+{
+  "name": "Strapi",
+  "avatar": "https://www.google.com/s2/favicons?domain=strapi.io&sz=128",
+  "description": "长期活跃的开源 Headless CMS，适合 API 驱动内容管理。",
+  "url": "https://strapi.io/",
+  "badge": "CMS",
+  "tags": ["Headless CMS", "Node.js", "API"],
+  "author": "Strapi",
+  "github": "https://github.com/strapi/strapi"
+}

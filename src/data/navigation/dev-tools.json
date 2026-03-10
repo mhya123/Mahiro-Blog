@@ -81,6 +81,54 @@
       "url": "https://caniuse.com/",
       "category": "兼容性",
       "id": "DEV012"
+    },
+    {
+      "name": "Postman",
+      "avatar": "https://www.google.com/s2/favicons?domain=postman.com&sz=128",
+      "description": "主流的 API 调试、测试与协作平台",
+      "url": "https://www.postman.com/",
+      "category": "API 调试",
+      "id": "DEV013"
+    },
+    {
+      "name": "Hoppscotch",
+      "avatar": "https://www.google.com/s2/favicons?domain=hoppscotch.io&sz=128",
+      "description": "开源轻量的 API 请求与调试工具",
+      "url": "https://hoppscotch.io/",
+      "category": "API 调试",
+      "id": "DEV014"
+    },
+    {
+      "name": "JSON Crack",
+      "avatar": "https://www.google.com/s2/favicons?domain=jsoncrack.com&sz=128",
+      "description": "将 JSON 数据可视化为交互式结构图",
+      "url": "https://jsoncrack.com/",
+      "category": "数据可视化",
+      "id": "DEV015"
+    },
+    {
+      "name": "Insomnia",
+      "avatar": "https://www.google.com/s2/favicons?domain=insomnia.rest&sz=128",
+      "description": "成熟的 API 调试、测试与协作工具",
+      "url": "https://insomnia.rest/",
+      "category": "API 调试",
+      "id": "DEV016"
+    },
+    {
+      "name": "Sentry",
+      "avatar": "https://www.google.com/s2/favicons?domain=sentry.io&sz=128",
+      "description": "错误追踪与性能监控平台",
+      "url": "https://sentry.io/",
+      "category": "监控分析",
+      "id": "DEV017"
+    },
+    {
+      "name": "Storybook",
+      "avatar": "https://www.google.com/s2/favicons?domain=storybook.js.org&sz=128",
+      "description": "前端组件开发、预览与文档化工具",
+      "url": "https://storybook.js.org/",
+      "category": "组件开发",
+      "id": "DEV018"
     }
   ]
 }

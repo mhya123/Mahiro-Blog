@@ -1,0 +1,10 @@
+{
+  "name": "Prisma",
+  "avatar": "https://www.google.com/s2/favicons?domain=prisma.io&sz=128",
+  "description": "广泛使用的 TypeScript ORM 与数据库开发工具链。",
+  "url": "https://www.prisma.io/docs/orm",
+  "badge": "Database",
+  "tags": ["ORM", "TypeScript", "Postgres"],
+  "author": "Prisma",
+  "github": "https://github.com/prisma/prisma"
+}

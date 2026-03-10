@@ -1,0 +1,10 @@
+{
+  "name": "Vite",
+  "avatar": "https://www.google.com/s2/favicons?domain=vite.dev&sz=128",
+  "description": "主流现代前端构建工具，以极快的开发体验和构建性能著称。",
+  "url": "https://vite.dev/",
+  "badge": "Tooling",
+  "tags": ["Frontend", "Build Tool", "JavaScript"],
+  "author": "Vite",
+  "github": "https://github.com/vitejs/vite"
+}

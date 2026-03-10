@@ -1,0 +1,10 @@
+{
+  "name": "Cal.com",
+  "avatar": "https://www.google.com/s2/favicons?domain=cal.com&sz=128",
+  "description": "开源预约与日程基础设施，适合个人、团队和平台集成。",
+  "url": "https://cal.com/",
+  "badge": "Scheduling",
+  "tags": ["Open Source", "Calendar", "Infrastructure"],
+  "author": "Cal.com",
+  "github": "https://github.com/calcom/cal.com"
+}

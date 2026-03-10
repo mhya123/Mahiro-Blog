@@ -1,0 +1,10 @@
+{
+  "name": "AppFlowy",
+  "avatar": "https://www.google.com/s2/favicons?domain=appflowy.com&sz=128",
+  "description": "开源协作工作空间，提供文档、项目和知识管理能力。",
+  "url": "https://appflowy.com/",
+  "badge": "Workspace",
+  "tags": ["Open Source", "Productivity", "Collaboration"],
+  "author": "AppFlowy",
+  "github": "https://github.com/AppFlowy-IO/AppFlowy"
+}

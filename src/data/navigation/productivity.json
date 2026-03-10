@@ -49,6 +49,46 @@
       "url": "https://www.snipaste.com/",
       "category": "截图",
       "id": "EFF006"
+    },
+    {
+      "name": "Todoist",
+      "avatar": "https://www.google.com/s2/favicons?domain=todoist.com&sz=128",
+      "description": "跨平台待办与任务管理工具",
+      "url": "https://todoist.com/",
+      "category": "任务管理",
+      "id": "EFF007"
+    },
+    {
+      "name": "Linear",
+      "avatar": "https://www.google.com/s2/favicons?domain=linear.app&sz=128",
+      "description": "面向产品与工程团队的项目管理系统",
+      "url": "https://linear.app/",
+      "category": "项目管理",
+      "id": "EFF008"
+    },
+    {
+      "name": "Readwise",
+      "avatar": "https://www.google.com/s2/favicons?domain=readwise.io&sz=128",
+      "description": "集中保存与回顾高亮内容的知识整理工具",
+      "url": "https://readwise.io/",
+      "category": "知识管理",
+      "id": "EFF009"
+    },
+    {
+      "name": "1Password",
+      "avatar": "https://www.google.com/s2/favicons?domain=1password.com&sz=128",
+      "description": "成熟的密码管理与访问控制工具",
+      "url": "https://1password.com/",
+      "category": "安全",
+      "id": "EFF010"
+    },
+    {
+      "name": "TickTick",
+      "avatar": "https://www.google.com/s2/favicons?domain=ticktick.com&sz=128",
+      "description": "待办、日历与习惯追踪一体化工具",
+      "url": "https://ticktick.com/",
+      "category": "任务管理",
+      "id": "EFF011"
     }
   ]
 }

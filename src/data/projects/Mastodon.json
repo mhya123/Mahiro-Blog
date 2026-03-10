@@ -1,0 +1,10 @@
+{
+  "name": "Mastodon",
+  "avatar": "https://www.google.com/s2/favicons?domain=joinmastodon.org&sz=128",
+  "description": "成熟的去中心化社交网络项目，支持自托管与联邦互通。",
+  "url": "https://joinmastodon.org/",
+  "badge": "Social",
+  "tags": ["Fediverse", "Open Source", "Community"],
+  "author": "Mastodon",
+  "github": "https://github.com/mastodon/mastodon"
+}

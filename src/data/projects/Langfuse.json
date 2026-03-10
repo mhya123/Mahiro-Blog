@@ -1,0 +1,10 @@
+{
+  "name": "Langfuse",
+  "avatar": "https://www.google.com/s2/favicons?domain=langfuse.com&sz=128",
+  "description": "开源 LLM 工程平台，聚焦可观测性、评测与提示词管理。",
+  "url": "https://langfuse.com/",
+  "badge": "LLM",
+  "tags": ["AI", "Observability", "Open Source"],
+  "author": "Langfuse",
+  "github": "https://github.com/langfuse/langfuse"
+}

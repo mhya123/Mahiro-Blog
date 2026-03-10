@@ -1,0 +1,10 @@
+{
+  "name": "NocoDB",
+  "avatar": "https://www.google.com/s2/favicons?domain=nocodb.com&sz=128",
+  "description": "开源的 Airtable 替代方案，可将数据库转为可协作表格界面。",
+  "url": "https://www.nocodb.com/",
+  "badge": "Database",
+  "tags": ["Open Source", "No-Code", "Database"],
+  "author": "NocoDB",
+  "github": "https://github.com/nocodb/nocodb"
+}

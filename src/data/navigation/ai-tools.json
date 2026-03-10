@@ -65,6 +65,54 @@
       "url": "https://www.midjourney.com/",
       "category": "AI 绘画",
       "id": "AI008"
+    },
+    {
+      "name": "OpenRouter",
+      "avatar": "https://www.google.com/s2/favicons?domain=openrouter.ai&sz=128",
+      "description": "统一接入多家大模型的 AI API 聚合平台",
+      "url": "https://openrouter.ai/",
+      "category": "AI API",
+      "id": "AI009"
+    },
+    {
+      "name": "Poe",
+      "avatar": "https://www.google.com/s2/favicons?domain=poe.com&sz=128",
+      "description": "聚合多种模型的 AI 对话与 Bot 平台",
+      "url": "https://poe.com/",
+      "category": "AI 对话",
+      "id": "AI010"
+    },
+    {
+      "name": "Bolt.new",
+      "avatar": "https://www.google.com/s2/favicons?domain=bolt.new&sz=128",
+      "description": "通过对话生成网页与应用原型的 AI 构建工具",
+      "url": "https://bolt.new/",
+      "category": "AI 开发",
+      "id": "AI011"
+    },
+    {
+      "name": "OpenClaw",
+      "avatar": "https://github.githubassets.com/favicons/favicon.svg",
+      "description": "开源自托管的个人 AI Agent 项目",
+      "url": "https://github.com/openclaw/openclaw",
+      "category": "AI Agent",
+      "id": "AI012"
+    },
+    {
+      "name": "Hugging Face",
+      "avatar": "https://www.google.com/s2/favicons?domain=huggingface.co&sz=128",
+      "description": "模型、数据集与 AI 应用生态平台",
+      "url": "https://huggingface.co/",
+      "category": "AI 平台",
+      "id": "AI013"
+    },
+    {
+      "name": "Ollama",
+      "avatar": "https://www.google.com/s2/favicons?domain=ollama.com&sz=128",
+      "description": "本地运行和管理开源模型的工具平台",
+      "url": "https://ollama.com/",
+      "category": "本地模型",
+      "id": "AI014"
     }
   ]
 }

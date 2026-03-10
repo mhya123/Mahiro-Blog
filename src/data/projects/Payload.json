@@ -1,0 +1,10 @@
+{
+  "name": "Payload CMS",
+  "avatar": "https://www.google.com/s2/favicons?domain=payloadcms.com&sz=128",
+  "description": "基于 Next.js 和 TypeScript 的开源 Headless CMS 与应用框架。",
+  "url": "https://payloadcms.com/",
+  "badge": "CMS",
+  "tags": ["Next.js", "TypeScript", "Headless CMS"],
+  "author": "Payload",
+  "github": "https://github.com/payloadcms/payload"
+}

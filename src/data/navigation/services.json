@@ -97,6 +97,46 @@
       "url": "https://supabase.com/",
       "category": "后端服务",
       "id": "SRV012"
+    },
+    {
+      "name": "Render",
+      "avatar": "https://www.google.com/s2/favicons?domain=render.com&sz=128",
+      "description": "面向全栈应用的云托管与部署平台",
+      "url": "https://render.com/",
+      "category": "部署托管",
+      "id": "SRV013"
+    },
+    {
+      "name": "Neon",
+      "avatar": "https://www.google.com/s2/favicons?domain=neon.tech&sz=128",
+      "description": "Serverless Postgres 数据库服务",
+      "url": "https://neon.tech/",
+      "category": "数据库服务",
+      "id": "SRV014"
+    },
+    {
+      "name": "Resend",
+      "avatar": "https://www.google.com/s2/favicons?domain=resend.com&sz=128",
+      "description": "面向开发者的事务邮件发送服务",
+      "url": "https://resend.com/",
+      "category": "邮件服务",
+      "id": "SRV015"
+    },
+    {
+      "name": "Upstash",
+      "avatar": "https://www.google.com/s2/favicons?domain=upstash.com&sz=128",
+      "description": "Serverless Redis、Kafka 与向量数据库平台",
+      "url": "https://upstash.com/",
+      "category": "后端服务",
+      "id": "SRV016"
+    },
+    {
+      "name": "Cloudinary",
+      "avatar": "https://www.google.com/s2/favicons?domain=cloudinary.com&sz=128",
+      "description": "图像与视频上传、处理、优化和 CDN 服务",
+      "url": "https://cloudinary.com/",
+      "category": "媒体服务",
+      "id": "SRV017"
     }
   ]
 }

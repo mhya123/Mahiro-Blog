@@ -1,13 +1,13 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
 import { Icon } from "astro-icon/components";
 import ProjectCard from "@/components/mdx/ProjectCard.astro";
 
 // 使用 import.meta.glob 自动加载所有项目 JSON 文件（与友链同模式）
-const projectModules = import.meta.glob<{ default: any }>('/src/data/projects/*.json', { eager: true });
-const projects = Object.entries(projectModules)
-  .filter(([_, mod]) => mod?.default)
-  .map(([_, mod]) => mod.default);
+const projects = (await getCollection("projects"))
+  .map((entry) => entry.data)
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 // 项目 PR 申请链接：引导用户直接在仓库中新建 JSON 文件提交 PR
 const applyUrl = `https://github.com/mhya123/Mahiro-Blog/new/main/src/data/projects?filename=你的项目名.json&value=${encodeURIComponent(JSON.stringify({

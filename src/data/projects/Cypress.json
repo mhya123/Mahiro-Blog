@@ -1,0 +1,10 @@
+{
+  "name": "Cypress",
+  "avatar": "https://www.google.com/s2/favicons?domain=cypress.io&sz=128",
+  "description": "长期活跃的前端端到端测试框架，聚焦浏览器应用测试体验。",
+  "url": "https://www.cypress.io/",
+  "badge": "Testing",
+  "tags": ["E2E", "Frontend", "QA"],
+  "author": "Cypress",
+  "github": "https://github.com/cypress-io/cypress"
+}

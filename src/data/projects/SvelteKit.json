@@ -1,0 +1,10 @@
+{
+  "name": "SvelteKit",
+  "avatar": "https://www.google.com/s2/favicons?domain=svelte.dev&sz=128",
+  "description": "Svelte 官方全栈应用框架，适合构建高性能 Web 应用。",
+  "url": "https://svelte.dev/docs/kit",
+  "badge": "Framework",
+  "tags": ["Svelte", "Full-Stack", "SSR"],
+  "author": "Svelte",
+  "github": "https://github.com/sveltejs/kit"
+}

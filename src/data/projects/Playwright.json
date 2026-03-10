@@ -1,0 +1,10 @@
+{
+  "name": "Playwright",
+  "avatar": "https://www.google.com/s2/favicons?domain=playwright.dev&sz=128",
+  "description": "现代浏览器自动化与测试框架，支持 Chromium、Firefox 和 WebKit。",
+  "url": "https://playwright.dev/",
+  "badge": "Testing",
+  "tags": ["E2E", "Automation", "Browser"],
+  "author": "Microsoft",
+  "github": "https://github.com/microsoft/playwright"
+}

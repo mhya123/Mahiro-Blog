@@ -1,0 +1,10 @@
+{
+  "name": "Appwrite",
+  "avatar": "https://www.google.com/s2/favicons?domain=appwrite.io&sz=128",
+  "description": "面向 Web、移动端和 AI 应用的开源后端平台。",
+  "url": "https://appwrite.io/",
+  "badge": "Backend",
+  "tags": ["BaaS", "Auth", "Storage"],
+  "author": "Appwrite",
+  "github": "https://github.com/appwrite/appwrite"
+}

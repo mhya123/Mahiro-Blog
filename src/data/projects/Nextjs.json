@@ -1,0 +1,10 @@
+{
+  "name": "Next.js",
+  "avatar": "https://www.google.com/s2/favicons?domain=nextjs.org&sz=128",
+  "description": "React 生态中长期活跃的全栈框架，覆盖服务端渲染与应用开发。",
+  "url": "https://nextjs.org/",
+  "badge": "Framework",
+  "tags": ["React", "Full-Stack", "SSR"],
+  "author": "Vercel",
+  "github": "https://github.com/vercel/next.js"
+}

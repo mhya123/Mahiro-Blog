@@ -1,0 +1,10 @@
+{
+  "name": "Home Assistant",
+  "avatar": "https://www.google.com/s2/favicons?domain=home-assistant.io&sz=128",
+  "description": "隐私优先、社区驱动的开源家庭自动化平台。",
+  "url": "https://www.home-assistant.io/",
+  "badge": "Self-Hosted",
+  "tags": ["Automation", "IoT", "Privacy"],
+  "author": "Open Home Foundation",
+  "github": "https://github.com/home-assistant/core"
+}

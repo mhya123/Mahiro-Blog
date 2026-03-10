@@ -1,0 +1,10 @@
+{
+  "name": "Vitest",
+  "avatar": "https://www.google.com/s2/favicons?domain=vitest.dev&sz=128",
+  "description": "由 Vite 驱动的现代测试框架，兼顾速度和开发体验。",
+  "url": "https://vitest.dev/",
+  "badge": "Testing",
+  "tags": ["Unit Test", "Vite", "TypeScript"],
+  "author": "Vitest",
+  "github": "https://github.com/vitest-dev/vitest"
+}

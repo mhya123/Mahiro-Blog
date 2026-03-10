@@ -1,0 +1,10 @@
+{
+  "name": "Supabase",
+  "avatar": "https://www.google.com/s2/favicons?domain=supabase.com&sz=128",
+  "description": "基于 Postgres 的开源开发平台，提供数据库、认证和存储能力。",
+  "url": "https://supabase.com/",
+  "badge": "Platform",
+  "tags": ["Postgres", "Backend", "Open Source"],
+  "author": "Supabase",
+  "github": "https://github.com/supabase/supabase"
+}

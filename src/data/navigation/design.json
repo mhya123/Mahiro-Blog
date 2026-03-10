@@ -57,6 +57,54 @@
       "url": "https://tinypng.com/",
       "category": "图片工具",
       "id": "DES008"
+    },
+    {
+      "name": "Framer",
+      "avatar": "https://www.google.com/s2/favicons?domain=framer.com&sz=128",
+      "description": "面向设计与营销团队的网站设计和发布工具",
+      "url": "https://www.framer.com/",
+      "category": "设计工具",
+      "id": "DES009"
+    },
+    {
+      "name": "LottieFiles",
+      "avatar": "https://www.google.com/s2/favicons?domain=lottiefiles.com&sz=128",
+      "description": "查找、编辑与交付 Lottie 动画资源的平台",
+      "url": "https://lottiefiles.com/",
+      "category": "动画资源",
+      "id": "DES010"
+    },
+    {
+      "name": "SVG Repo",
+      "avatar": "https://www.google.com/s2/favicons?domain=svgrepo.com&sz=128",
+      "description": "收录海量 SVG 图标、插画与矢量素材",
+      "url": "https://www.svgrepo.com/",
+      "category": "图标素材",
+      "id": "DES011"
+    },
+    {
+      "name": "Penpot",
+      "avatar": "https://www.google.com/s2/favicons?domain=penpot.app&sz=128",
+      "description": "面向设计与开发协作的开源设计平台",
+      "url": "https://penpot.app/",
+      "category": "设计工具",
+      "id": "DES012"
+    },
+    {
+      "name": "Dribbble",
+      "avatar": "https://www.google.com/s2/favicons?domain=dribbble.com&sz=128",
+      "description": "全球知名的设计作品展示与灵感社区",
+      "url": "https://dribbble.com/",
+      "category": "设计灵感",
+      "id": "DES013"
+    },
+    {
+      "name": "Behance",
+      "avatar": "https://www.google.com/s2/favicons?domain=behance.net&sz=128",
+      "description": "Adobe 旗下的创意作品集与案例平台",
+      "url": "https://www.behance.net/",
+      "category": "设计灵感",
+      "id": "DES014"
     }
   ]
 }

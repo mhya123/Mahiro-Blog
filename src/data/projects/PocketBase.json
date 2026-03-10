@@ -1,0 +1,10 @@
+{
+  "name": "PocketBase",
+  "avatar": "https://www.google.com/s2/favicons?domain=pocketbase.io&sz=128",
+  "description": "轻量级开源实时后端，适合快速构建中小型应用。",
+  "url": "https://pocketbase.io/",
+  "badge": "Backend",
+  "tags": ["Go", "Realtime", "Self-Hosted"],
+  "author": "PocketBase",
+  "github": "https://github.com/pocketbase/pocketbase"
+}

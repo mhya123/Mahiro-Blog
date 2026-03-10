@@ -1,0 +1,10 @@
+{
+  "name": "Astro",
+  "avatar": "https://www.google.com/s2/favicons?domain=astro.build&sz=128",
+  "description": "面向内容驱动网站的现代 Web 框架，强调性能与低 JavaScript 负载。",
+  "url": "https://astro.build/",
+  "badge": "Framework",
+  "tags": ["Web", "SSG", "Content"],
+  "author": "Astro",
+  "github": "https://github.com/withastro/astro"
+}

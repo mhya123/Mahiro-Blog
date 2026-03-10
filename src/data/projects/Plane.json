@@ -1,0 +1,10 @@
+{
+  "name": "Plane",
+  "avatar": "https://www.google.com/s2/favicons?domain=plane.so&sz=128",
+  "description": "现代化的开源项目管理平台，覆盖任务、迭代和知识协作。",
+  "url": "https://plane.so/",
+  "badge": "Project",
+  "tags": ["Open Source", "Project Management", "Team"],
+  "author": "Plane",
+  "github": "https://github.com/makeplane/plane"
+}

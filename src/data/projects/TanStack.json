@@ -1,0 +1,10 @@
+{
+  "name": "TanStack",
+  "avatar": "https://www.google.com/s2/favicons?domain=tanstack.com&sz=128",
+  "description": "面向现代 Web 开发的高质量开源工具集合，覆盖路由、数据、表格与表单。",
+  "url": "https://tanstack.com/",
+  "badge": "Toolkit",
+  "tags": ["React", "TypeScript", "Frontend"],
+  "author": "TanStack",
+  "github": "https://github.com/TanStack/tanstack"
+}

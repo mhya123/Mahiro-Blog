@@ -1,0 +1,10 @@
+{
+  "name": "Immich",
+  "avatar": "https://www.google.com/s2/favicons?domain=immich.app&sz=128",
+  "description": "高性能的开源自托管照片与视频管理方案。",
+  "url": "https://immich.app/",
+  "badge": "Self-Hosted",
+  "tags": ["Photos", "Self-Hosted", "Media"],
+  "author": "Immich",
+  "github": "https://github.com/immich-app/immich"
+}

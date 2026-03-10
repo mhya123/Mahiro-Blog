@@ -1,0 +1,10 @@
+{
+  "name": "Hoppscotch",
+  "avatar": "https://www.google.com/s2/favicons?domain=hoppscotch.io&sz=128",
+  "description": "开源 API 开发生态，覆盖请求调试、协作与测试场景。",
+  "url": "https://hoppscotch.io/",
+  "badge": "API",
+  "tags": ["Open Source", "API", "Developer Tools"],
+  "author": "Hoppscotch",
+  "github": "https://github.com/hoppscotch/hoppscotch"
+}

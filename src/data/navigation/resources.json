@@ -73,6 +73,54 @@
       "url": "https://vite.dev/",
       "category": "构建工具",
       "id": "RES010"
+    },
+    {
+      "name": "MDN Web Docs",
+      "avatar": "https://www.google.com/s2/favicons?domain=developer.mozilla.org&sz=128",
+      "description": "权威的 Web 平台文档与 API 参考",
+      "url": "https://developer.mozilla.org/",
+      "category": "文档",
+      "id": "RES011"
+    },
+    {
+      "name": "Bun",
+      "avatar": "https://www.google.com/s2/favicons?domain=bun.sh&sz=128",
+      "description": "集运行时、打包与测试于一体的 JavaScript 工具链",
+      "url": "https://bun.sh/",
+      "category": "运行时",
+      "id": "RES012"
+    },
+    {
+      "name": "pnpm",
+      "avatar": "https://www.google.com/s2/favicons?domain=pnpm.io&sz=128",
+      "description": "高性能且节省磁盘空间的 JavaScript 包管理器",
+      "url": "https://pnpm.io/",
+      "category": "包管理",
+      "id": "RES013"
+    },
+    {
+      "name": "web.dev",
+      "avatar": "https://www.google.com/s2/favicons?domain=web.dev&sz=128",
+      "description": "Google 维护的现代 Web 开发学习资源",
+      "url": "https://web.dev/",
+      "category": "文档",
+      "id": "RES014"
+    },
+    {
+      "name": "Deno",
+      "avatar": "https://www.google.com/s2/favicons?domain=deno.com&sz=128",
+      "description": "现代 JavaScript 与 TypeScript 运行时平台",
+      "url": "https://deno.com/",
+      "category": "运行时",
+      "id": "RES015"
+    },
+    {
+      "name": "Docker",
+      "avatar": "https://www.google.com/s2/favicons?domain=docker.com&sz=128",
+      "description": "容器开发、分发与运行的核心平台",
+      "url": "https://www.docker.com/",
+      "category": "开发平台",
+      "id": "RES016"
     }
   ]
 }

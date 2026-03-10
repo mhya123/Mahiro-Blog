@@ -1,0 +1,10 @@
+{
+  "name": "Grafana",
+  "avatar": "https://www.google.com/s2/favicons?domain=grafana.com&sz=128",
+  "description": "成熟的开源可观测性与数据可视化平台。",
+  "url": "https://grafana.com/",
+  "badge": "Observability",
+  "tags": ["Monitoring", "Visualization", "DevOps"],
+  "author": "Grafana Labs",
+  "github": "https://github.com/grafana/grafana"
+}

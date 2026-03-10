@@ -1,0 +1,10 @@
+{
+  "name": "Directus",
+  "avatar": "https://www.google.com/s2/favicons?domain=directus.io&sz=128",
+  "description": "将数据库快速转为 Headless CMS 和后台管理系统的开源平台。",
+  "url": "https://directus.io/",
+  "badge": "CMS",
+  "tags": ["Headless CMS", "Database", "API"],
+  "author": "Directus",
+  "github": "https://github.com/directus/directus"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Mermaid",
+  "avatar": "https://www.google.com/s2/favicons?domain=mermaid.js.org&sz=128",
+  "description": "用文本描述流程图、时序图等图表的开源图形工具。",
+  "url": "https://mermaid.js.org/",
+  "badge": "Diagram",
+  "tags": ["Docs", "Visualization", "Markdown"],
+  "author": "Mermaid",
+  "github": "https://github.com/mermaid-js/mermaid"
+}

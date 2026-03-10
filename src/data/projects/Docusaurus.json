@@ -1,0 +1,10 @@
+{
+  "name": "Docusaurus",
+  "avatar": "https://www.google.com/s2/favicons?domain=docusaurus.io&sz=128",
+  "description": "专注文档与内容站点的开源框架，适合项目官网和知识库建设。",
+  "url": "https://docusaurus.io/",
+  "badge": "Docs",
+  "tags": ["Documentation", "React", "Static Site"],
+  "author": "Meta Open Source",
+  "github": "https://github.com/facebook/docusaurus"
+}
