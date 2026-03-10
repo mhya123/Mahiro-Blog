@@ -1,10 +1,10 @@
 {
-  "commitSha": "c54772d996635f5683c1546340ffd369926e54ea",
-  "commitShort": "c54772d",
-  "commitMessage": "fix(BackToTop): prevent errors by checking scrollTweenState before scrolling",
+  "commitSha": "f01decf85922bcba18e6d0eaeb9cba1c6b01d7af",
+  "commitShort": "f01decf",
+  "commitMessage": "feat(WritePage): enhance preview functionality and improve image handling",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-10T09:38:00+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/c54772d996635f5683c1546340ffd369926e54ea",
-  "buildTime": "2026/3/10 09:38:32",
-  "totalCommits": 272
+  "commitDate": "2026-03-10T10:17:07+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/f01decf85922bcba18e6d0eaeb9cba1c6b01d7af",
+  "buildTime": "2026/3/10 10:17:34",
+  "totalCommits": 274
 }
