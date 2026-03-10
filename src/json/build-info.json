@@ -1,10 +1,10 @@
 {
-  "commitSha": "84e3f9abbfff5af6fd819e9764e5a8476a4b2b22",
-  "commitShort": "84e3f9a",
-  "commitMessage": "chore(cookie-consent): remove unnecessary comment about React hydration",
+  "commitSha": "c54772d996635f5683c1546340ffd369926e54ea",
+  "commitShort": "c54772d",
+  "commitMessage": "fix(BackToTop): prevent errors by checking scrollTweenState before scrolling",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-09T19:31:06+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/84e3f9abbfff5af6fd819e9764e5a8476a4b2b22",
-  "buildTime": "2026/3/9 19:31:42",
-  "totalCommits": 268
+  "commitDate": "2026-03-10T09:38:00+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/c54772d996635f5683c1546340ffd369926e54ea",
+  "buildTime": "2026/3/10 09:38:32",
+  "totalCommits": 272
 }
