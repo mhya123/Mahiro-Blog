@@ -150,6 +150,7 @@ import { Icon } from "astro-icon/components";
         duration: Math.min(950, Math.max(480, currentY * 0.42)),
         ease: "inOutQuart",
         onUpdate: () => {
+          if (!scrollTweenState) return;
           window.scrollTo(0, scrollTweenState.y);
         },
         onComplete: () => {
