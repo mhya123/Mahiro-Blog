@@ -34,6 +34,15 @@
     @apply my-0; // 进一步减少徽章图片的上下边距  
   }
 
+  img {
+    display: block;
+    width: auto;
+    max-width: min(88%, 42rem);
+    max-height: min(24rem, 56vh);
+    margin-inline: auto;
+    object-fit: contain;
+  }
+
   // 只优化分隔线的上下边距  
   hr {
     @apply my-3; // 上下各 0.75rem 的间距，比默认更紧凑  
@@ -223,6 +232,7 @@
 html {
   @apply scroll-smooth font-sans;
   font-family: theme('fontFamily.sans') !important;
+  scrollbar-gutter: stable;
   /* 强制使用自定义字体，防止主题覆盖 */
   font-size: 16px;
   /* 桌面端默认字号 */
@@ -275,6 +285,85 @@ code {
   &::-webkit-scrollbar {
     display: none;
     /* Chrome, Safari and Opera */
+  }
+}
+
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(var(--bc) / 0.28) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(
+      180deg,
+      oklch(var(--bc) / 0.16),
+      oklch(var(--bc) / 0.34)
+    );
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  min-height: 48px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(
+      180deg,
+      oklch(var(--p) / 0.34),
+      oklch(var(--bc) / 0.44)
+    );
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.preview-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(var(--bc) / 0.28) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background:
+      linear-gradient(
+        180deg,
+        oklch(var(--bc) / 0.18),
+        oklch(var(--bc) / 0.34)
+      );
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    min-height: 48px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background:
+      linear-gradient(
+        180deg,
+        oklch(var(--p) / 0.38),
+        oklch(var(--bc) / 0.44)
+      );
+    background-clip: padding-box;
   }
 }
 

@@ -6,6 +6,7 @@ import { useCallback, useRef } from 'react'
 /** slug 只允许：小写字母、数字、连字符、下划线 */
 const SLUG_REGEX = /[^a-z0-9\-_]/g
 const PLACEHOLDER = 'text'
+const PASTED_IMAGE_PREFIX = 'pasted-image'
 
 /** 列表前缀匹配：- / * / 1. / 2. / - [ ] / - [x] 等 */
 const LIST_PREFIX_RE = /^(\s*)([-*]|\d+\.)\s(\[[ x]\]\s)?/
@@ -75,6 +76,58 @@ export function WriteEditor() {
 		if (end === -1) end = value.length
 		return value.substring(start, end)
 	}, [getLineStart])
+
+	const normalizePastedImageFiles = useCallback((files: File[]) => {
+		const now = Date.now()
+
+		return files.map((file, index) => {
+			if (file.name && file.name.trim()) {
+				return file
+			}
+
+			const rawExt = file.type.split('/')[1] || 'png'
+			const ext = rawExt === 'jpeg' ? 'jpg' : rawExt
+
+			return new File(
+				[file],
+				`${PASTED_IMAGE_PREFIX}-${now}-${index + 1}.${ext}`,
+				{
+					type: file.type || 'image/png',
+					lastModified: now,
+				},
+			)
+		})
+	}, [])
+
+	const insertImageMarkdown = useCallback((items: Array<{ type: 'url'; url: string } | { type: 'file'; id: string }>) => {
+		const textarea = textareaRef.current
+		if (!textarea || items.length === 0) return
+
+		const { selectionStart, selectionEnd, value } = textarea
+		const before = value.slice(0, selectionStart)
+		const after = value.slice(selectionEnd)
+		const markdown = items
+			.map(item => (item.type === 'url' ? `![](${item.url})` : `![](local-image:${item.id})`))
+			.join('\n\n')
+
+		const prefix = before.length === 0
+			? ''
+			: before.endsWith('\n\n')
+				? ''
+				: before.endsWith('\n')
+					? '\n'
+					: '\n\n'
+
+		const suffix = after.length === 0
+			? ''
+			: after.startsWith('\n\n')
+				? ''
+				: after.startsWith('\n')
+					? '\n'
+					: '\n\n'
+
+		insertText(`${prefix}${markdown}${suffix}`)
+	}, [insertText])
 
 	// ─── 快捷键 ─────────────────────────────────────────
 
@@ -244,12 +297,12 @@ export function WriteEditor() {
 		if (imageFiles.length === 0) return
 
 		e.preventDefault()
-		const result = await addFiles(imageFiles).catch(() => [])
+		const normalizedFiles = normalizePastedImageFiles(imageFiles)
+		const result = await addFiles(normalizedFiles).catch(() => [])
 		if (result && result.length > 0) {
-			const md = result
-				.map(item => (item.type === 'url' ? `![](${item.url})` : `![](local-image:${item.id})`))
-				.join('\n')
-			insertText(md)
+			insertImageMarkdown(
+				result.map(item => (item.type === 'url' ? { type: 'url', url: item.url } : { type: 'file', id: item.id })),
+			)
 		}
 	}
 

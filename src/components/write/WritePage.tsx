@@ -18,6 +18,7 @@ export default function WritePage({ categories = [] }: WritePageProps) {
     const { form, cover, reset } = useWriteStore()
     const { isPreview, closePreview } = usePreviewStore()
     const [slug, setSlug] = useState<string | null>(null)
+    const [shouldRenderPreview, setShouldRenderPreview] = useState(false)
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
@@ -29,7 +30,13 @@ export default function WritePage({ categories = [] }: WritePageProps) {
         }
     }, [])
 
-    const { loading } = useLoadBlog(slug || undefined)
+    useLoadBlog(slug || undefined)
+
+    useEffect(() => {
+        if (isPreview) {
+            setShouldRenderPreview(true)
+        }
+    }, [isPreview])
 
     const coverPreviewUrl = cover ? (cover.type === 'url' ? cover.url : cover.previewUrl) : null
 
@@ -61,18 +68,24 @@ export default function WritePage({ categories = [] }: WritePageProps) {
                     closeButton: false,
                 }}
             />
-            {isPreview ? (
-                <WritePreview form={form} coverPreviewUrl={coverPreviewUrl} onClose={closePreview} slug={slug || undefined} />
-            ) : (
-                <div className='relative'>
-                    <div className='flex flex-col md:flex-row h-full justify-center gap-6 px-4 md:px-6 pt-24 pb-12'>
-                        <WriteEditor />
-                        <WriteSidebar categories={categories} />
-                    </div>
-
-                    <WriteActions />
+            <div className='relative'>
+                <div className='flex flex-col md:flex-row h-full justify-center gap-6 px-4 md:px-6 pt-24 pb-12'>
+                    <WriteEditor />
+                    <WriteSidebar categories={categories} />
                 </div>
-            )}
+
+                <WriteActions />
+
+                {shouldRenderPreview && (
+                    <WritePreview
+                        isOpen={isPreview}
+                        form={form}
+                        coverPreviewUrl={coverPreviewUrl}
+                        onRequestClose={closePreview}
+                        onExited={() => setShouldRenderPreview(false)}
+                    />
+                )}
+            </div>
         </>
     )
 }
