@@ -9,12 +9,14 @@ import { WritePreview } from './components/preview'
 import { useEffect, useState } from 'react'
 import { Toaster } from 'sonner'
 import { useLoadBlog } from './hooks/use-load-blog'
+import type { AiModelDefinition } from '@/lib/ai-models'
 
 type WritePageProps = {
     categories?: string[]
+    aiModels?: AiModelDefinition[]
 }
 
-export default function WritePage({ categories = [] }: WritePageProps) {
+export default function WritePage({ categories = [], aiModels = [] }: WritePageProps) {
     const { form, cover, reset } = useWriteStore()
     const { isPreview, closePreview } = usePreviewStore()
     const [slug, setSlug] = useState<string | null>(null)
@@ -71,7 +73,7 @@ export default function WritePage({ categories = [] }: WritePageProps) {
             <div className='relative'>
                 <div className='flex flex-col md:flex-row h-full justify-center gap-6 px-4 md:px-6 pt-24 pb-12'>
                     <WriteEditor />
-                    <WriteSidebar categories={categories} />
+                    <WriteSidebar categories={categories} aiModels={aiModels} />
                 </div>
 
                 <WriteActions />

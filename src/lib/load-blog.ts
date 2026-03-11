@@ -60,6 +60,7 @@ export async function loadBlog(slug: string): Promise<{ form: PublishForm, cover
         tags: data.tags || [],
         date: data.pubDate ? dayjs(data.pubDate).format('YYYY-MM-DDTHH:mm') : '',
         summary: data.description || '',
+        aiModel: data.aiModel || '',
         hidden: data.draft || false,
         categories: data.categories || [],
         badge: data.badge || '',

@@ -114,6 +114,7 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
         const frontmatter: Record<string, any> = {
             title: form.title,
             description: form.summary,
+            aiModel: form.aiModel,
             pubDate: dateStr,
             image: coverPath,
             draft: form.hidden,

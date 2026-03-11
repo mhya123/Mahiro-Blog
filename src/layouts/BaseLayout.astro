@@ -232,6 +232,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       import { initHoverEffects } from "@/lib/hover-effects";
       import { initPageEntrance } from "@/lib/page-entrance";
       import { initSmoothTransitions } from "@/lib/smooth-transitions";
+      import { decorateAiSummaryCards } from "@/lib/ai-summary-cards";
 
       // 配置 NProgress
       NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.2 });
@@ -262,6 +263,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
 
         // 6. 全局柔和过渡（弹性 hover、侧边栏入场、导航栏平滑等）
         initSmoothTransitions();
+        decorateAiSummaryCards();
 
         // 7. TOC 滚动遮罩检测
         const tocNav = document.querySelector(".toc-nav") as HTMLElement | null;

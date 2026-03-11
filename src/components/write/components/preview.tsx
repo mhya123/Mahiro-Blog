@@ -7,9 +7,11 @@ import ReactMarkdown, { defaultUrlTransform } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { rehypeAiSummaryCards } from '@/plugins/rehype-ai-summary-cards'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useWriteStore } from '../stores/write-store'
+import { decorateAiSummaryCards } from '@/lib/ai-summary-cards'
 
 import 'katex/dist/katex.min.css'
 
@@ -237,6 +239,11 @@ export function WritePreview({ form, coverPreviewUrl, isOpen, onRequestClose, on
 	}, [])
 
 	useEffect(() => {
+		if (!isOpen || !panelRef.current) return
+		decorateAiSummaryCards(panelRef.current)
+	}, [form.md, isOpen])
+
+	useEffect(() => {
 		if (!mounted) return
 
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -367,7 +374,7 @@ export function WritePreview({ form, coverPreviewUrl, isOpen, onRequestClose, on
 								>
 									<ReactMarkdown
 										remarkPlugins={[remarkGfm, remarkMath]}
-										rehypePlugins={[rehypeKatex]}
+										rehypePlugins={[rehypeKatex, rehypeAiSummaryCards]}
 										urlTransform={(url) => {
 											if (url.startsWith('local-image:')) {
 												return url

@@ -2,6 +2,7 @@
 title: 谷歌云 (GCP) 服务器 SSH 免密连接与提权指南
 description: 详细讲解 GCP 的常见问题与解决方案
 pubDate: 2026-03-03T16:55
+aiModel: qwen3-coder-plus
 image: /images/gcp-help/8a43cfbb14304c46.jpeg
 tags:
   - 教程
@@ -9,6 +10,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] 千问 3 Coder Plus
+> GCP服务器默认禁用密码登录和root密码，需通过ED25519密钥对实现免密连接。在Termius中生成密钥时需指定用户名，将公钥添加到GCP控制台的SSH密钥配置中。连接时使用对应IP和用户名，首次连接需确认主机指纹。获得普通用户权限后可通过sudo命令临时提权，或使用sudo -i直接切换至root账户进行系统级操作。
+
 # 谷歌云 (GCP) 服务器 SSH 免密连接与提权指南
 
 在谷歌云平台上，为了确保服务器的最高安全性，系统默认**禁止使用密码直接登录 SSH**，也**不提供初始的 root 密码**。本教程以现代跨平台 SSH 客户端 **Termius** 为例，通过配置 ED25519 密钥对实现安全、高效的免密登录。

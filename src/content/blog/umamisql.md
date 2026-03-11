@@ -1,7 +1,7 @@
 ---
 title: Umami v3 数据库可视化管理与访问量修改教程
-description: ''
 pubDate: 2026-02-27T21:07
+aiModel: qwen3-coder-plus
 image: /images/umamisql/dda8e9e2042390da.jpg
 draft: false
 tags:
@@ -11,8 +11,12 @@ tags:
   - 教程
 categories:
   - 教程
-badge: ''
 ---
+
+> [!ai] 千问 3 Coder Plus
+> 通过Docker运行Adminer可视化工具连接Umami数据库，使用SQL脚本批量修改访客数和浏览量。需在服务器8080端口运行Adminer，登录时填写PostgreSQL连接信息，然后执行包含随机时间生成的SQL脚本插入session和website_event记录。
+> 完成数据修改后立即删除临时Adminer容器以确保安全。脚本会为每次访问生成随机UUID和过去30天内的随机时间戳，同时更新访客会话和页面浏览记录保持数据自然性。
+
 本教程将引导你安全地使用可视化网页工具（Adminer）连接到通过 Docker 部署的 Umami 数据库，并使用 SQL 脚本安全地批量修改网站的访客数与浏览量。
 
 ## 一、 开启可视化数据库面板
@@ -100,4 +104,3 @@ docker rm -f umami-adminer
 ```
 
 *说明：此操作仅会删除临时的可视化面板，绝对不会影响你的 Umami 网站和数据库的正常运行。下次需要修改时，重新执行第一步的开启命令即可。*
-

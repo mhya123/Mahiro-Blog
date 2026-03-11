@@ -2,6 +2,7 @@
 title: 极客湾2026手机大横评补档
 description: 极客湾2026手机大横评珍贵视频补档，值得收藏的年度手机综合评测
 pubDate: 2026-03-01T08:00
+aiModel: qwen3-coder-plus
 image: /images/geekerwan-2026-phone-review/90f5d128c9b9eb5d.png
 tags:
   - 科技
@@ -9,6 +10,10 @@ tags:
 categories:
   - 科技
 ---
+
+> [!ai] 千问 3 Coder Plus
+> 极客湾2026手机大横评从性能、影像、屏幕、续航、信号等维度对主流旗舰手机进行全面对比评测。视频数据详实、测试严谨，是年度最全面的手机综合评测和购机重要参考。
+> 本视频为个人补档收藏用途。
 
 ## 极客湾2026手机大横评
 

@@ -1440,3 +1440,111 @@ body,
 .animate-spin-slow {
   animation: spin-slow 8s linear infinite;
 }
+
+blockquote.admonition.bdm-ai {
+  position: relative;
+  margin: 2rem 0;
+  padding: 1.2rem 1.4rem 2.15rem 1.7rem;
+  border: 1px solid oklch(var(--p) / 0.18);
+  border-left: none;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at bottom center, oklch(var(--p) / 0.12), transparent 48%),
+    linear-gradient(180deg, oklch(var(--b1) / 0.92), oklch(var(--b1) / 0.76));
+  box-shadow:
+    0 20px 50px -24px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    bottom: 1rem;
+    left: 0.75rem;
+    width: 4px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, oklch(var(--p)), oklch(var(--p) / 0.72));
+    box-shadow: 0 0 16px oklch(var(--p) / 0.28);
+  }
+
+  > .bdm-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.72rem;
+    color: oklch(var(--p));
+    font-size: 0.98rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+  }
+
+  > .bdm-title .bdm-title__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    color: oklch(var(--p));
+    filter: drop-shadow(0 0 8px oklch(var(--p) / 0.28));
+  }
+
+  > p,
+  > ul,
+  > ol,
+  > pre,
+  > div,
+  > figure {
+    position: relative;
+    z-index: 1;
+  }
+
+  > p {
+    margin: 0;
+    color: oklch(var(--bc) / 0.88);
+    font-size: 0.92rem;
+    line-height: 1.72;
+    font-weight: 500;
+  }
+
+  > p + p {
+    margin-top: 0.8rem;
+  }
+
+  > .bdm-footer {
+    position: absolute;
+    right: 1.2rem;
+    bottom: 0.9rem;
+    color: oklch(var(--bc) / 0.48);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 640px) {
+  blockquote.admonition.bdm-ai {
+    padding: 1.05rem 1rem 1.95rem 1.3rem;
+
+    > .bdm-title {
+      font-size: 0.92rem;
+      margin-bottom: 0.65rem;
+    }
+
+    > p {
+      font-size: 0.88rem;
+      line-height: 1.68;
+    }
+
+    > .bdm-footer {
+      right: 1rem;
+      bottom: 0.82rem;
+      font-size: 0.68rem;
+    }
+  }
+}

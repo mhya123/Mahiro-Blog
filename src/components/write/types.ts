@@ -5,6 +5,7 @@ export type PublishForm = {
 	tags: string[]
 	date: string
 	summary: string
+	aiModel?: string
 	hidden?: boolean
 	badge?: string
 	categories: string[]

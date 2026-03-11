@@ -2,11 +2,13 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import WritePage from '@/components/write/WritePage';
 import { getCollection } from 'astro:content';
+import { getAiModels } from '@/lib/ai-models';
 
 const posts = await getCollection('blog');
 const categories = [...new Set(posts.flatMap(post => post.data.categories || []))].sort();
+const aiModels = await getAiModels();
 ---
 
 <BaseLayout title="随笔" showSidebar={false} showBanner={true} isIndexed={false}>
-    <WritePage client:only="react" categories={categories} />
+    <WritePage client:only="react" categories={categories} aiModels={aiModels} />
 </BaseLayout>

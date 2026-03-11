@@ -1,0 +1,68 @@
+{
+  "models": [
+    {
+      "id": "qwen3.5-plus",
+      "name": "千问 3.5 Plus",
+      "brand": "千问",
+      "capabilities": ["text", "reasoning", "vision"],
+      "supportsReasoning": true,
+      "supportsVision": true
+    },
+    {
+      "id": "qwen3-max-2026-01-23",
+      "name": "千问 3 Max",
+      "brand": "千问",
+      "capabilities": ["text", "reasoning"],
+      "supportsReasoning": true,
+      "supportsVision": false
+    },
+    {
+      "id": "qwen3-coder-next",
+      "name": "千问 3 Coder Next",
+      "brand": "千问",
+      "capabilities": ["text"],
+      "supportsReasoning": false,
+      "supportsVision": false
+    },
+    {
+      "id": "qwen3-coder-plus",
+      "name": "千问 3 Coder Plus",
+      "brand": "千问",
+      "capabilities": ["text"],
+      "supportsReasoning": false,
+      "supportsVision": false
+    },
+    {
+      "id": "glm-5",
+      "name": "GLM-5",
+      "brand": "智谱",
+      "capabilities": ["text", "reasoning"],
+      "supportsReasoning": true,
+      "supportsVision": false
+    },
+    {
+      "id": "glm-4.7",
+      "name": "GLM-4.7",
+      "brand": "智谱",
+      "capabilities": ["text", "reasoning"],
+      "supportsReasoning": true,
+      "supportsVision": false
+    },
+    {
+      "id": "kimi-k2.5",
+      "name": "Kimi K2.5",
+      "brand": "Kimi",
+      "capabilities": ["text", "reasoning", "vision"],
+      "supportsReasoning": true,
+      "supportsVision": true
+    },
+    {
+      "id": "MiniMax-M2.5",
+      "name": "MiniMax M2.5",
+      "brand": "MiniMax",
+      "capabilities": ["text", "reasoning"],
+      "supportsReasoning": true,
+      "supportsVision": false
+    }
+  ]
+}

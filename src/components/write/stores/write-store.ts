@@ -45,6 +45,7 @@ const initialForm: PublishForm = {
 	tags: [],
 	date: formatDateTimeLocal(),
 	summary: '',
+	aiModel: '',
 	hidden: false,
 	categories: [],
 	fileFormat: 'md', // 默认使用md格式

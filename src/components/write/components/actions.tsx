@@ -86,6 +86,7 @@ export function WriteActions() {
 			const updates: Partial<typeof form> = { md: content || text }
 			if (data.title) updates.title = data.title
 			if (data.description) updates.summary = data.description
+			if (data.aiModel) updates.aiModel = data.aiModel
 			if (data.tags?.length) updates.tags = data.tags
 			if (data.categories?.length) updates.categories = data.categories
 			if (data.draft !== undefined) updates.hidden = data.draft
