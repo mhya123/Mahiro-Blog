@@ -1,6 +1,13 @@
 {
   "src/content/blog/gcp-help.md": [
     {
+      "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
+      "message": "feat: Add AI model integration and summary generation for blog posts",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:13:41+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/af23fa5dfa3458303410b83140ceb1a22c8064d4"
+    },
+    {
       "sha": "db3d5b4da2dc06a8b394f11f3260ff8e0e9ca24a",
       "message": "feat(blog): update post \"谷歌云 (GCP) 服务器 SSH 免密连接与提权指南\"",
       "authorName": "mahiro-blog[bot]",
@@ -24,6 +31,13 @@
   ],
   "src/content/blog/geekerwan-2026-phone-review.md": [
     {
+      "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
+      "message": "feat: Add AI model integration and summary generation for blog posts",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:13:41+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/af23fa5dfa3458303410b83140ceb1a22c8064d4"
+    },
+    {
       "sha": "1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
       "message": "feat(blog): update post \"极客湾2026手机大横评补档\"",
       "authorName": "mahiro-blog[bot]",
@@ -39,6 +53,13 @@
     }
   ],
   "src/content/blog/loookme.md": [
+    {
+      "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
+      "message": "feat: Add AI model integration and summary generation for blog posts",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:13:41+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/af23fa5dfa3458303410b83140ceb1a22c8064d4"
+    },
     {
       "sha": "582daa35e725d04840d5837fdfcd52990b0c4f93",
       "message": "feat(blog): update post \"快看快看!!!!\"",
@@ -90,6 +111,13 @@
     }
   ],
   "src/content/blog/test.md": [
+    {
+      "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
+      "message": "feat: Add AI model integration and summary generation for blog posts",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:13:41+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/af23fa5dfa3458303410b83140ceb1a22c8064d4"
+    },
     {
       "sha": "caaa5450ea6623f69d10e558054b4b1b4363187e",
       "message": "1",
@@ -184,6 +212,20 @@
   ],
   "src/content/blog/umamisql.md": [
     {
+      "sha": "1436d4f50539ece50fa9847b28ea674259c20edc",
+      "message": "feat: 添加文章描述以增强SEO和可读性",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:15:26+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/1436d4f50539ece50fa9847b28ea674259c20edc"
+    },
+    {
+      "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
+      "message": "feat: Add AI model integration and summary generation for blog posts",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:13:41+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/af23fa5dfa3458303410b83140ceb1a22c8064d4"
+    },
+    {
       "sha": "f78981aa87ebd0a57755debfb50cc81e3a36711f",
       "message": "feat(blog): update post \"Umami v3 数据库可视化管理与访问量修改教程\"",
       "authorName": "mahiro-blog[bot]",
@@ -206,6 +248,20 @@
     }
   ],
   "src/content/blog/wbzda.md": [
+    {
+      "sha": "1436d4f50539ece50fa9847b28ea674259c20edc",
+      "message": "feat: 添加文章描述以增强SEO和可读性",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:15:26+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/1436d4f50539ece50fa9847b28ea674259c20edc"
+    },
+    {
+      "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
+      "message": "feat: Add AI model integration and summary generation for blog posts",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:13:41+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/af23fa5dfa3458303410b83140ceb1a22c8064d4"
+    },
     {
       "sha": "f309269791008c677fc79df423ab65a0756c623d",
       "message": "feat(blog): update post \"我不知道啊\"",
