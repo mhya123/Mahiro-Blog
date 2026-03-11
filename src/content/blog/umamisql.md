@@ -1,5 +1,6 @@
 ---
 title: Umami v3 数据库可视化管理与访问量修改教程
+description: 介绍如何通过 Adminer 和 SQL 安全管理 Umami 数据库与访问量数据
 pubDate: 2026-02-27T21:07
 aiModel: qwen3-coder-plus
 image: /images/umamisql/dda8e9e2042390da.jpg
