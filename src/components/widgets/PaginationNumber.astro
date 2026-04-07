@@ -3,19 +3,37 @@ import type { PaginationNumberProps } from "@interfaces/data";
 
 const { number, current, baseUrl, isOnly = false } = Astro.props as PaginationNumberProps;
 const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+const normalizedNumber = Number(number);
+
+const normalizePath = (value: string) => {
+  const cleaned = value.replace(/\/+$/, "");
+  return cleaned || "/";
+};
+
 const href =
   number == 1
     ? normalizedBaseUrl || "/"
     : normalizedBaseUrl
       ? `${normalizedBaseUrl}/${number}`
       : `/${number}`;
+
+const currentPath = normalizePath(Astro.url.pathname);
+const targetPath = normalizePath(href);
+const isCurrentPage =
+  currentPath === targetPath ||
+  (Number.isFinite(normalizedNumber) && normalizedNumber === Number(current));
 ---
 
 <a
   href={href}
   title={`Page ${number}`}
   aria-label={`Page ${number}`}
-  class:list={["join-item btn bg-base-100", number === current && "btn-active", isOnly && "rounded-btn"]}
+  aria-current={isCurrentPage ? "page" : undefined}
+  class:list={[
+    "join-item btn",
+    isCurrentPage ? "btn-primary text-primary-content pointer-events-none" : "bg-base-100",
+    isOnly && "rounded-btn",
+  ]}
 >
   {number}
 </a>
