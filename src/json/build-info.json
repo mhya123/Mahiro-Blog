@@ -1,10 +1,10 @@
 {
-  "commitSha": "01af33e36ae993485655bab90a65054612700734",
-  "commitShort": "01af33e",
-  "commitMessage": "fix: update word count display logic and improve bell animation",
+  "commitSha": "94d9fbf764739b39cc0ee93595dbd901359a5b00",
+  "commitShort": "94d9fbf",
+  "commitMessage": "新增功能：增强返回顶部按钮的动画和进度指示器",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-07T19:45:50+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/01af33e36ae993485655bab90a65054612700734",
-  "buildTime": "2026/4/7 19:46:24",
-  "totalCommits": 312
+  "commitDate": "2026-04-07T20:26:29+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/94d9fbf764739b39cc0ee93595dbd901359a5b00",
+  "buildTime": "2026/4/7 20:27:05",
+  "totalCommits": 314
 }
