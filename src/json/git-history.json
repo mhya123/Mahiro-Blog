@@ -275,6 +275,15 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
     }
   ],
+  "src/content/blog/mahiro-github-app-pem-guide.md": [
+    {
+      "sha": "c88800f09dce8a4fb088d7118ed6a2ab2317b626",
+      "message": "添加 Mahiro-Blog 新手教程，介绍如何获取 PEM 证书及导入失败排查方法",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T11:33:48+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/c88800f09dce8a4fb088d7118ed6a2ab2317b626"
+    }
+  ],
   "src/content/blog/mahiro-image-and-performance-basics.md": [
     {
       "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",

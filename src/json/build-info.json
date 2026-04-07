@@ -1,10 +1,10 @@
 {
-  "commitSha": "a05dc4ca15c0c055fa817a5139e03398892e0afa",
-  "commitShort": "a05dc4c",
-  "commitMessage": "功能：为博客文章添加随机封面缓存步骤，并更新 Git 提交内容",
+  "commitSha": "c88800f09dce8a4fb088d7118ed6a2ab2317b626",
+  "commitShort": "c88800f",
+  "commitMessage": "添加 Mahiro-Blog 新手教程，介绍如何获取 PEM 证书及导入失败排查方法",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-07T11:16:26+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/a05dc4ca15c0c055fa817a5139e03398892e0afa",
-  "buildTime": "2026/4/7 11:16:56",
-  "totalCommits": 289
+  "commitDate": "2026-04-07T11:33:48+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/c88800f09dce8a4fb088d7118ed6a2ab2317b626",
+  "buildTime": "2026/4/7 11:34:27",
+  "totalCommits": 291
 }

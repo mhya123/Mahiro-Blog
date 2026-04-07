@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（十二）：PEM 证书怎么获取（GitHub Ap
 description: 只讲两件事：GitHub App 的 PEM 私钥怎么获取，以及导入失败时怎么快速排查。
 pubDate: 2026-04-07T23:20
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-github-app-pem-guide.webp
 draft: false
 tags:
   - PEM
