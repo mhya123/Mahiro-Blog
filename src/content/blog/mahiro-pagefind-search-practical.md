@@ -124,7 +124,7 @@ pnpm search:clean
     <div class="card-body p-4">
       <div class="text-xs text-base-content/50">专栏目录</div>
       <div class="font-semibold text-base">Mahiro-Blog 新手专栏：完整学习路径</div>
-      <div class="text-sm text-base-content/60">查看 1~10 篇教程总览与推荐阅读顺序。</div>
+  <div class="text-sm text-base-content/60">查看新手教程总览与推荐阅读顺序（持续更新）。</div>
     </div>
   </a>
 </div>

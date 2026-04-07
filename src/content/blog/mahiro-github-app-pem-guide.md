@@ -92,3 +92,37 @@ categories:
 3. 重新导入测试
 
 ---
+
+## 系列导航
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+  <a href="/blog/mahiro-config-env-multi-platform-pages" class="card bg-base-100 border border-base-300 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div class="card-body p-4">
+      <div class="text-xs text-base-content/50">上一篇</div>
+      <div class="font-semibold text-base">新手教程（十一）：mahiro.config.yaml 与 .env 在多平台部署</div>
+      <div class="text-sm text-base-content/60">先搞定多平台变量治理，再处理 GitHub App PEM 导入链路。</div>
+    </div>
+  </a>
+
+  <a href="/blog/mahiro-secondary-dev-index" class="card bg-base-100 border border-base-300 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div class="card-body p-4">
+      <div class="text-xs text-base-content/50">进阶入口</div>
+      <div class="font-semibold text-base">进入 Mahiro-Blog 二开实战总览</div>
+      <div class="text-sm text-base-content/60">完成 PEM 与认证链路后，继续进入组件和架构级二开实战。</div>
+    </div>
+  </a>
+</div>
+
+---
+
+## 新手专栏目录入口
+
+<div class="mt-4">
+  <a href="/blog/mahiro-beginner-tutorial-index" class="card bg-base-100 border border-primary/30 hover:border-primary transition-all duration-300 hover:shadow-lg">
+    <div class="card-body p-4">
+      <div class="text-xs text-base-content/50">专栏目录</div>
+      <div class="font-semibold text-base">Mahiro-Blog 新手专栏：完整学习路径</div>
+      <div class="text-sm text-base-content/60">查看新手教程总览与推荐阅读顺序（持续更新）。</div>
+    </div>
+  </a>
+</div>
