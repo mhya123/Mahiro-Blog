@@ -448,8 +448,8 @@ function initTagsToggle() {
   // 初始化函数  
   function init() {  
     // 文章数 & 总字数 — 立刻开始跳动
-    var wordsDisplay = totalWords >= 10000 ? Math.round(totalWords / 1000) : totalWords;
-    var wordsSuffix = totalWords >= 10000 ? ' 千' : '';
+    var wordsDisplay = totalWords;
+    var wordsSuffix = '';
     animateNumber(document.getElementById('stat-articles'), articleCount, 1000);
     animateNumber(document.getElementById('stat-words'), wordsDisplay, 1000, wordsSuffix);
 

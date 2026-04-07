@@ -13,12 +13,10 @@ import {
 export default function UpdateNotifier() {
     const [changes, setChanges] = useState<ArticleChange[]>([]);
     const [isOpen, setIsOpen] = useState(false);
-    const [isRendered, setIsRendered] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
     const [, setIsChecking] = useState(false);
     const [lastCheck, setLastCheck] = useState<string | null>(null);
 
-    const overlayRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
     const bellRef = useRef<HTMLButtonElement>(null);
 
@@ -77,49 +75,66 @@ export default function UpdateNotifier() {
         if (hasChanges && bellRef.current) {
             gsap.fromTo(
                 bellRef.current,
-                { scale: 0.8, rotation: -20 },
-                { scale: 1, rotation: 0, duration: 0.7, ease: 'elastic.out(1, 0.4)' }
+                { scale: 0.92, rotation: -12 },
+                { scale: 1, rotation: 0, duration: 0.6, ease: 'elastic.out(1, 0.45)' }
             );
         }
     }, [hasChanges]);
 
-    // Handle GSAP open & close unmount lifecycles
-    useEffect(() => {
-        if (isOpen) {
-            setIsRendered(true);
-        } else if (isRendered) {
-            const tl = gsap.timeline({
-                onComplete: () => setIsRendered(false)
-            });
-            if (overlayRef.current) tl.to(overlayRef.current, { opacity: 0, duration: 0.3 }, 0);
-            if (panelRef.current) tl.to(panelRef.current, { y: 20, opacity: 0, scale: 0.95, duration: 0.3, ease: 'power2.in' }, 0);
-        }
-    }, [isOpen, isRendered]);
+    const animateBell = useCallback(() => {
+        if (!bellRef.current) return;
+        gsap.fromTo(
+            bellRef.current,
+            { rotate: 0, scale: 1 },
+            {
+                keyframes: [
+                    { rotate: -12, duration: 0.08 },
+                    { rotate: 10, duration: 0.08 },
+                    { rotate: -7, duration: 0.08 },
+                    { rotate: 5, duration: 0.08 },
+                    { rotate: 0, duration: 0.08 },
+                ],
+                scale: 1.03,
+                duration: 0.45,
+                ease: 'power2.out',
+            },
+        );
+    }, []);
 
-    // Handle initial mount GSAP animation
+    // 点击空白关闭 + ESC 关闭（替代全屏遮罩）
     useEffect(() => {
-        if (isRendered && isOpen) {
-            if (overlayRef.current) gsap.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 });
-            if (panelRef.current) gsap.fromTo(panelRef.current, { y: 20, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.2)' });
-        }
-    }, [isRendered, isOpen]);
+        if (!isOpen) return;
 
-    const panel = isRendered
-        ? createPortal(
-            <div className="fixed inset-0 z-[9998]">
-                <div
-                    ref={overlayRef}
-                    className="absolute inset-0 bg-black/40"
-                    onClick={() => setIsOpen(false)}
-                />
-                {/* 面板 */}
+        const onPointerDown = (event: MouseEvent | PointerEvent) => {
+            const target = event.target as Node;
+            if (panelRef.current?.contains(target)) return;
+            if (bellRef.current?.contains(target)) return;
+            setIsOpen(false);
+        };
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') setIsOpen(false);
+        };
+
+        document.addEventListener('mousedown', onPointerDown);
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', onPointerDown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [isOpen]);
+
+    const panel = createPortal(
+            <div className="fixed inset-0 z-[9998] pointer-events-none">
                 <div
                     id="update-notifier-panel"
                     role="dialog"
                     aria-modal="false"
                     aria-label="文章更新通知"
                     ref={panelRef}
-                    className="absolute bottom-20 right-4 w-[calc(100vw-2rem)] max-w-[420px] max-h-[70vh] flex flex-col bg-base-100 rounded-2xl shadow-2xl border border-base-200 overflow-hidden sm:right-6"
+                    className={`pointer-events-auto absolute bottom-20 right-4 w-[calc(100vw-2rem)] max-w-[420px] max-h-[70vh] flex flex-col bg-base-100 rounded-2xl shadow-2xl border border-base-200 overflow-hidden sm:right-6 will-change-transform transition-[opacity,transform] duration-200 ease-out ${isOpen
+                        ? 'opacity-100 translate-y-0 scale-100'
+                        : 'opacity-0 translate-y-3 scale-[0.98] pointer-events-none'}`}
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-5 py-3.5 border-b border-base-200 shrink-0">
@@ -210,15 +225,17 @@ export default function UpdateNotifier() {
                 </div>
             </div>,
             document.body
-        )
-        : null;
+        );
 
     return (
         <>
             {/* 铃铛按钮 - 固定右下角 */}
             <button
                 ref={bellRef}
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => {
+                    animateBell();
+                    setIsOpen(!isOpen);
+                }}
                 className={`fixed bottom-6 right-6 z-[9997] btn btn-circle btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform`}
                 aria-label={bellAriaLabel}
                 aria-haspopup="dialog"
