@@ -1,10 +1,10 @@
 {
-  "commitSha": "94d9fbf764739b39cc0ee93595dbd901359a5b00",
-  "commitShort": "94d9fbf",
-  "commitMessage": "新增功能：增强返回顶部按钮的动画和进度指示器",
+  "commitSha": "9396ac4394df53e366367c0a1f90f11930be0691",
+  "commitShort": "9396ac4",
+  "commitMessage": "修复样式：优化 MainCard 组件的标题和帮助按钮的样式过渡效果",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-07T20:26:29+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/94d9fbf764739b39cc0ee93595dbd901359a5b00",
-  "buildTime": "2026/4/7 20:27:05",
-  "totalCommits": 314
+  "commitDate": "2026-04-07T21:13:52+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/9396ac4394df53e366367c0a1f90f11930be0691",
+  "buildTime": "2026/4/7 21:14:34",
+  "totalCommits": 318
 }

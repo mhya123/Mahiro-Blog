@@ -563,6 +563,15 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
     }
   ],
+  "src/content/blog/mdx-all-components-showcase.mdx": [
+    {
+      "sha": "936ac63fde3c8e3ff013167ced85d027d7e54e56",
+      "message": "feat: add GitHubRepoCard component and showcase in MDX example",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T21:07:07+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/936ac63fde3c8e3ff013167ced85d027d7e54e56"
+    }
+  ],
   "src/content/blog/test.md": [
     {
       "sha": "94d9fbf764739b39cc0ee93595dbd901359a5b00",
