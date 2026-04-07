@@ -133,6 +133,13 @@
   ],
   "src/content/blog/mahiro-beginner-tutorial-index.md": [
     {
+      "sha": "ce205d4113188487769398f96b27bd63d26a43f2",
+      "message": "功能：更新 Mahiro-Blog 新手专栏目录，添加 PEM 证书获取教程，并优化返回链接描述",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T11:50:49+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/ce205d4113188487769398f96b27bd63d26a43f2"
+    },
+    {
       "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
       "message": "新增功能：为博客文章添加随机封面缓存脚本",
       "authorName": "MhYa123",
@@ -404,6 +411,13 @@
     }
   ],
   "src/content/blog/mahiro-secondary-dev-index.md": [
+    {
+      "sha": "ce205d4113188487769398f96b27bd63d26a43f2",
+      "message": "功能：更新 Mahiro-Blog 新手专栏目录，添加 PEM 证书获取教程，并优化返回链接描述",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T11:50:49+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/ce205d4113188487769398f96b27bd63d26a43f2"
+    },
     {
       "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
       "message": "新增功能：为博客文章添加随机封面缓存脚本",

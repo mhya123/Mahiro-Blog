@@ -1,10 +1,10 @@
 {
-  "commitSha": "7fce3e9c0247134535e299088b688be7912b3573",
-  "commitShort": "7fce3e9",
-  "commitMessage": "功能：优化随机封面下载逻辑，增加超时和重试机制",
+  "commitSha": "ce205d4113188487769398f96b27bd63d26a43f2",
+  "commitShort": "ce205d4",
+  "commitMessage": "功能：更新 Mahiro-Blog 新手专栏目录，添加 PEM 证书获取教程，并优化返回链接描述",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-07T11:41:09+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/7fce3e9c0247134535e299088b688be7912b3573",
-  "buildTime": "2026/4/7 11:41:41",
-  "totalCommits": 293
+  "commitDate": "2026-04-07T11:50:49+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/ce205d4113188487769398f96b27bd63d26a43f2",
+  "buildTime": "2026/4/7 11:51:16",
+  "totalCommits": 295
 }
