@@ -565,6 +565,13 @@
   ],
   "src/content/blog/test.md": [
     {
+      "sha": "94d9fbf764739b39cc0ee93595dbd901359a5b00",
+      "message": "新增功能：增强返回顶部按钮的动画和进度指示器",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T20:26:29+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/94d9fbf764739b39cc0ee93595dbd901359a5b00"
+    },
+    {
       "sha": "78735f1f13ca96331f837bfa99c122ee89e5871e",
       "message": "feat(constants): add draft storage key and meaningful draft check function",
       "authorName": "MhYa123",
