@@ -56,8 +56,11 @@ jobs:
       - name: Cache random covers for posts
         run: pnpm run cover:cache
 
+      - name: Generate watermarked images
+        run: pnpm run watermark
+
       - name: Build site
-        run: pnpm run build
+        run: pnpm run build:ci
         env:
           PUBLIC_GITHUB_OWNER: ${{ secrets.PUBLIC_GITHUB_OWNER }}
           PUBLIC_GITHUB_REPO: ${{ secrets.PUBLIC_GITHUB_REPO }}
