@@ -1,10 +1,10 @@
 {
-  "commitSha": "1436d4f50539ece50fa9847b28ea674259c20edc",
-  "commitShort": "1436d4f",
-  "commitMessage": "feat: 添加文章描述以增强SEO和可读性",
+  "commitSha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+  "commitShort": "b383b96",
+  "commitMessage": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-03-11T16:15:26+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/1436d4f50539ece50fa9847b28ea674259c20edc",
-  "buildTime": "2026/3/11 16:15:52",
-  "totalCommits": 282
+  "commitDate": "2026-04-07T10:30:38+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+  "buildTime": "2026/4/7 10:31:07",
+  "totalCommits": 284
 }

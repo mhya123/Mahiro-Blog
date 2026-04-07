@@ -110,6 +110,177 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/4cc186bc81e0a5aa32026b9c74b13b86e9d475b5"
     }
   ],
+  "src/content/blog/mahiro-beginner-tutorial-index.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-blog-readme-guide-practical.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-blog-readme-guide.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-comments-giscus-waline-beginner.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-config-env-multi-platform-pages.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-config-zero-to-one.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-deploy-and-ci-beginner-guide.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-first-post-mdx-workflow.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-friend-auto-audit-workflow.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-image-and-performance-basics.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-music-player-config-practical.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-navigation-project-json-workflow.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-pagefind-search-practical.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-secondary-dev-component-refactor.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-secondary-dev-config-evolution.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-secondary-dev-index.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-secondary-dev-data-pipeline.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-secondary-dev-workflow-automation.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
+  "src/content/blog/mahiro-theme-and-navbar-customization.md": [
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
   "src/content/blog/test.md": [
     {
       "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
