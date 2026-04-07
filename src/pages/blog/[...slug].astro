@@ -11,6 +11,8 @@ import MainCard from "@/components/MainCard.astro";
 import Giscus from "@components/comments/Giscus.astro";
 import Waline from "@components/comments/Waline.astro";
 import CommitHistory from "@components/widgets/CommitHistory";
+import PostDiffInArticle from "@components/widgets/PostDiffInArticle.astro";
+import PostContentHighlighter from "@components/widgets/PostContentHighlighter.astro";
 import { commentsConfig, GITHUB_CONFIG, COMMIT_HISTORY_SIZE, POST_PASSWORD } from "@config";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 import { Icon } from "astro-icon/components";
@@ -72,6 +74,8 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
     title={blog.data.title}
     description={blog.data.description}
     image={blog.data.image}
+    titleId="post-title"
+    descriptionId="post-description"
     infoIcon="lucide:info"
   >
     <div class="flex justify-end gap-2 mb-2">
@@ -113,6 +117,8 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
 
     <!-- Article Content -->
     <div class="mt-8">
+      <PostDiffInArticle />
+      <PostContentHighlighter />
       {isEncrypted ? (
         <EncryptedContent password={POST_PASSWORD}>
           <Content />
@@ -195,6 +201,13 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
   <script>
     import { Fancybox } from "@fancyapps/ui";
 
+    const forceScrollTopOnArticleEnter = () => {
+      const run = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      run();
+      requestAnimationFrame(run);
+      setTimeout(run, 0);
+    };
+
     const initArticleImageActions = () => {
       const images = document.querySelectorAll("#content img, .prose img");
       
@@ -235,10 +248,17 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
       } as any);
     };
 
-    document.addEventListener("astro:page-load", initArticleImageActions);
+    document.addEventListener("astro:page-load", () => {
+      forceScrollTopOnArticleEnter();
+      initArticleImageActions();
+    });
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", initArticleImageActions);
+      document.addEventListener("DOMContentLoaded", () => {
+        forceScrollTopOnArticleEnter();
+        initArticleImageActions();
+      });
     } else {
+      forceScrollTopOnArticleEnter();
       initArticleImageActions();
     }
   </script>

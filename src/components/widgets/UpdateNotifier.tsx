@@ -9,6 +9,7 @@ import {
     getLastCheckTime,
     type ArticleChange,
 } from '@/lib/update-checker';
+import { buildDiffArticleHref } from '@/lib/post-diff-utils';
 
 export default function UpdateNotifier() {
     const [changes, setChanges] = useState<ArticleChange[]>([]);
@@ -64,6 +65,10 @@ export default function UpdateNotifier() {
     const hasChanges = changes.length > 0;
     const newCount = changes.filter((c) => c.type === 'new').length;
     const updateCount = changes.filter((c) => c.type === 'update').length;
+    const buildArticleHref = useCallback((change: ArticleChange) => {
+        if (change.type !== 'update') return change.link;
+        return buildDiffArticleHref(change.link, false);
+    }, []);
     const bellAriaLabel = isOpen
         ? '关闭文章更新通知面板'
         : hasChanges
@@ -191,7 +196,7 @@ export default function UpdateNotifier() {
                         {changes.map((change) => (
                             <a
                                 key={change.guid}
-                                href={change.link}
+                                href={buildArticleHref(change)}
                                 className="flex items-center justify-between px-5 py-3 hover:bg-base-200/30 transition-colors border-b border-base-200/50 group"
                             >
                                 <span className="text-sm font-medium text-base-content truncate mr-3 group-hover:text-primary transition-colors">

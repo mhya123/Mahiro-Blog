@@ -1,0 +1,99 @@
+<div
+  id="post-update-notification"
+  class="fixed top-24 right-4 z-[9996] transform translate-x-full opacity-0 transition-all duration-300 pointer-events-none"
+>
+  <div class="bg-base-100 border border-success/30 rounded-xl shadow-lg p-4 max-w-sm pointer-events-auto flex flex-col gap-2">
+    <div class="flex items-center gap-2 text-success">
+      <span class="font-bold text-sm">内容已更新</span>
+    </div>
+    <p class="text-xs text-base-content/70">检测到本篇文章有变更，已为你高亮差异内容。</p>
+    <div class="flex gap-2 mt-1">
+      <button id="scroll-to-diff" class="btn btn-success btn-xs text-success-content">跳转到更新处</button>
+      <button id="close-diff-toast" class="btn btn-ghost btn-xs">忽略</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // @ts-nocheck
+  const DIFF_APPLIED_EVENT = 'mahiro:post-diff-applied';
+
+  function findFirstDiffTarget() {
+    const anchor = document.getElementById('post-diff');
+    if (anchor) return anchor;
+
+    return (
+      document.querySelector('.post-inline-diff-add-target') ||
+      document.querySelector('.post-inline-diff-del-target') ||
+      document.querySelector('.post-inline-diff-del-line')
+    );
+  }
+
+  function hideNotification(notification) {
+    notification.classList.add('translate-x-full', 'opacity-0', 'pointer-events-none');
+  }
+
+  function showNotification(notification) {
+    notification.classList.remove('translate-x-full', 'opacity-0', 'pointer-events-none');
+  }
+
+  function initPostContentHighlighter(forceVisible = false) {
+    const notification = document.getElementById('post-update-notification');
+    if (!notification) return;
+
+    const target = findFirstDiffTarget();
+    if (!target && !forceVisible) {
+      hideNotification(notification);
+      return;
+    }
+
+    showNotification(notification);
+
+    document.getElementById('close-diff-toast')?.addEventListener('click', () => {
+      hideNotification(notification);
+    });
+
+    document.getElementById('scroll-to-diff')?.addEventListener('click', () => {
+      const currentTarget = findFirstDiffTarget();
+      if (!(currentTarget instanceof HTMLElement)) return;
+
+      currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      currentTarget.classList.add('post-diff-flash');
+      setTimeout(() => currentTarget.classList.remove('post-diff-flash'), 1400);
+    });
+  }
+
+  function initWithRetry() {
+    initPostContentHighlighter(false);
+    setTimeout(() => initPostContentHighlighter(false), 80);
+    setTimeout(() => initPostContentHighlighter(false), 200);
+  }
+
+  document.addEventListener('DOMContentLoaded', initWithRetry);
+  document.addEventListener('astro:page-load', initWithRetry);
+
+  window.addEventListener(DIFF_APPLIED_EVENT, (event) => {
+    const detail = event?.detail || {};
+    const hasDiff = detail.hasDiff === true;
+    if (hasDiff) initPostContentHighlighter(true);
+    else {
+      const notification = document.getElementById('post-update-notification');
+      if (notification) hideNotification(notification);
+    }
+  });
+</script>
+
+<style is:global>
+  .post-diff-flash {
+    animation: post-diff-flash 1.2s ease-out;
+  }
+
+  @keyframes post-diff-flash {
+    0% {
+      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.75);
+    }
+    100% {
+      box-shadow: 0 0 0 12px rgba(56, 189, 248, 0);
+    }
+  }
+</style>

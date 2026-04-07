@@ -4,14 +4,57 @@ import { Icon } from "astro-icon/components";
 
 <button
   id="back-to-top"
-  class="group fixed right-6 bottom-[5.5rem] z-[90] grid h-12 w-12 place-items-center rounded-full border border-primary-content/10 bg-primary/85 text-primary-content shadow-[0_18px_40px_-20px_oklch(var(--p)/0.9)] opacity-0 pointer-events-none backdrop-blur-xl will-change-[transform,opacity] transition-[box-shadow,background-color,border-color,transform,opacity] duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:bg-primary hover:shadow-[0_24px_48px_-20px_oklch(var(--p)/1)] active:scale-95"
+  type="button"
+  class="group fixed right-6 bottom-[5.5rem] z-[10000] grid h-12 w-12 place-items-center rounded-full border border-primary-content/10 bg-primary/85 text-primary-content shadow-[0_18px_40px_-20px_oklch(var(--p)/0.9)] opacity-0 pointer-events-none backdrop-blur-xl will-change-[transform,opacity] overflow-visible"
   aria-label="返回顶部"
 >
+  <!-- 呼吸光晕（常驻，由JS控制) -->
   <span
     id="back-to-top-glow"
-    class="pointer-events-none absolute inset-0 rounded-full bg-primary/35 opacity-0 blur-md"
+    class="pointer-events-none absolute inset-0 rounded-full bg-primary/30 opacity-0 blur-lg"
     aria-hidden="true"
   ></span>
+
+  <!-- 点击涟漪（由JS控制） -->
+  <span
+    id="back-to-top-ripple"
+    class="pointer-events-none absolute inset-0 rounded-full border-2 border-primary-content/40 opacity-0"
+    aria-hidden="true"
+  ></span>
+
+  <!-- SVG 环形进度条 -->
+  <svg
+    id="back-to-top-progress"
+    class="pointer-events-none absolute inset-0 w-full h-full -rotate-90"
+    viewBox="0 0 48 48"
+    aria-hidden="true"
+  >
+    <circle
+      id="back-to-top-track"
+      cx="24"
+      cy="24"
+      r="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      class="text-primary-content/10"
+    />
+    <circle
+      id="back-to-top-ring"
+      cx="24"
+      cy="24"
+      r="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-dasharray="138.23"
+      stroke-dashoffset="138.23"
+      class="text-primary-content/80 transition-none"
+    />
+  </svg>
+
+  <!-- 箭头图标 -->
   <span
     id="back-to-top-icon"
     class="relative z-10 flex items-center justify-center"
@@ -21,157 +64,243 @@ import { Icon } from "astro-icon/components";
 </button>
 
 <script>
-  import { animate, remove } from "animejs";
+  import { animate, spring, remove } from "animejs";
 
+  // ─── 模块级状态（跨页面持久） ───────────────────────────────────────────
   let scrollHandler: (() => void) | null = null;
   let clickHandler: (() => void) | null = null;
   let rafId: number | null = null;
+  let pulseAnim: ReturnType<typeof animate> | null = null;
+
+  // 圆周长 2π×22 ≈ 138.23
+  const CIRCUMFERENCE = 2 * Math.PI * 22;
+
+  // ─── 工具：停止所有 anime 实例 ────────────────────────────────────────────
+  const stopAll = (els: (Element | null)[]) => {
+    els.forEach((el) => el && remove(el));
+  };
 
   document.addEventListener("astro:page-load", () => {
-    const btn = document.getElementById("back-to-top");
-    const glow = document.getElementById("back-to-top-glow");
-    const icon = document.getElementById("back-to-top-icon");
-    if (!btn || !glow || !icon) return;
+    const btn     = document.getElementById("back-to-top");
+    const glow    = document.getElementById("back-to-top-glow");
+    const ripple  = document.getElementById("back-to-top-ripple");
+    const icon    = document.getElementById("back-to-top-icon");
+    const ring    = document.getElementById("back-to-top-ring") as SVGCircleElement | null;
+
+    if (!btn || !glow || !ripple || !icon || !ring) return;
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const SHOW_THRESHOLD = 360;
     let isVisible = false;
 
-    const stopAnimations = () => {
-      remove(btn);
-      remove(glow);
-      remove(icon);
+    // ── 进度环更新 ────────────────────────────────────────────────────────
+    const updateProgress = () => {
+      const scrollTop = window.scrollY;
+      const docH = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const pct = docH > 0 ? Math.min(scrollTop / docH, 1) : 0;
+      const offset = CIRCUMFERENCE * (1 - pct);
+      ring.style.strokeDashoffset = String(offset);
     };
 
+    // ── 呼吸脉冲（出场后持续循环） ─────────────────────────────────────────
+    const startPulse = () => {
+      if (prefersReducedMotion || pulseAnim) return;
+      pulseAnim = animate(glow, {
+        opacity: [0.15, 0.5, 0.15],
+        scale:   [0.9,  1.15, 0.9],
+        duration: 2600,
+        ease:    "inOutSine",
+        loop: true,
+      });
+    };
+
+    const stopPulse = () => {
+      if (pulseAnim) {
+        remove(glow);
+        pulseAnim = null;
+        (glow as HTMLElement).style.opacity = "0";
+        (glow as HTMLElement).style.transform = "";
+      }
+    };
+
+    // ── 出场动画（弹簧物理） ─────────────────────────────────────────────
     const playShowAnimation = () => {
       if (prefersReducedMotion) {
         btn.style.opacity = "1";
         btn.style.transform = "translateY(0) scale(1)";
+        startPulse();
         return;
       }
 
+      // 按钮主体：透明度淡入 + 弹簧弹进来（spring 自动决定 duration）
       animate(btn, {
         opacity: [0, 1],
-        translateY: [16, 0],
-        scale: [0.9, 1],
-        duration: 380,
-        ease: "outExpo",
+        duration: 300,
+        ease: "outQuad",
+      });
+      animate(btn, {
+        translateY: [20, 0],
+        scale: [0.75, 1],
+        ease: spring({ stiffness: 260, damping: 18, mass: 1 }),
       });
 
+      // 图标：延迟弹跳出现
       animate(icon, {
-        translateY: [6, 0],
-        scale: [0.92, 1],
-        duration: 320,
+        translateY: [10, 0],
+        scale: [0.8, 1],
+        delay: 60,
+        ease: spring({ stiffness: 340, damping: 16, mass: 0.8 }),
+      });
+      animate(icon, {
+        opacity: [0, 1],
+        delay: 60,
+        duration: 260,
         ease: "outQuad",
       });
 
+      // 出场瞬间闪光
       animate(glow, {
-        opacity: [0, 0.35, 0],
-        scale: [0.8, 1.45],
+        opacity: [0, 0.55, 0],
+        scale:   [0.7, 1.5],
         duration: 520,
-        ease: "outCubic",
+        ease:    "outCubic",
+        onComplete: startPulse,
       });
     };
 
+    // ── 隐藏动画 ─────────────────────────────────────────────────────────
     const playHideAnimation = () => {
+      stopPulse();
+
       if (prefersReducedMotion) {
         btn.style.opacity = "0";
-        btn.style.transform = "translateY(8px) scale(0.96)";
+        btn.style.transform = "translateY(10px) scale(0.9)";
         return;
       }
 
       animate(btn, {
-        opacity: 0,
-        translateY: 8,
-        scale: 0.96,
-        duration: 160,
-        ease: "inSine",
+        opacity:    0,
+        translateY: 12,
+        scale:      0.88,
+        duration:   220,
+        ease:       "inCubic",
       });
 
       animate(icon, {
-        translateY: 0,
-        scale: 0.96,
-        duration: 140,
-        ease: "inSine",
+        translateY: 6,
+        opacity:    0,
+        scale:      0.85,
+        duration:   180,
+        ease:       "inSine",
       });
     };
 
+    // ── 点击动画 ─────────────────────────────────────────────────────────
     const playClickAnimation = () => {
       if (prefersReducedMotion) return;
 
+      // 按钮回弹
       animate(btn, {
-        scale: [1, 0.94, 1],
-        duration: 220,
-        ease: "outQuad",
+        scale: [1, 0.88, 1.04, 1],
+        duration: 380,
+        ease: "outBack",
       });
 
+      // 图标飞出
       animate(icon, {
-        translateY: [0, -4, 0],
-        duration: 240,
-        ease: "outQuad",
+        translateY: [0, -6, 0],
+        scale:      [1, 1.2, 1],
+        duration:   360,
+        ease:       "outBack",
       });
 
+      // 涟漪扩散
+      animate(ripple, {
+        opacity:    [0.7, 0],
+        scale:      [0.6, 1.8],
+        duration:   560,
+        ease:       "outExpo",
+      });
+
+      // 光晕爆炸
       animate(glow, {
-        opacity: [0, 0.35, 0],
-        scale: [0.9, 1.6],
-        duration: 420,
-        ease: "outCubic",
+        opacity: [0.6, 0],
+        scale:   [0.8, 1.9],
+        duration: 500,
+        ease:    "outExpo",
+        onComplete: startPulse,
       });
     };
 
+    // ── 可见性切换 ───────────────────────────────────────────────────────
     const setVisible = (shouldShow: boolean) => {
       if (shouldShow === isVisible) return;
-
       isVisible = shouldShow;
-      stopAnimations();
+
+      stopAll([btn, icon]);
       btn.style.pointerEvents = shouldShow ? "auto" : "none";
 
-      if (shouldShow) {
-        playShowAnimation();
-        return;
-      }
-
-      playHideAnimation();
+      shouldShow ? playShowAnimation() : playHideAnimation();
     };
 
-    const updateVisibility = () => {
-      const currentScroll = window.scrollY || document.documentElement.scrollTop;
-      setVisible(currentScroll > SHOW_THRESHOLD);
-    };
-
-    scrollHandler = () => {
+    // ── 滚动处理（RAF 节流） ─────────────────────────────────────────────
+    const handleScroll = () => {
       if (rafId !== null) return;
-      rafId = window.requestAnimationFrame(() => {
-        updateVisibility();
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        setVisible(scrollY > SHOW_THRESHOLD);
+        if (isVisible) updateProgress();
         rafId = null;
       });
     };
 
-    clickHandler = () => {
+    // ── 事件注册 ─────────────────────────────────────────────────────────
+    scrollHandler = handleScroll;
+    clickHandler  = (e?: Event) => {
+      e?.preventDefault();
+      e?.stopPropagation();
+
+      if (window.location.hash === "#post-diff") {
+        const nextUrl = `${window.location.pathname}${window.location.search}`;
+        history.replaceState(history.state, "", nextUrl);
+      }
+
       playClickAnimation();
-      window.scrollTo({
-        top: 0,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
     };
 
     window.addEventListener("scroll", scrollHandler, { passive: true });
-    btn.addEventListener("click", clickHandler);
-    updateVisibility();
+    btn.addEventListener("click", clickHandler as EventListener);
+
+    // hover 时加强光晕
+    btn.addEventListener("mouseenter", () => {
+      if (!isVisible || prefersReducedMotion) return;
+      animate(glow, { opacity: 0.55, scale: 1.1, duration: 260, ease: "outSine" });
+    });
+    btn.addEventListener("mouseleave", () => {
+      if (!isVisible || prefersReducedMotion) return;
+      animate(glow, { opacity: 0.2, scale: 1.0, duration: 340, ease: "outSine" });
+    });
+
+    // 初始化
+    handleScroll();
+    updateProgress();
   });
 
+  // ── 页面切换前清理 ────────────────────────────────────────────────────
   document.addEventListener("astro:before-swap", () => {
-    const btn = document.getElementById("back-to-top");
-    const glow = document.getElementById("back-to-top-glow");
-    const icon = document.getElementById("back-to-top-icon");
-
     if (scrollHandler) {
       window.removeEventListener("scroll", scrollHandler);
       scrollHandler = null;
     }
 
+    const btn    = document.getElementById("back-to-top");
+    const glow   = document.getElementById("back-to-top-glow");
+    const ripple = document.getElementById("back-to-top-ripple");
+    const icon   = document.getElementById("back-to-top-icon");
+
     if (btn && clickHandler) {
-      btn.removeEventListener("click", clickHandler);
+      btn.removeEventListener("click", clickHandler as EventListener);
       clickHandler = null;
     }
 
@@ -180,17 +309,15 @@ import { Icon } from "astro-icon/components";
       rafId = null;
     }
 
-    if (btn) {
-      remove(btn);
-    }
-
-    if (glow) {
-      remove(glow);
-    }
-
-    if (icon) {
-      remove(icon);
-    }
-
+    stopPulse_safe(glow);
+    stopAll([btn, glow, ripple, icon]);
   });
+
+  // 安全停止脉冲（before-swap 时 pulseAnim 可能已清空）
+  function stopPulse_safe(glow: HTMLElement | null) {
+    if (pulseAnim) {
+      glow && remove(glow);
+      pulseAnim = null;
+    }
+  }
 </script>

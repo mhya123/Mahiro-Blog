@@ -224,6 +224,22 @@ export async function fetchAndCompare(): Promise<ArticleChange[]> {
                         }
                     }
 
+                    if (descriptionChanged) {
+                        const d = Diff.diffLines(stored.description, post.description);
+                        if (d && d.some((part: any) => part.added || part.removed)) {
+                            result.description = d;
+                            hasChanges = true;
+                        }
+                    }
+
+                    if (titleChanged) {
+                        const d = Diff.diffLines(stored.title, post.title);
+                        if (d && d.some((part: any) => part.added || part.removed)) {
+                            result.title = d;
+                            hasChanges = true;
+                        }
+                    }
+
                     if (hasChanges || titleChanged || descriptionChanged) {
                         detectedChanges.push({
                             guid: post.guid,
@@ -234,7 +250,7 @@ export async function fetchAndCompare(): Promise<ArticleChange[]> {
                             oldDescription: descriptionChanged ? stored.description : (existingChange?.oldDescription || undefined),
                             newDescription: descriptionChanged ? post.description : (existingChange?.newDescription || undefined),
                             detectedAt: existingChange?.detectedAt || now,
-                            diff: hasChanges ? result.content : undefined
+                            diff: hasChanges ? result : undefined
                         });
                     }
                 }

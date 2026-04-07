@@ -1,0 +1,477 @@
+---
+---
+
+<script>
+  // @ts-nocheck
+  import * as Diff from 'diff';
+  import {
+    normalizePathname,
+    findMatchedUpdatedChange,
+  } from '../../lib/post-diff-utils';
+
+  const CHANGES_KEY = 'blog-articles-changes';
+  const CONTEXT_LINES = 2;
+  const DIFF_APPLIED_EVENT = 'mahiro:post-diff-applied';
+
+  function notifyDiffApplied(hasDiff) {
+    window.dispatchEvent(
+      new CustomEvent(DIFF_APPLIED_EVENT, {
+        detail: {
+          hasDiff: !!hasDiff,
+          hasAnchor: !!document.getElementById('post-diff'),
+          path: normalizePathname(window.location.pathname),
+        },
+      }),
+    );
+  }
+
+  function buildRows(diffParts) {
+    const rows = [];
+    for (const part of Array.isArray(diffParts) ? diffParts : []) {
+      const type = part?.added ? 'add' : part?.removed ? 'del' : 'ctx';
+      const value = String(part?.value ?? '');
+      const lines = value.split('\n');
+      if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+      for (const line of lines) rows.push({ type, text: line });
+    }
+    return rows;
+  }
+
+  function normalizeLineText(text) {
+    return String(text ?? '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\u00A0/g, ' ')
+      .replace(/[ \t]*\n[ \t]*/g, ' ')
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/[ \t]+$/g, '')
+      .trim();
+  }
+
+  function stripHtmlLine(line) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = String(line ?? '');
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  function normalizeForMatch(line) {
+    const text = normalizeLineText(stripHtmlLine(line));
+    if (text) return { kind: 'text', value: text };
+    return { kind: 'none', value: '' };
+  }
+
+  function clearInlineDiff(container) {
+    container.querySelectorAll('[data-post-inline-diff="1"]').forEach((el) => {
+      if (!(el instanceof HTMLElement)) return;
+      const kind = el.getAttribute('data-post-inline-diff-kind') || '';
+      if (kind === 'injected') {
+        el.remove();
+        return;
+      }
+      el.removeAttribute('data-post-inline-diff');
+      el.removeAttribute('data-post-inline-diff-kind');
+      el.classList.remove('post-inline-diff-add-target', 'post-inline-diff-del-target');
+    });
+  }
+
+  function clearSimpleDiff(container) {
+    if (!(container instanceof HTMLElement)) return;
+    const original = container.getAttribute('data-post-inline-diff-original');
+    if (typeof original === 'string') {
+      container.textContent = original;
+      container.removeAttribute('data-post-inline-diff-original');
+    }
+    container.querySelectorAll('[data-post-inline-diff="1"]').forEach((el) => {
+      if (el instanceof HTMLElement) el.removeAttribute('data-post-inline-diff');
+    });
+  }
+
+  function getTextBlocks(container) {
+    return Array.from(
+      container.querySelectorAll('p, li, blockquote, pre, h1, h2, h3, h4, h5, h6'),
+    ).filter((el) => el instanceof HTMLElement);
+  }
+
+  function findBlockByText(container, line) {
+    const key = normalizeForMatch(line);
+    if (key.kind !== 'text') return null;
+    const needle = key.value.slice(0, 48);
+    const blocks = getTextBlocks(container);
+
+    for (const el of blocks) {
+      const text = normalizeLineText(el.textContent || '');
+      if (!text) continue;
+      if (!needle) continue;
+      if (text === key.value) return el;
+      if (needle.length >= 16 && text.includes(needle)) return el;
+    }
+    return null;
+  }
+
+  function findExactBlockByText(container, line) {
+    const key = normalizeForMatch(line);
+    if (key.kind !== 'text') return null;
+    const blocks = getTextBlocks(container);
+    for (const el of blocks) {
+      const text = normalizeLineText(el.textContent || '');
+      if (text && text === key.value) return el;
+    }
+    return null;
+  }
+
+  function sliceWithContext(rows) {
+    const changeIndexes = [];
+    for (let i = 0; i < rows.length; i += 1) {
+      if (rows[i].type !== 'ctx') changeIndexes.push(i);
+    }
+    if (changeIndexes.length === 0) return [];
+
+    const keep = new Array(rows.length).fill(false);
+    for (const idx of changeIndexes) {
+      const start = Math.max(0, idx - CONTEXT_LINES);
+      const end = Math.min(rows.length - 1, idx + CONTEXT_LINES);
+      for (let i = start; i <= end; i += 1) keep[i] = true;
+    }
+
+    const out = [];
+    let inGap = false;
+    for (let i = 0; i < rows.length; i += 1) {
+      if (keep[i]) {
+        out.push(rows[i]);
+        inGap = false;
+      } else if (!inGap) {
+        out.push({ type: 'gap', text: '…' });
+        inGap = true;
+      }
+    }
+    return out;
+  }
+
+  function toHunks(rowsWithGaps) {
+    const hunks = [];
+    let current = [];
+    for (const row of rowsWithGaps) {
+      if (row.type === 'gap') {
+        if (current.length) hunks.push(current);
+        current = [];
+      } else {
+        current.push(row);
+      }
+    }
+    if (current.length) hunks.push(current);
+    return hunks;
+  }
+
+  function createDeletionNode(text, withAnchor) {
+    const cleanText = normalizeLineText(stripHtmlLine(text));
+    if (!cleanText) return null;
+
+    const el = document.createElement('div');
+    el.setAttribute('data-post-inline-diff', '1');
+    el.setAttribute('data-post-inline-diff-kind', 'injected');
+    el.className = 'post-inline-diff-del-line';
+
+    if (withAnchor) {
+      const anchor = document.createElement('span');
+      anchor.id = 'post-diff';
+      anchor.setAttribute('data-post-inline-diff', '1');
+      anchor.setAttribute('data-post-inline-diff-kind', 'injected');
+      el.appendChild(anchor);
+    }
+
+    const del = document.createElement('del');
+    del.textContent = ` ${cleanText}`;
+    el.appendChild(del);
+    return el;
+  }
+
+  function applyWordInlineDiff(target, oldLine, newLine, showDeleted) {
+    if (!(target instanceof HTMLElement)) return false;
+    if (target.childElementCount > 0) return false;
+
+    const oldText = normalizeLineText(stripHtmlLine(oldLine));
+    const newText = normalizeLineText(stripHtmlLine(newLine));
+    if (!newText) return false;
+
+    const parts = Diff.diffWordsWithSpace(oldText, newText);
+    if (!Array.isArray(parts) || parts.length === 0) return false;
+
+    target.innerHTML = '';
+    target.setAttribute('data-post-inline-diff', '1');
+    target.setAttribute('data-post-inline-diff-kind', 'inline-replace');
+
+    for (const part of parts) {
+      const value = String(part?.value ?? '');
+      if (!value) continue;
+
+      if (part.added) {
+        const mark = document.createElement('mark');
+        mark.className = 'post-inline-diff-word-add';
+        mark.textContent = value;
+        mark.setAttribute('data-post-inline-diff', '1');
+        target.appendChild(mark);
+        continue;
+      }
+
+      if (part.removed) {
+        if (!showDeleted) continue;
+        const del = document.createElement('del');
+        del.className = 'post-inline-diff-word-del';
+        del.textContent = value;
+        del.setAttribute('data-post-inline-diff', '1');
+        target.appendChild(del);
+        continue;
+      }
+
+      target.appendChild(document.createTextNode(value));
+    }
+
+    return true;
+  }
+
+  function applyInlineDiff(container, diffParts, showDeleted) {
+    clearInlineDiff(container);
+
+    const rows = buildRows(diffParts);
+    const focused = sliceWithContext(rows);
+    const hunks = toHunks(focused);
+    let insertedAnchor = false;
+
+    for (const hunk of hunks) {
+      let idx = 0;
+      while (idx < hunk.length) {
+        const row = hunk[idx];
+
+        if (row.type === 'del' && idx + 1 < hunk.length && hunk[idx + 1].type === 'add') {
+          const addRow = hunk[idx + 1];
+          const target = findBlockByText(container, addRow.text);
+          if (target instanceof HTMLElement) {
+            const replaced = applyWordInlineDiff(target, row.text, addRow.text, showDeleted);
+            if (!replaced) {
+              target.classList.add('post-inline-diff-add-target');
+              target.setAttribute('data-post-inline-diff', '1');
+            }
+
+            if (showDeleted) {
+              const node = createDeletionNode(row.text, !insertedAnchor);
+              if (node) {
+                target.parentNode?.insertBefore(node, target);
+                if (!insertedAnchor) insertedAnchor = true;
+              }
+            }
+          }
+          idx += 2;
+          continue;
+        }
+
+        if (row.type === 'add') {
+          const target = findBlockByText(container, row.text);
+          if (target instanceof HTMLElement) {
+            target.classList.add('post-inline-diff-add-target');
+            target.setAttribute('data-post-inline-diff', '1');
+            if (!insertedAnchor) {
+              const anchor = document.createElement('span');
+              anchor.id = 'post-diff';
+              anchor.setAttribute('data-post-inline-diff', '1');
+              anchor.setAttribute('data-post-inline-diff-kind', 'injected');
+              target.parentNode?.insertBefore(anchor, target);
+              insertedAnchor = true;
+            }
+          }
+          idx += 1;
+          continue;
+        }
+
+        if (row.type === 'del') {
+          if (!showDeleted) {
+            idx += 1;
+            continue;
+          }
+
+          const target = findExactBlockByText(container, row.text);
+          if (target instanceof HTMLElement) {
+            target.classList.add('post-inline-diff-del-target');
+            target.setAttribute('data-post-inline-diff', '1');
+            idx += 1;
+            continue;
+          }
+
+          let inserted = false;
+          for (let i = idx + 1; i < hunk.length; i += 1) {
+            if (hunk[i].type !== 'ctx') continue;
+            const ctxEl = findBlockByText(container, hunk[i].text);
+            if (!(ctxEl instanceof HTMLElement)) continue;
+            const node = createDeletionNode(row.text, !insertedAnchor);
+            if (node) {
+              ctxEl.parentNode?.insertBefore(node, ctxEl);
+              inserted = true;
+              if (!insertedAnchor) insertedAnchor = true;
+            }
+            break;
+          }
+
+          if (!inserted) {
+            const node = createDeletionNode(row.text, !insertedAnchor);
+            if (node) {
+              container.prepend(node);
+              if (!insertedAnchor) insertedAnchor = true;
+            }
+          }
+
+          idx += 1;
+          continue;
+        }
+
+        idx += 1;
+      }
+    }
+  }
+
+  function applySimpleDiff(container, diffParts) {
+    if (!(container instanceof HTMLElement)) return;
+    if (!container.hasAttribute('data-post-inline-diff-original')) {
+      container.setAttribute('data-post-inline-diff-original', container.textContent || '');
+    }
+
+    container.innerHTML = '';
+    const rows = buildRows(diffParts);
+
+    for (const row of rows) {
+      if (row.type === 'del') continue;
+
+      const span = document.createElement('span');
+      span.setAttribute('data-post-inline-diff', '1');
+      span.textContent = row.text;
+
+      if (row.type === 'add') span.className = 'post-inline-diff-add-target';
+      if (row.type === 'del') span.className = 'post-inline-diff-del-target';
+
+      container.appendChild(span);
+    }
+  }
+
+  function initPostInlineDiff() {
+    const sp = new URLSearchParams(window.location.search);
+    const forceDisable = sp.get('diff') === '0' || sp.get('nodiff') === '1';
+    const showDeleted = sp.get('showDeleted') === '1';
+
+    const content = document.getElementById('content');
+    if (!(content instanceof HTMLElement)) return;
+
+    const titleEl = document.getElementById('post-title');
+    const descriptionEl = document.getElementById('post-description');
+
+    let changes = [];
+    try {
+      const raw = localStorage.getItem(CHANGES_KEY);
+      changes = raw ? JSON.parse(raw) : [];
+    } catch {
+      clearInlineDiff(content);
+      clearSimpleDiff(titleEl);
+      clearSimpleDiff(descriptionEl);
+      notifyDiffApplied(false);
+      return;
+    }
+
+    const matched = findMatchedUpdatedChange(changes, window.location.pathname);
+
+    const shouldApply = !forceDisable && !!matched?.diff;
+
+    if (!shouldApply) {
+      clearInlineDiff(content);
+      clearSimpleDiff(titleEl);
+      clearSimpleDiff(descriptionEl);
+      notifyDiffApplied(false);
+      return;
+    }
+
+    if (!matched?.diff) {
+      clearInlineDiff(content);
+      clearSimpleDiff(titleEl);
+      clearSimpleDiff(descriptionEl);
+      notifyDiffApplied(false);
+      return;
+    }
+
+    let diffData = matched.diff;
+    if (Array.isArray(diffData)) diffData = { content: diffData };
+    if (!diffData || typeof diffData !== 'object') {
+      clearInlineDiff(content);
+      clearSimpleDiff(titleEl);
+      clearSimpleDiff(descriptionEl);
+      notifyDiffApplied(false);
+      return;
+    }
+
+    if (Array.isArray(diffData.title) && titleEl) applySimpleDiff(titleEl, diffData.title);
+    else clearSimpleDiff(titleEl);
+
+    if (Array.isArray(diffData.description) && descriptionEl) applySimpleDiff(descriptionEl, diffData.description);
+    else clearSimpleDiff(descriptionEl);
+
+  if (Array.isArray(diffData.content)) applyInlineDiff(content, diffData.content, showDeleted);
+    else clearInlineDiff(content);
+
+    const hasAnyDiff =
+      Array.isArray(diffData.content) ||
+      Array.isArray(diffData.title) ||
+      Array.isArray(diffData.description);
+
+    notifyDiffApplied(hasAnyDiff);
+
+    const shouldScrollToAnchor = window.location.hash === '#post-diff';
+    const anchor = document.getElementById('post-diff');
+    if (shouldScrollToAnchor && anchor instanceof HTMLElement) {
+      anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initPostInlineDiff);
+  document.addEventListener('astro:page-load', initPostInlineDiff);
+</script>
+
+<style is:global>
+  .post-inline-diff-add-target {
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: rgb(74 222 128 / 1);
+    background-color: rgb(74 222 128 / 0.12);
+    border-radius: 0.25rem;
+  }
+
+  .post-inline-diff-del-target {
+    color: rgb(248 113 113 / 1) !important;
+    text-decoration-line: line-through;
+    text-decoration-thickness: 2px;
+    text-decoration-color: rgb(248 113 113 / 1);
+  }
+
+  .post-inline-diff-del-line {
+    margin: 0.5rem 0;
+    color: rgb(248 113 113 / 1);
+    font-size: 0.95em;
+  }
+
+  .post-inline-diff-del-line del {
+    text-decoration-thickness: 2px;
+    background-color: rgb(248 113 113 / 0.1);
+    border-radius: 0.25rem;
+    padding: 0.08rem 0.28rem;
+  }
+
+  .post-inline-diff-word-add {
+    background-color: rgb(74 222 128 / 0.2);
+    border-bottom: 2px solid rgb(74 222 128 / 0.95);
+    border-radius: 0.2rem;
+    padding: 0 0.08em;
+    color: inherit;
+  }
+
+  .post-inline-diff-word-del {
+    color: rgb(248 113 113 / 0.9);
+    text-decoration-thickness: 2px;
+    text-decoration-color: rgb(248 113 113 / 0.95);
+    margin-right: 0.06em;
+  }
+</style>
