@@ -22,8 +22,8 @@ categories:
   <a href="/blog/mahiro-beginner-tutorial-index" class="card bg-primary/10 border border-primary/30 hover:border-primary transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
     <div class="card-body p-5">
       <div class="text-xs text-primary/80 font-medium">快速返回</div>
-      <div class="font-semibold text-lg text-base-content">⬅ 返回 Mahiro-Blog 新手专栏目录（1~10）</div>
-      <div class="text-sm text-base-content/70">如果你想先补基础，再回到进阶二开，点击这里一键跳转。</div>
+      <div class="font-semibold text-lg text-base-content">⬅ 返回 Mahiro-Blog 新手专栏目录（持续更新）</div>
+      <div class="text-sm text-base-content/70">如果你想先补基础教程，再回到进阶二开，点击这里一键跳转。</div>
     </div>
   </a>
 </div>

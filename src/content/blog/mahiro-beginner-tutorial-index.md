@@ -31,6 +31,7 @@ categories:
 11. [新手教程（九）：音乐播放器与歌单配置实战](/blog/mahiro-music-player-config-practical)
 12. [新手教程（十）：导航页/项目页 JSON 数据维护与提交流程](/blog/mahiro-navigation-project-json-workflow)
 13. [新手教程（十一）：mahiro.config.yaml 与 .env 在多平台部署](/blog/mahiro-config-env-multi-platform-pages)
+14. [Mahiro-Blog 新手教程（十二）：PEM 证书怎么获取（GitHub App 实操）](/blog/mahiro-github-app-pem-guide)
 
 ---
 
@@ -51,7 +52,7 @@ categories:
     <div class="card-body p-5">
       <div class="text-xs text-base-content/50">进阶专题</div>
       <div class="font-semibold text-lg">Mahiro-Blog 二开实战总览：从可运行到可演进</div>
-      <div class="text-sm text-base-content/60">当你完成新手 1~10 篇后，从这里进入组件重构、数据管道、自动化与配置演进四连篇。</div>
+      <div class="text-sm text-base-content/60">当你完成新手专栏基础篇后，从这里进入组件重构、数据管道、自动化与配置演进四连篇。</div>
     </div>
   </a>
 </div>
