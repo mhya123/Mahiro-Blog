@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（十）：导航页/项目页 JSON 数据维护
 description: 学会维护导航与项目 JSON 数据、组织字段结构，并通过标准流程提交更新。
 pubDate: 2026-04-07T16:40
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-navigation-project-json-workflow.webp
 draft: false
 tags:
   - JSON

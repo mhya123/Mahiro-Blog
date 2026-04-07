@@ -3,7 +3,7 @@ title: 我不知道啊
 description: 一篇关于写作灵感缺失的简短随笔
 pubDate: 2026-02-26T16:03
 aiModel: qwen3-coder-plus
-image: /images/wbzda/aaf040a4112fb7ab.png
+image: /images/wbzda/aaf040a4112fb7ab.webp
 draft: false
 tags:
   - 未知

@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（四）：部署与自动发布（CI）
 description: 从本地构建到线上部署，给新手一套可复用的发布路径，并附带自动化建议。
 pubDate: 2026-04-07T14:10
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-deploy-and-ci-beginner-guide.webp
 draft: false
 tags:
   - 部署

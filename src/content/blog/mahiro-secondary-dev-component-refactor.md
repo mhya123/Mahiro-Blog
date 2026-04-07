@@ -3,7 +3,7 @@ title: Mahiro-Blog 二开实战（一）：组件重构与可维护目录拆分
 description: 以真实二开场景讲解如何重构组件结构、拆分职责边界、降低后续维护成本。
 pubDate: 2026-04-07T17:20
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-secondary-dev-component-refactor.webp
 draft: false
 tags:
   - 二开

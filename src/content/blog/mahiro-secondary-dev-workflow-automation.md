@@ -3,7 +3,7 @@ title: Mahiro-Blog 二开实战（三）：自动化工作流与审核策略
 description: 结合 GitHub Actions 的实际维护思路，构建“可解释、可演进”的自动审核流程。
 pubDate: 2026-04-07T17:50
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-secondary-dev-workflow-automation.webp
 draft: false
 tags:
   - 二开

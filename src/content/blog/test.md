@@ -3,7 +3,7 @@ title: 测试文章 v2 更新通知测试
 description: 这个描述已被修改，用于测试更新检测功能
 aiModel: qwen3-coder-plus
 pubDate: 2026-03-01T00:00:00.000Z
-image: /images/test/93439a7db885d0ed.jpg
+image: /images/test/93439a7db885d0ed.webp
 tags:
   - 科技
 categories:

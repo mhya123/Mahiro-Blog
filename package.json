@@ -8,6 +8,7 @@
     "check": "astro check",
     "git": "node scripts/generate-git-info.mjs",
     "watermark": "node scripts/add-watermark.mjs",
+  "cover:cache": "node scripts/cache-random-covers.mjs",
     "ai:summary": "node scripts/generate-ai-summary.mjs",
     "webp": "node scripts/convert-to-webp.mjs",
     "build": "pnpm watermark && astro check && astro build && pagefind --site dist && cpy 'dist/pagefind/**' public/pagefind",

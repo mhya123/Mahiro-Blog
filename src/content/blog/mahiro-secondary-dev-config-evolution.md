@@ -3,7 +3,7 @@ title: Mahiro-Blog 二开实战（四）：配置系统演进与版本兼容
 description: 从配置项新增到历史兼容，讲清二开项目如何让配置系统长期可升级、可回滚。
 pubDate: 2026-04-07T18:05
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-secondary-dev-config-evolution.webp
 draft: false
 tags:
   - 二开

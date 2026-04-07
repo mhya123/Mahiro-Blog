@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（七）：Pagefind 搜索与索引实操
 description: 从构建索引到搜索异常排查，系统讲清 Mahiro-Blog 的静态搜索工作方式。
 pubDate: 2026-04-07T15:05
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-pagefind-search-practical.webp
 draft: false
 tags:
   - Pagefind

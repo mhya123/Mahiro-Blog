@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（八）：图片与性能优化基础
 description: 聚焦新手最容易见效的性能优化：图片策略、构建流程、页面体验检查清单。
 pubDate: 2026-04-07T15:25
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-image-and-performance-basics.webp
 draft: false
 tags:
   - 性能优化

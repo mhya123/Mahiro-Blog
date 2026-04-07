@@ -44,6 +44,11 @@ export const BLOG_CONFIG = config.site.blog;
 export const BLOG_PAGE_SIZE = config.site.blog.pageSize;
 export const BLOG_PAGINATION_ELLIPSIS_THRESHOLD = Math.max(3, Number(config.site.blog.ellipsisThreshold ?? 9) || 9);
 export const COMMIT_HISTORY_SIZE = config.site.blog.commitHistorySize ?? 8;
+export const RANDOM_COVER_SOURCES = (
+  Array.isArray(config.site.blog.randomCoverSources)
+    ? config.site.blog.randomCoverSources.filter((url: unknown) => typeof url === "string" && /^https?:\/\//.test(url))
+    : []
+);
 
 
 // GitHub 配置

@@ -1,9 +1,13 @@
 ---
-title: Mahiro-Blog 新手教程（十一）：mahiro.config.yaml 与 .env 在多平台部署（GitHub Pages / Cloudflare Pages / EdgeOne）
-description: 一篇讲清配置文件与环境变量分层的实操教程，覆盖本地、GitHub Pages、Cloudflare Pages、EdgeOne Pages 的变量注入与排错。
+title: >-
+  Mahiro-Blog 新手教程（十一）：mahiro.config.yaml 与 .env 在多平台部署（GitHub Pages /
+  Cloudflare Pages / EdgeOne）
+description: >-
+  一篇讲清配置文件与环境变量分层的实操教程，覆盖本地、GitHub Pages、Cloudflare Pages、EdgeOne Pages
+  的变量注入与排错。
 pubDate: 2026-04-07T19:10
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-config-env-multi-platform-pages.webp
 draft: false
 tags:
   - 配置文件

@@ -62,6 +62,7 @@ export interface BlogConfig {
   pageSize: number;
   ellipsisThreshold?: number;
   commitHistorySize?: number;
+  randomCoverSources?: string[];
 }
 
 export interface TmdbConfig {

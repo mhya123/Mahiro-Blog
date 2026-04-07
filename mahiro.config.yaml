@@ -14,6 +14,9 @@ site:
     pageSize: 10 # 首页每页显示文章数量
     ellipsisThreshold: 7 # 当总页数超过该值时，分页使用省略号（...）模式
     commitHistorySize: 6 # 修订历史最大可见条数，超出后滚动查看
+    randomCoverSources: # 随机封面图床（按顺序回退）
+      - https://t.alcy.cc/ycy
+      - https://moe.jitsu.top/img/?sort=pc&size=mw2048
   banner:
     defaultMode: background
     enableRandom: false

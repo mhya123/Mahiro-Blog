@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（六）：友链自动审核工作流实战
 description: 读懂友链 PR/Issue 自动审核机制，学会配置、排错与维护这套无人值守流程。
 pubDate: 2026-04-07T14:45
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-friend-auto-audit-workflow.webp
 draft: false
 tags:
   - GitHub Actions

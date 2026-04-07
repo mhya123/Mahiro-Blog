@@ -6,6 +6,108 @@ import type { ImageItem, PublishForm } from '../types'
 import { getFileExt, formatDateTimeLocal } from '@/lib/utils'
 import { toast } from 'sonner'
 import { stringifyFrontmatter } from '@/lib/frontmatter'
+import yaml from 'js-yaml'
+
+const DEFAULT_RANDOM_COVER_SOURCES = [
+    'https://t.alcy.cc/ycy',
+    'https://moe.jitsu.top/img/?sort=pc&size=mw2048',
+]
+let cachedRandomCoverSources: string[] | null = null
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = ''
+    const bytes = new Uint8Array(buffer)
+    const chunkSize = 0x8000
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize)
+        binary += String.fromCharCode(...chunk)
+    }
+    return btoa(binary)
+}
+
+async function tryCreateRandomCoverBlobFromSource(token: string, slug: string, sourceUrl: string): Promise<{ publicPath: string; repoPath: string; sha: string } | null> {
+    try {
+        const seed = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+        const requestUrl = `${sourceUrl}${sourceUrl.includes('?') ? '&' : '?'}_seed=${seed}`
+        const response = await fetch(requestUrl, {
+            redirect: 'follow',
+            headers: {
+                Accept: 'image/*,*/*;q=0.8',
+            },
+        })
+
+        if (!response.ok) {
+            return null
+        }
+
+        const contentType = response.headers.get('content-type') || ''
+        const ext = contentType.includes('png')
+            ? '.png'
+            : contentType.includes('webp')
+                ? '.webp'
+                : contentType.includes('avif')
+                    ? '.avif'
+                    : '.jpg'
+
+        const filename = `${slug}-cover${ext}`
+        const publicPath = `/images/covers/${filename}`
+        const repoPath = `public/images/covers/${filename}`
+        const buffer = await response.arrayBuffer()
+        const base64 = arrayBufferToBase64(buffer)
+
+        const blobData = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, base64, 'base64')
+        return { publicPath, repoPath, sha: blobData.sha }
+    } catch {
+        return null
+    }
+}
+
+function uniqueUrls(urls: string[]): string[] {
+    return [...new Set(urls.filter(url => /^https?:\/\//i.test(url)))]
+}
+
+function extractRandomCoverSources(configContent: string): string[] {
+    try {
+        const parsed = yaml.load(configContent) as any
+        const urls = parsed?.site?.blog?.randomCoverSources
+        if (Array.isArray(urls)) {
+            const valid = uniqueUrls(urls.map(String))
+            if (valid.length > 0) return valid
+        }
+    } catch {
+        // ignore parse failure and use defaults
+    }
+    return [...DEFAULT_RANDOM_COVER_SOURCES]
+}
+
+async function getRandomCoverSources(): Promise<string[]> {
+    if (cachedRandomCoverSources && cachedRandomCoverSources.length > 0) {
+        return cachedRandomCoverSources
+    }
+
+    try {
+        const response = await fetch('/api/config.yaml', { method: 'GET' })
+        if (response.ok) {
+            const text = await response.text()
+            cachedRandomCoverSources = extractRandomCoverSources(text)
+            return cachedRandomCoverSources
+        }
+    } catch {
+        // ignore and use defaults
+    }
+
+    cachedRandomCoverSources = [...DEFAULT_RANDOM_COVER_SOURCES]
+    return cachedRandomCoverSources
+}
+
+async function createRandomCoverBlob(token: string, slug: string): Promise<{ publicPath: string; repoPath: string; sha: string } | null> {
+    const sources = await getRandomCoverSources()
+    for (const source of sources) {
+        const result = await tryCreateRandomCoverBlobFromSource(token, slug, source)
+        if (result) return result
+    }
+    return null
+}
 
 export type PushBlogParams = {
     form: PublishForm
@@ -106,6 +208,27 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 
         if (cover?.type === 'url') {
             coverPath = cover.url
+        }
+
+        // 发布新文章时自动补封面：先复用文章目录已有图片，若没有再请求随机图床并落地到仓库
+        if (!coverPath && mode === 'create') {
+            const firstPostImage = treeItems
+                .map(item => item.path)
+                .find(p => typeof p === 'string' && p.startsWith(`public/images/${form.slug}/`))
+
+            if (firstPostImage) {
+                coverPath = `/${firstPostImage.replace(/^public\//, '')}`
+            } else {
+                toast.loading('🖼️ 未检测到封面，正在自动获取随机封面...', { id: toastId })
+                const randomCover = await createRandomCoverBlob(token, form.slug)
+                if (randomCover) {
+                    treeItems.push({ path: randomCover.repoPath, mode: '100644', type: 'blob', sha: randomCover.sha })
+                    coverPath = randomCover.publicPath
+                } else {
+                    // 随机图床异常时兜底为站点默认图，保证发布不中断
+                    coverPath = '/home.webp'
+                }
+            }
         }
 
         toast.loading('正在创建文章内容...', { id: toastId })

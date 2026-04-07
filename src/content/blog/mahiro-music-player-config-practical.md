@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（九）：音乐播放器与歌单配置实战
 description: 从配置歌单到前端播放排查，手把手完成 Mahiro-Blog 音乐模块的可用配置。
 pubDate: 2026-04-07T16:20
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-music-player-config-practical.webp
 draft: false
 tags:
   - 音乐播放器

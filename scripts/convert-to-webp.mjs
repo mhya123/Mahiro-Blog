@@ -1,4 +1,5 @@
-import fs from 'node:fs';
+import { promises as fs } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { glob } from 'glob';
 import sharp from 'sharp';
@@ -6,11 +7,90 @@ import sharp from 'sharp';
 const IMAGE_DIR = 'public/images';
 const CONTENT_DIR = 'src/content/blog';
 
-async function main() {
-    console.log('[WebP Converter] Scanning for PNG/JPG/JPEG images...');
+function normalizePath(p) {
+    return p.replace(/\\/g, '/');
+}
 
-    // Using glob to match non-webp images
-    const images = glob.sync(`${IMAGE_DIR}/**/*.{png,jpg,jpeg}`).map(p => p.replace(/\\/g, '/'));
+function parseArgs(argv) {
+    const args = {
+        quality: 85,
+        effort: 6,
+        dryRun: false,
+        keepOriginal: false,
+        concurrency: Math.max(2, Math.min(8, os.cpus().length || 4)),
+    };
+
+    for (const arg of argv) {
+        if (arg === '--dry-run') args.dryRun = true;
+        else if (arg === '--keep-original') args.keepOriginal = true;
+        else if (arg.startsWith('--quality=')) {
+            const n = Number(arg.split('=')[1]);
+            if (Number.isFinite(n) && n >= 1 && n <= 100) args.quality = n;
+        }
+        else if (arg.startsWith('--effort=')) {
+            const n = Number(arg.split('=')[1]);
+            if (Number.isFinite(n) && n >= 0 && n <= 6) args.effort = n;
+        }
+        else if (arg.startsWith('--concurrency=')) {
+            const n = Number(arg.split('=')[1]);
+            if (Number.isFinite(n) && n >= 1) args.concurrency = Math.floor(n);
+        }
+    }
+
+    return args;
+}
+
+function createLimiter(limit) {
+    let active = 0;
+    const queue = [];
+
+    const runNext = () => {
+        if (active >= limit || queue.length === 0) return;
+        const { fn, resolve, reject } = queue.shift();
+        active++;
+        Promise.resolve(fn())
+            .then(resolve)
+            .catch(reject)
+            .finally(() => {
+                active--;
+                runNext();
+            });
+    };
+
+    return (fn) => new Promise((resolve, reject) => {
+        queue.push({ fn, resolve, reject });
+        runNext();
+    });
+}
+
+async function statSafe(filePath) {
+    try {
+        return await fs.stat(filePath);
+    }
+    catch {
+        return null;
+    }
+}
+
+function extractImageRel(p) {
+    const normalized = normalizePath(p);
+    const idx = normalized.indexOf('/images/');
+    return idx >= 0 ? normalized.slice(idx) : null;
+}
+
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+async function main() {
+    const options = parseArgs(process.argv.slice(2));
+
+    sharp.concurrency(options.concurrency);
+
+    console.log('[WebP Converter] Scanning for PNG/JPG/JPEG images...');
+    console.log(`[WebP Converter] Settings: quality=${options.quality}, effort=${options.effort}, concurrency=${options.concurrency}, dryRun=${options.dryRun}, keepOriginal=${options.keepOriginal}`);
+
+    const images = (await glob(`${IMAGE_DIR}/**/*.{png,jpg,jpeg}`)).map(normalizePath);
 
     if (images.length === 0) {
         console.log('[WebP Converter] All clear! No non-WebP images found.');
@@ -18,70 +98,99 @@ async function main() {
     }
 
     const conversionMap = new Map();
+    const limiter = createLimiter(options.concurrency);
 
-    let count = 0;
-    for (const imgPath of images) {
+    let converted = 0;
+    let skipped = 0;
+    let failed = 0;
+    let bytesBefore = 0;
+    let bytesAfter = 0;
+
+    await Promise.all(images.map((imgPath) => limiter(async () => {
         const parsed = path.parse(imgPath);
-        const newPath = path.join(parsed.dir, `${parsed.name}.webp`).replace(/\\/g, '/');
+        const newPath = normalizePath(path.join(parsed.dir, `${parsed.name}.webp`));
+
+        const srcStat = await statSafe(imgPath);
+        if (!srcStat) {
+            skipped++;
+            return;
+        }
+
+        const dstStat = await statSafe(newPath);
+        if (dstStat && dstStat.mtimeMs >= srcStat.mtimeMs) {
+            skipped++;
+            return;
+        }
 
         try {
-            await sharp(imgPath)
-                .webp({ quality: 85, effort: 6 }) // effort 6 for better compression ratio
-                .toFile(newPath);
+            bytesBefore += srcStat.size;
 
-            // Delete the original bloated image
-            fs.unlinkSync(imgPath);
+            if (!options.dryRun) {
+                await sharp(imgPath)
+                    .webp({ quality: options.quality, effort: options.effort })
+                    .toFile(newPath);
 
-            // Store mapping to update the markdown posts
-            // Extract the relative path like '/images/xxx/yyy.png'
-            const oldRel = imgPath.substring(imgPath.indexOf('/images/'));
-            const newRel = newPath.substring(newPath.indexOf('/images/'));
+                const newStat = await statSafe(newPath);
+                if (newStat)
+                    bytesAfter += newStat.size;
 
-            conversionMap.set(oldRel, newRel);
-            count++;
+                if (!options.keepOriginal) {
+                    await fs.unlink(imgPath);
+                }
+            }
+
+            const oldRel = extractImageRel(imgPath);
+            const newRel = extractImageRel(newPath);
+            if (oldRel && newRel)
+                conversionMap.set(oldRel, newRel);
+
+            converted++;
             console.log(`[WebP Converter] Converted: ${parsed.base} -> ${parsed.name}.webp`);
-        } catch (e) {
+        }
+        catch (e) {
+            failed++;
             console.error(`[WebP Converter] Failed to convert ${imgPath}:`, e);
         }
-    }
+    })));
 
+    let filesUpdated = 0;
     if (conversionMap.size > 0) {
         console.log('[WebP Converter] Updating Markdown references...');
-        const mdFiles = glob.sync(`${CONTENT_DIR}/**/*.{md,mdx}`);
-        let filesUpdated = 0;
+        const mdFiles = await glob(`${CONTENT_DIR}/**/*.{md,mdx}`);
 
         for (const mdFile of mdFiles) {
-            let content = fs.readFileSync(mdFile, 'utf-8');
+            let content = await fs.readFile(mdFile, 'utf-8');
             let changed = false;
 
             for (const [oldRel, newRel] of conversionMap.entries()) {
-                // Replace root-relative paths like /images/path.png
                 if (content.includes(oldRel)) {
                     content = content.split(oldRel).join(newRel);
                     changed = true;
                 }
 
-                // Also try replacing relative paths like path.png assuming just filename matches
                 const oldBase = path.basename(oldRel);
                 const newBase = path.basename(newRel);
                 if (content.includes(oldBase)) {
-                    // Use a safe regex to only replace the exact filename if it hasn't been completely covered
-                    const regex = new RegExp(`(?<=[/'"])${oldBase}(?=[\\s)'"])`, 'g');
+                    const escapedOldBase = escapeRegExp(oldBase);
+                    const regex = new RegExp(`(?<=[/'\"])${escapedOldBase}(?=[\\s)'\"])`, 'g');
                     const pre = content;
                     content = content.replace(regex, newBase);
                     if (pre !== content) changed = true;
                 }
             }
 
-            if (changed) {
-                fs.writeFileSync(mdFile, content, 'utf-8');
+            if (changed && !options.dryRun) {
+                await fs.writeFile(mdFile, content, 'utf-8');
                 filesUpdated++;
             }
-        }
+    }
         console.log(`[WebP Converter] Updated ${filesUpdated} markdown file(s) with new .webp extensions.`);
     }
 
-    console.log(`[WebP Converter] Complete! ${count} images successfully modernized to WebP format 🚀`);
+    const saved = Math.max(0, bytesBefore - bytesAfter);
+    const savedMB = (saved / 1024 / 1024).toFixed(2);
+
+    console.log(`[WebP Converter] Complete! converted=${converted}, skipped=${skipped}, failed=${failed}, markdownUpdated=${filesUpdated}, estSaved=${savedMB}MB`);
 }
 
 main().catch(e => {

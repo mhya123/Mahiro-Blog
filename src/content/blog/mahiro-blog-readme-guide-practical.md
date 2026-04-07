@@ -3,7 +3,7 @@ title: 从 README 到实战（二）：Mahiro-Blog 本地开发与排错手册
 description: 作为《从 README 到实战》续篇，聚焦可直接执行的本地开发流程、构建命令与高频报错排查。
 pubDate: 2026-04-07T12:10
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-blog-readme-guide-practical.webp
 draft: false
 tags:
   - Astro

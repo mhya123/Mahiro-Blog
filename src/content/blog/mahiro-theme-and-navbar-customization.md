@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（三）：主题与导航栏定制
 description: 从主题切换到导航菜单，教你把默认站点改成自己的视觉风格与信息结构。
 pubDate: 2026-04-07T13:50
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-theme-and-navbar-customization.webp
 draft: false
 tags:
   - 主题

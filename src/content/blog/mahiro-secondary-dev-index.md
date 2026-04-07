@@ -3,7 +3,7 @@ title: Mahiro-Blog 二开实战总览：从可运行到可演进
 description: 进阶二开入口，聚合组件重构、数据管道、工作流自动化与配置演进四大主题。
 pubDate: 2026-04-07T18:30
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-secondary-dev-index.webp
 draft: false
 tags:
   - 二开实战

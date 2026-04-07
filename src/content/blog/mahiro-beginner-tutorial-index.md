@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手专栏目录：从 0 到可维护上线
 description: 新手教程总入口，覆盖配置、写作、主题、部署、评论、自动化、搜索、性能、音乐与 JSON 数据维护全链路。
 pubDate: 2026-04-07T16:00
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-beginner-tutorial-index.webp
 draft: false
 tags:
   - 新手教程

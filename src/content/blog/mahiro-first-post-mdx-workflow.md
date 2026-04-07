@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（二）：写第一篇 Markdown / MDX 文章
 description: 从 frontmatter 到图片、标签分类、发布流程，带你完成第一篇可发布文章。
 pubDate: 2026-04-07T13:30
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-first-post-mdx-workflow.webp
 draft: false
 tags:
   - Markdown

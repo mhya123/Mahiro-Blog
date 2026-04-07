@@ -3,7 +3,7 @@ title: 从 README 到实战：Mahiro-Blog 的设计思路与上手指南
 description: 一篇基于 Mahiro-Blog README 的完整导读，包含核心特性、技术选型、目录结构、开发流程与部署建议。
 pubDate: 2026-04-07T10:30
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-blog-readme-guide.webp
 draft: false
 tags:
   - Astro

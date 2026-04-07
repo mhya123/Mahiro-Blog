@@ -3,7 +3,7 @@ title: Mahiro-Blog 二开实战（二）：数据流与 JSON 管道设计
 description: 面向长期维护的二开实践，讲清页面数据来源、JSON 组织规范与增量演进方式。
 pubDate: 2026-04-07T17:35
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-secondary-dev-data-pipeline.webp
 draft: false
 tags:
   - 二开

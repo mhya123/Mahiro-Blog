@@ -3,7 +3,7 @@ title: Mahiro-Blog 新手教程（一）：从 0 到 1 改配置文件（mahiro.
 description: 手把手讲清楚 Mahiro-Blog 的配置改造路径：哪些字段先改、怎样新增配置项、如何避免 YAML 踩坑。
 pubDate: 2026-04-07T13:10
 aiModel: qwen3-coder-plus
-image: /home.webp
+image: /images/covers/mahiro-config-zero-to-one.webp
 draft: false
 tags:
   - 配置文件
