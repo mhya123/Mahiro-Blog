@@ -25,7 +25,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
     return btoa(binary)
 }
 
-async function tryCreateRandomCoverBlobFromSource(token: string, slug: string, sourceUrl: string): Promise<{ publicPath: string; repoPath: string; sha: string } | null> {
+async function tryCreateRandomCoverBlobFromSource(token: string, slug: string, sourceUrl: string): Promise<{ publicPath: string; repoPath: string; originalRepoPath: string; sha: string } | null> {
     try {
         const seed = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
         const requestUrl = `${sourceUrl}${sourceUrl.includes('?') ? '&' : '?'}_seed=${seed}`
@@ -52,11 +52,12 @@ async function tryCreateRandomCoverBlobFromSource(token: string, slug: string, s
         const filename = `${slug}-cover${ext}`
         const publicPath = `/images/covers/${filename}`
         const repoPath = `public/images/covers/${filename}`
+    const originalRepoPath = `public/images-original/covers/${filename}`
         const buffer = await response.arrayBuffer()
         const base64 = arrayBufferToBase64(buffer)
 
         const blobData = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, base64, 'base64')
-        return { publicPath, repoPath, sha: blobData.sha }
+    return { publicPath, repoPath, originalRepoPath, sha: blobData.sha }
     } catch {
         return null
     }
@@ -100,7 +101,7 @@ async function getRandomCoverSources(): Promise<string[]> {
     return cachedRandomCoverSources
 }
 
-async function createRandomCoverBlob(token: string, slug: string): Promise<{ publicPath: string; repoPath: string; sha: string } | null> {
+async function createRandomCoverBlob(token: string, slug: string): Promise<{ publicPath: string; repoPath: string; originalRepoPath: string; sha: string } | null> {
     const sources = await getRandomCoverSources()
     for (const source of sources) {
         const result = await tryCreateRandomCoverBlobFromSource(token, slug, source)
@@ -166,6 +167,7 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
                 hash: string
                 publicPath: string
                 repoPath: string
+                originalRepoPath: string
                 needUpload: boolean
             }> = []
 
@@ -175,24 +177,26 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
                 const filename = `${hash}${ext}`
                 const publicPath = `/images/${form.slug}/${filename}`
                 const repoPath = `public/images/${form.slug}/${filename}`
+                const originalRepoPath = `public/images-original/${form.slug}/${filename}`
                 const needUpload = !seenHashes.has(hash)
                 if (needUpload) seenHashes.add(hash)
-                imageMeta.push({ img, id, hash, publicPath, repoPath, needUpload })
+                imageMeta.push({ img, id, hash, publicPath, repoPath, originalRepoPath, needUpload })
             }
 
             // 并行上传需要上传的图片 Blob
             const toUpload = imageMeta.filter(m => m.needUpload)
             const blobResults = await Promise.all(
-                toUpload.map(async ({ img, repoPath }) => {
+                toUpload.map(async ({ img, repoPath, originalRepoPath }) => {
                     const contentBase64 = await fileToBase64NoPrefix(img.file)
                     const blobData = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, contentBase64, 'base64')
-                    return { repoPath, sha: blobData.sha }
+                    return { repoPath, originalRepoPath, sha: blobData.sha }
                 })
             )
 
             // 收集 tree 条目
-            for (const { repoPath, sha } of blobResults) {
+            for (const { repoPath, originalRepoPath, sha } of blobResults) {
                 treeItems.push({ path: repoPath, mode: '100644', type: 'blob', sha })
+                treeItems.push({ path: originalRepoPath, mode: '100644', type: 'blob', sha })
             }
 
             // 替换 markdown 中的占位符
@@ -223,6 +227,7 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
                 const randomCover = await createRandomCoverBlob(token, form.slug)
                 if (randomCover) {
                     treeItems.push({ path: randomCover.repoPath, mode: '100644', type: 'blob', sha: randomCover.sha })
+                    treeItems.push({ path: randomCover.originalRepoPath, mode: '100644', type: 'blob', sha: randomCover.sha })
                     coverPath = randomCover.publicPath
                 } else {
                     // 随机图床异常时兜底为站点默认图，保证发布不中断

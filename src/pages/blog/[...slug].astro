@@ -180,16 +180,56 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
     import { Fancybox } from "@fancyapps/ui";
 
     document.addEventListener("astro:page-load", () => {
+      const getOriginalImagePath = (rawSrc: string): string | null => {
+        try {
+          const url = new URL(rawSrc, window.location.origin);
+          if (!url.pathname.startsWith("/images/")) return null;
+          return url.pathname.replace(/^\/images\//, "/images-original/");
+        } catch {
+          return null;
+        }
+      };
+
+      const ensureDownloadOriginalButton = (img: HTMLImageElement) => {
+        if (img.dataset.originalDownloadBound === "true") return;
+        const originalPath = getOriginalImagePath(img.src);
+        if (!originalPath) return;
+
+        const host = img.closest("figure, p, div, li, blockquote") || img.parentElement;
+        if (!host || host.querySelector(".download-original-image-btn")) {
+          img.dataset.originalDownloadBound = "true";
+          return;
+        }
+
+        const action = document.createElement("div");
+        action.className = "download-original-image-row";
+
+        const link = document.createElement("a");
+        link.href = originalPath;
+        link.download = originalPath.split("/").pop() || "image";
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.className = "download-original-image-btn";
+        link.textContent = "下载无水印图片";
+
+        action.appendChild(link);
+        host.appendChild(action);
+        img.dataset.originalDownloadBound = "true";
+      };
+
       const images = document.querySelectorAll("#content img");
       
       images.forEach((img) => {
+        const imageEl = img as HTMLImageElement;
+        ensureDownloadOriginalButton(imageEl);
+
         // 如果图片已经在链接中，则跳过
         if (img.closest("a")) return;
         
         const link = document.createElement("a");
-        link.href = (img as HTMLImageElement).src;
+        link.href = imageEl.src;
         link.dataset.fancybox = "gallery";
-        link.dataset.caption = (img as HTMLImageElement).alt || "";
+        link.dataset.caption = imageEl.alt || "";
         
         if (img.parentNode) {
           img.parentNode.insertBefore(link, img);
@@ -217,4 +257,34 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
       } as any);
     });
   </script>
+
+  <style>
+    #content .download-original-image-row {
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+
+    #content .download-original-image-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1;
+      padding: 0.45rem 0.7rem;
+      border-radius: 999px;
+      color: oklch(var(--p));
+      background: oklch(var(--p) / 0.1);
+      border: 1px solid oklch(var(--p) / 0.2);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    #content .download-original-image-btn:hover {
+      transform: translateY(-1px);
+      background: oklch(var(--p) / 0.16);
+      border-color: oklch(var(--p) / 0.35);
+    }
+  </style>
 </BaseLayout>

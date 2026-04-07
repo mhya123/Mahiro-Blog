@@ -4,40 +4,54 @@ import crypto from 'crypto';
 import { glob } from 'glob';
 import sharp from 'sharp';
 import yaml from 'js-yaml';
+import opentype from 'opentype.js';
 
 // ─── 配置 ────────────────────────────────────────────
 const CACHE_FILE  = 'scripts/.watermark-cache.json';
+const SOURCE_DIR  = 'public/images-original';
 const TARGET_DIR  = 'public/images';
 const CONCURRENCY = 8;                    // 并行处理数
 const SUPPORTED   = '{jpg,jpeg,png,webp}'; // gif 不做水印（会丢帧）
 const WATERMARK_FONT_PATH = 'public/watermarkfont/HFSimpleElegance-2.ttf';
 
-let cachedFontDataUri = undefined;
+let cachedFontBuffer = undefined;
+let cachedParsedFont = undefined;
 
-function getFontMimeByExt(fontPath) {
-    const ext = path.extname(fontPath).toLowerCase();
-    if (ext === '.ttf') return 'font/ttf';
-    if (ext === '.otf') return 'font/otf';
-    if (ext === '.woff') return 'font/woff';
-    if (ext === '.woff2') return 'font/woff2';
-    return 'application/octet-stream';
-}
-
-function loadWatermarkFontDataUri() {
-    if (cachedFontDataUri !== undefined) return cachedFontDataUri;
+function loadWatermarkFontBuffer() {
+    if (cachedFontBuffer !== undefined) return cachedFontBuffer;
     const absFontPath = path.resolve(process.cwd(), WATERMARK_FONT_PATH);
 
     try {
         if (!fs.existsSync(absFontPath)) {
-            cachedFontDataUri = null;
-            return cachedFontDataUri;
+            cachedFontBuffer = null;
+            return cachedFontBuffer;
         }
-        const base64 = fs.readFileSync(absFontPath).toString('base64');
-        cachedFontDataUri = `data:${getFontMimeByExt(absFontPath)};base64,${base64}`;
-        return cachedFontDataUri;
+        cachedFontBuffer = fs.readFileSync(absFontPath);
+        return cachedFontBuffer;
     } catch {
-        cachedFontDataUri = null;
-        return cachedFontDataUri;
+        cachedFontBuffer = null;
+        return cachedFontBuffer;
+    }
+}
+
+function loadParsedFont() {
+    if (cachedParsedFont !== undefined) return cachedParsedFont;
+    const fontBuffer = loadWatermarkFontBuffer();
+    if (!fontBuffer) {
+        cachedParsedFont = null;
+        return cachedParsedFont;
+    }
+
+    try {
+        const arrayBuffer = fontBuffer.buffer.slice(
+            fontBuffer.byteOffset,
+            fontBuffer.byteOffset + fontBuffer.byteLength,
+        );
+        cachedParsedFont = opentype.parse(arrayBuffer);
+        return cachedParsedFont;
+    } catch {
+        cachedParsedFont = null;
+        return cachedParsedFont;
     }
 }
 
@@ -88,47 +102,42 @@ function fileHash(buf) {
     return crypto.createHash('md5').update(buf).digest('hex');
 }
 
-function generateWatermarkSvgWithFont(width, height, text, fontDataUri) {
-        const safeText = escapeXml(text);
-        const fontSize = Math.max(18, Math.floor(Math.min(width, height) / 22));
-        const opacity = 0.1;
-        const rotate = -30;
+function generateWatermarkSvgWithFont(width, height, text, font) {
+    const fontSize = Math.max(18, Math.floor(Math.min(width, height) / 22));
+    const opacity = 0.1;
+    const rotate = -30;
 
-        const tileW = Math.round(fontSize * Math.max(18, safeText.length * 0.9));
-        const tileH = Math.round(fontSize * 4.8);
-        const x = Math.round(tileW * 0.1);
-        const y = Math.round(tileH * 0.55);
+    const glyphPath = font.getPath(text, 0, fontSize, fontSize, { kerning: true });
+    const pathD = glyphPath.toPathData(2);
 
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-    <defs>
-        <style>
-            @font-face {
-                font-family: 'WatermarkFont';
-                src: url('${fontDataUri}') format('truetype');
-                font-display: block;
-            }
-            .wm-text {
-                font-family: 'WatermarkFont', sans-serif;
-                font-size: ${fontSize}px;
-                fill: rgba(255,255,255,${opacity});
-                letter-spacing: 0.04em;
-            }
-        </style>
-        <pattern id="wm" width="${tileW}" height="${tileH}" patternUnits="userSpaceOnUse"
-                         patternTransform="rotate(${rotate})">
-            <text class="wm-text" x="${x}" y="${y}">${safeText}</text>
-        </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#wm)"/>
+    const metrics = glyphPath.getBoundingBox();
+    const textWidth = Math.max(1, metrics.x2 - metrics.x1);
+    const textHeight = Math.max(1, metrics.y2 - metrics.y1);
+
+    const tileW = Math.round(textWidth + fontSize * 10);
+    const tileH = Math.round(textHeight + fontSize * 3.2);
+    const offsetX = Math.round((tileW - textWidth) / 2 - metrics.x1);
+    const offsetY = Math.round((tileH - textHeight) / 2 - metrics.y1);
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+  <defs>
+    <pattern id="wm" width="${tileW}" height="${tileH}" patternUnits="userSpaceOnUse"
+             patternTransform="rotate(${rotate})">
+      <g transform="translate(${offsetX},${offsetY})">
+        <path d="${escapeXml(pathD)}" fill="rgba(255,255,255,${opacity})" />
+      </g>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#wm)"/>
 </svg>`;
 }
 
 function generateWatermarkSvg(width, height, text) {
-    const fontDataUri = loadWatermarkFontDataUri();
-    if (!fontDataUri) {
+    const font = loadParsedFont();
+    if (!font) {
         throw new Error(`未找到水印字体文件：${WATERMARK_FONT_PATH}`);
     }
-    return generateWatermarkSvgWithFont(width, height, text, fontDataUri);
+    return generateWatermarkSvgWithFont(width, height, text, font);
 }
 
 // ─── 并发控制器 ───────────────────────────────────────
@@ -146,17 +155,47 @@ async function parallelLimit(tasks, limit) {
 }
 
 // ─── 单张图片处理 ─────────────────────────────────────
-async function processOne(file, siteUrl, cache) {
-    const relPath = path.relative(process.cwd(), file).replace(/\\/g, '/');
+function ensureDirForFile(filePath) {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
 
-    const inputBuffer = fs.readFileSync(file);
+function sourceToTargetPath(sourceFile) {
+    const sourceAbs = path.resolve(process.cwd(), SOURCE_DIR);
+    const targetAbs = path.resolve(process.cwd(), TARGET_DIR);
+    const relative = path.relative(sourceAbs, sourceFile);
+    return path.join(targetAbs, relative);
+}
+
+function normalizeFileArgToSourcePath(fileArg) {
+    const resolved = path.resolve(process.cwd(), fileArg);
+    const sourceAbs = path.resolve(process.cwd(), SOURCE_DIR);
+    const targetAbs = path.resolve(process.cwd(), TARGET_DIR);
+
+    if (resolved.startsWith(sourceAbs)) return resolved;
+
+    if (resolved.startsWith(targetAbs)) {
+        const relative = path.relative(targetAbs, resolved);
+        return path.join(sourceAbs, relative);
+    }
+
+    return resolved;
+}
+
+async function processOne(sourceFile, siteUrl, cache) {
+    const sourceRelPath = path.relative(process.cwd(), sourceFile).replace(/\\/g, '/');
+    const targetFile = sourceToTargetPath(sourceFile);
+    const targetRelPath = path.relative(process.cwd(), targetFile).replace(/\\/g, '/');
+    const cacheKey = `${sourceRelPath}=>${targetRelPath}`;
+
+    const inputBuffer = fs.readFileSync(sourceFile);
     const hash = fileHash(inputBuffer);
 
     // 缓存命中 → 跳过
-    if (!FORCE && cache[relPath] === hash) return null;
+    if (!FORCE && cache[cacheKey] === hash) return null;
 
     if (DRY) {
-        console.log(`  [dry-run] ${relPath}`);
+        console.log(`  [dry-run] ${sourceRelPath} -> ${targetRelPath}`);
         return null;
     }
 
@@ -164,7 +203,7 @@ async function processOne(file, siteUrl, cache) {
     const metadata = await image.metadata();
 
     if (!metadata.width || !metadata.height) {
-        console.warn(`  ⚠ Skip (no dimensions): ${relPath}`);
+        console.warn(`  ⚠ Skip (no dimensions): ${sourceRelPath}`);
         return null;
     }
 
@@ -174,18 +213,19 @@ async function processOne(file, siteUrl, cache) {
         .composite([{ input: svgBuf, blend: 'over' }])
         .toBuffer();
 
-    fs.writeFileSync(file, outputBuffer);
+    ensureDirForFile(targetFile);
+    fs.writeFileSync(targetFile, outputBuffer);
 
     // 更新缓存为处理后的 hash
-    cache[relPath] = fileHash(outputBuffer);
-    return relPath;
+    cache[cacheKey] = hash;
+    return targetRelPath;
 }
 
 // ─── 主流程 ───────────────────────────────────────────
 async function main() {
     const siteUrl = getSiteUrl();
     const t0 = performance.now();
-    const fontReady = Boolean(loadWatermarkFontDataUri());
+    const fontReady = Boolean(loadParsedFont());
     if (!fontReady) {
         throw new Error(`缺少水印字体，请确认文件存在：${WATERMARK_FONT_PATH}`);
     }
@@ -193,16 +233,17 @@ async function main() {
     console.log(`\n🖼  Watermark Script`);
     console.log(`   Text : ${siteUrl}`);
     console.log(`   Font : ${WATERMARK_FONT_PATH}`);
-    console.log(`   Dir  : ${TARGET_DIR}/`);
+    console.log(`   From : ${SOURCE_DIR}/`);
+    console.log(`   To   : ${TARGET_DIR}/`);
     if (SINGLE_FILE_ARG) console.log(`   File : ${SINGLE_FILE_ARG}`);
     if (FORCE) console.log('   Mode : --force (ignore cache)');
     if (DRY)   console.log('   Mode : --dry-run');
 
     let files = [];
     if (SINGLE_FILE_ARG) {
-        const resolvedFile = path.resolve(process.cwd(), SINGLE_FILE_ARG);
+        const resolvedFile = normalizeFileArgToSourcePath(SINGLE_FILE_ARG);
         if (!fs.existsSync(resolvedFile)) {
-            throw new Error(`指定文件不存在: ${SINGLE_FILE_ARG}`);
+            throw new Error(`指定文件不存在（原图目录）: ${SINGLE_FILE_ARG}`);
         }
 
         const ext = path.extname(resolvedFile).toLowerCase();
@@ -211,7 +252,7 @@ async function main() {
         }
         files = [resolvedFile];
     } else {
-        files = await glob(`${TARGET_DIR}/**/*.${SUPPORTED}`);
+        files = await glob(`${SOURCE_DIR}/**/*.${SUPPORTED}`);
     }
 
     console.log(`   Found: ${files.length} images\n`);

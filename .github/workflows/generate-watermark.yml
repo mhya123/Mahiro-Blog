@@ -1,0 +1,62 @@
+name: Generate Watermarked Images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'public/images-original/**'
+      - 'src/content/blog/**'
+      - 'scripts/add-watermark.mjs'
+      - 'public/watermarkfont/**'
+      - 'mahiro.config.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  watermark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate watermarked images
+        run: pnpm run watermark
+
+      - name: Commit and push generated images
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add public/images
+
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(watermark): auto-generate watermarked images"
+            git pull --rebase origin main
+            git push
+          else
+            echo "No watermarked image changes detected, skipping commit."
+          fi

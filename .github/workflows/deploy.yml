@@ -71,7 +71,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/json/build-info.json src/json/git-history.json src/content/blog public/images/covers
+          git add src/json/build-info.json src/json/git-history.json src/content/blog public/images public/images-original
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore(ci): update generated content [skip ci]" && git pull --rebase --autostash -X theirs origin ${{ github.ref_name }} && git push origin HEAD:${{ github.ref_name }})
         
       - name: Upload artifact
