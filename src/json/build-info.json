@@ -1,10 +1,10 @@
 {
-  "commitSha": "5dfcd91502869eba9d8cf5629b3a31e1a8561cd5",
-  "commitShort": "5dfcd91",
-  "commitMessage": "功能调整",
+  "commitSha": "78735f1f13ca96331f837bfa99c122ee89e5871e",
+  "commitShort": "78735f1",
+  "commitMessage": "feat(constants): add draft storage key and meaningful draft check function",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-07T12:20:05+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/5dfcd91502869eba9d8cf5629b3a31e1a8561cd5",
-  "buildTime": "2026/4/7 12:20:30",
-  "totalCommits": 299
+  "commitDate": "2026-04-07T15:19:12+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/78735f1f13ca96331f837bfa99c122ee89e5871e",
+  "buildTime": "2026/4/7 15:19:47",
+  "totalCommits": 301
 }
