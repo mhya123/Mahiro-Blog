@@ -12,6 +12,8 @@ const BLOG_DIR = 'src/content/blog';
 const COVER_DIR = 'public/images/covers';
 const IMAGE_EXT_RE = /\.(png|jpe?g|webp|avif|gif)$/i;
 const CONFIG_PATH = path.resolve('mahiro.config.yaml');
+const FETCH_TIMEOUT_MS = 15000;
+const FETCH_RETRIES = 2;
 
 function parseArgs(argv) {
   const args = {
@@ -73,6 +75,10 @@ function uniqueUrls(urls) {
   return [...new Set(urls.filter(url => typeof url === 'string' && /^https?:\/\//i.test(url)))];
 }
 
+function expandMirrorSources(urls) {
+  return uniqueUrls(urls);
+}
+
 async function loadCoverSourcesFromConfig() {
   try {
     const text = await fs.readFile(CONFIG_PATH, 'utf8');
@@ -102,30 +108,49 @@ async function ensureDir(dir) {
 }
 
 async function downloadRandomCover(url, outputPath, quality, effort) {
-  const requestUrl = `${url}${url.includes('?') ? '&' : '?'}_seed=${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const res = await fetch(requestUrl, {
-    redirect: 'follow',
-    headers: {
-      'User-Agent': 'Mahiro-Blog-Cover-Cacher/1.0',
-      Accept: 'image/*,*/*;q=0.8',
-    },
-  });
+  let lastError = null;
+  for (let i = 0; i <= FETCH_RETRIES; i++) {
+    const requestUrl = `${url}${url.includes('?') ? '&' : '?'}_seed=${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    try {
+      const res = await fetch(requestUrl, {
+        redirect: 'follow',
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mahiro-Blog-Cover-Cacher/1.0',
+          Accept: 'image/*,*/*;q=0.8',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      }
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('image')) {
+        throw new Error(`Unexpected content-type: ${contentType || 'unknown'}`);
+      }
+
+      const arr = await res.arrayBuffer();
+      const buffer = Buffer.from(arr);
+
+      await sharp(buffer)
+        .webp({ quality, effort })
+        .toFile(outputPath);
+      clearTimeout(timeoutId);
+      return;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      lastError = error;
+      if (i < FETCH_RETRIES) {
+        await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
+      }
+    }
   }
 
-  const contentType = res.headers.get('content-type') || '';
-  if (!contentType.includes('image')) {
-    throw new Error(`Unexpected content-type: ${contentType || 'unknown'}`);
-  }
-
-  const arr = await res.arrayBuffer();
-  const buffer = Buffer.from(arr);
-
-  await sharp(buffer)
-    .webp({ quality, effort })
-    .toFile(outputPath);
+  throw lastError || new Error('fetch failed');
 }
 
 async function downloadRandomCoverWithFallback(sources, outputPath, quality, effort) {
@@ -180,7 +205,7 @@ async function isFrontmatterLocalImageMissing(image) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const configSources = await loadCoverSourcesFromConfig();
-  const sourceUrls = uniqueUrls(args.sourceUrl ? [args.sourceUrl, ...configSources] : configSources);
+  const sourceUrls = expandMirrorSources(args.sourceUrl ? [args.sourceUrl, ...configSources] : configSources);
 
   console.log('[Random Cover] Start caching random covers for blog posts...');
   console.log(`[Random Cover] sources=${sourceUrls.join(' -> ')}, quality=${args.quality}, effort=${args.effort}, dryRun=${args.dryRun}, force=${args.force}${args.limit ? `, limit=${args.limit}` : ''}`);
