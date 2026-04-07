@@ -1,15 +1,6 @@
-name: Generate Watermarked Images
+name: Generate Watermarked Images (disabled)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'public/images-original/**'
-      - 'src/content/blog/**'
-      - 'scripts/add-watermark.mjs'
-      - 'public/watermarkfont/**'
-      - 'mahiro.config.yaml'
   workflow_dispatch:
 
 concurrency:
@@ -21,6 +12,7 @@ permissions:
 
 jobs:
   watermark:
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     steps:
@@ -43,8 +35,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate watermarked images
-        run: pnpm run watermark
+      - name: Generate watermarked images (disabled)
+        run: echo "Watermark generation is disabled by repository configuration."
 
       - name: Commit and push generated images
         run: |

@@ -51,6 +51,7 @@ const displayDate = blog.data.pubDate
   ? dayjs(blog.data.pubDate).format(DATE_FORMAT)
   : "";
 const url = new URL(`/blog/${blog.slug}`, Astro.url.origin);
+const downloadImageUrl = typeof blog.data.image === "string" ? blog.data.image : null;
 
 const isEncrypted = blog.data.encrypted === true && !!POST_PASSWORD;
 
@@ -75,6 +76,21 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
   >
     <div class="flex justify-end gap-2 mb-2">
       <CommitHistory client:only="react" commits={commits} owner={owner} repo={repo} maxVisible={COMMIT_HISTORY_SIZE} />
+      {
+        downloadImageUrl && (
+          <a
+            href={downloadImageUrl}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-ghost btn-sm font-normal border border-primary/30 text-primary hover:text-primary-content hover:bg-primary hover:border-primary"
+            aria-label="Download Original Image"
+          >
+            <Icon name="lucide:download" class="w-4 h-4" />
+            <span class="hidden sm:inline">下载原图</span>
+          </a>
+        )
+      }
       <a href={`/write?slug=${blog.slug}`} class="btn btn-ghost btn-sm font-normal border border-base-content/20 text-base-content/70 hover:text-base-content hover:border-base-content/40 hover:bg-base-content/10" aria-label="Edit Article">
         <Icon name="lucide:edit" class="w-4 h-4" />
         <span class="hidden sm:inline">Edit</span>
@@ -179,49 +195,11 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
   <script>
     import { Fancybox } from "@fancyapps/ui";
 
-    document.addEventListener("astro:page-load", () => {
-      const getOriginalImagePath = (rawSrc: string): string | null => {
-        try {
-          const url = new URL(rawSrc, window.location.origin);
-          if (!url.pathname.startsWith("/images/")) return null;
-          return url.pathname.replace(/^\/images\//, "/images-original/");
-        } catch {
-          return null;
-        }
-      };
-
-      const ensureDownloadOriginalButton = (img: HTMLImageElement) => {
-        if (img.dataset.originalDownloadBound === "true") return;
-        const originalPath = getOriginalImagePath(img.src);
-        if (!originalPath) return;
-
-        const host = img.closest("figure, p, div, li, blockquote") || img.parentElement;
-        if (!host || host.querySelector(".download-original-image-btn")) {
-          img.dataset.originalDownloadBound = "true";
-          return;
-        }
-
-        const action = document.createElement("div");
-        action.className = "download-original-image-row";
-
-        const link = document.createElement("a");
-        link.href = originalPath;
-        link.download = originalPath.split("/").pop() || "image";
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.className = "download-original-image-btn";
-        link.textContent = "下载无水印图片";
-
-        action.appendChild(link);
-        host.appendChild(action);
-        img.dataset.originalDownloadBound = "true";
-      };
-
-      const images = document.querySelectorAll("#content img");
+    const initArticleImageActions = () => {
+      const images = document.querySelectorAll("#content img, .prose img");
       
       images.forEach((img) => {
         const imageEl = img as HTMLImageElement;
-        ensureDownloadOriginalButton(imageEl);
 
         // 如果图片已经在链接中，则跳过
         if (img.closest("a")) return;
@@ -255,36 +233,13 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
           },
         },
       } as any);
-    });
+    };
+
+    document.addEventListener("astro:page-load", initArticleImageActions);
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initArticleImageActions);
+    } else {
+      initArticleImageActions();
+    }
   </script>
-
-  <style>
-    #content .download-original-image-row {
-      margin-top: 0.5rem;
-      text-align: center;
-    }
-
-    #content .download-original-image-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.35rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      line-height: 1;
-      padding: 0.45rem 0.7rem;
-      border-radius: 999px;
-      color: oklch(var(--p));
-      background: oklch(var(--p) / 0.1);
-      border: 1px solid oklch(var(--p) / 0.2);
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-
-    #content .download-original-image-btn:hover {
-      transform: translateY(-1px);
-      background: oklch(var(--p) / 0.16);
-      border-color: oklch(var(--p) / 0.35);
-    }
-  </style>
 </BaseLayout>

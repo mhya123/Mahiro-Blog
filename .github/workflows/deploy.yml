@@ -56,9 +56,6 @@ jobs:
       - name: Cache random covers for posts
         run: pnpm run cover:cache
 
-      - name: Generate watermarked images
-        run: pnpm run watermark
-
       - name: Build site
         run: pnpm run build
         env:
@@ -74,21 +71,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          paths=(
-            "src/json/build-info.json"
-            "src/json/git-history.json"
-            "src/content/blog"
-            "public/images"
-            "public/images-original"
-          )
-
-          for p in "${paths[@]}"; do
-            if [ -e "$p" ]; then
-              git add "$p"
-            fi
-          done
-
+          git add src/json/build-info.json src/json/git-history.json src/content/blog public/images/covers
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore(ci): update generated content [skip ci]" && git pull --rebase --autostash -X theirs origin ${{ github.ref_name }} && git push origin HEAD:${{ github.ref_name }})
         
       - name: Upload artifact
