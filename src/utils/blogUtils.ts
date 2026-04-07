@@ -1,5 +1,6 @@
 import type { CollectionEntry } from "astro:content";
 import { getCollection } from "astro:content";
+import { BLOG_PAGINATION_ELLIPSIS_THRESHOLD } from "@config";
 
 /**
  * 获取所有博客文章并根据环境过滤草稿
@@ -120,22 +121,87 @@ export function generatePageLinks(totalPages: number): {
   active: string[];
   hidden: string[];
 } {
+  return generatePageLinksByCurrent(totalPages, 1);
+}
+
+/**
+ * 根据当前页生成分页链接（首尾 + 当前页邻近页 + 省略号）
+ * @param totalPages 总页数
+ * @param currentPage 当前页码（1-based）
+ * @returns 包含活动链接和隐藏链接的对象
+ */
+export function generatePageLinksByCurrent(
+  totalPages: number,
+  currentPage: number,
+): {
+  active: string[];
+  hidden: string[];
+} {
   const pages = {
     active: [] as string[],
     hidden: [] as string[],
   };
 
-  if (totalPages > 3) {
-    pages.active.push("1");
-    pages.active.push("...");
-    pages.active.push(totalPages.toString());
-    for (let i = 2; i <= totalPages - 1; i++) {
-      pages.hidden.push(i.toString());
-    }
+  if (totalPages <= 0) {
+    return pages;
   }
-  else {
+
+  const current = Math.min(Math.max(currentPage || 1, 1), totalPages);
+
+  // 页数小于阈值时，全部展示；达到阈值后开始使用省略模式
+  if (totalPages < BLOG_PAGINATION_ELLIPSIS_THRESHOLD) {
     for (let i = 1; i <= totalPages; i++) {
       pages.active.push(i.toString());
+    }
+    return pages;
+  }
+
+  // 中间窗口：按阈值动态决定展示宽度（阈值越小，越容易出现省略号）
+  const minInner = 2;
+  const maxInner = totalPages - 1;
+  const innerSlots = Math.max(1, BLOG_PAGINATION_ELLIPSIS_THRESHOLD - 2);
+
+  let windowStart = current - Math.floor(innerSlots / 2);
+  let windowEnd = windowStart + innerSlots - 1;
+
+  if (windowStart < minInner) {
+    windowStart = minInner;
+    windowEnd = Math.min(maxInner, windowStart + innerSlots - 1);
+  }
+
+  if (windowEnd > maxInner) {
+    windowEnd = maxInner;
+    windowStart = Math.max(minInner, windowEnd - innerSlots + 1);
+  }
+
+  // 首项
+  pages.active.push("1");
+
+  // 左侧间隙：只要存在间隙就显示省略号（超过阈值时强制体现压缩）
+  if (windowStart > 2) {
+    pages.active.push("...");
+  }
+
+  for (let i = windowStart; i <= windowEnd; i++) {
+    pages.active.push(i.toString());
+  }
+
+  // 右侧间隙：只要存在间隙就显示省略号（超过阈值时强制体现压缩）
+  if (windowEnd < totalPages - 1) {
+    pages.active.push("...");
+  }
+
+  // 末项
+  pages.active.push(totalPages.toString());
+
+  // 生成 hidden（用于下拉跳转）
+  const visibleNumbers = new Set<number>(
+    pages.active.filter((item) => item !== "...").map((item) => Number(item)),
+  );
+
+  for (let i = 2; i <= totalPages - 1; i++) {
+    if (!visibleNumbers.has(i)) {
+      pages.hidden.push(i.toString());
     }
   }
 

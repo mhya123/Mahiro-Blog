@@ -42,6 +42,7 @@ export const ANNOUNCEMENT_CONFIG = config.site.announcement || { enable: false, 
 // 博客配置
 export const BLOG_CONFIG = config.site.blog;
 export const BLOG_PAGE_SIZE = config.site.blog.pageSize;
+export const BLOG_PAGINATION_ELLIPSIS_THRESHOLD = Math.max(3, Number(config.site.blog.ellipsisThreshold ?? 9) || 9);
 export const COMMIT_HISTORY_SIZE = config.site.blog.commitHistorySize ?? 8;
 
 

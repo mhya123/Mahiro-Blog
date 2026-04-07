@@ -2,6 +2,12 @@
 import type { PaginationDropdownProps } from "@interfaces/data";
 
 const { hiddenPages, current, baseUrl } = Astro.props as PaginationDropdownProps;
+const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+
+const getHref = (page: string | number) => {
+  if (page === 1) return normalizedBaseUrl || "/";
+  return normalizedBaseUrl ? `${normalizedBaseUrl}/${page}` : `/${page}`;
+};
 ---
 
 <div class="dropdown dropdown-top join-item">
@@ -11,7 +17,7 @@ const { hiddenPages, current, baseUrl } = Astro.props as PaginationDropdownProps
       hiddenPages.map((page) => (
         <li class="w-full">
           <a
-            href={page === 1 ? baseUrl : `${baseUrl}/${page}`}
+            href={getHref(page)}
             class:list={["text-center py-1 px-3", page === current && "bg-primary text-primary-content"]}
           >
             {page}

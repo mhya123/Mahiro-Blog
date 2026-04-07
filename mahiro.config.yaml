@@ -11,7 +11,8 @@ site:
     code: github-dark
   date_format: ddd MMM DD YYYY
   blog:
-    pageSize: 8 # 首页每页显示文章数量
+    pageSize: 10 # 首页每页显示文章数量
+    ellipsisThreshold: 7 # 当总页数超过该值时，分页使用省略号（...）模式
     commitHistorySize: 6 # 修订历史最大可见条数，超出后滚动查看
   banner:
     defaultMode: background
@@ -57,7 +58,7 @@ site:
       subtitle: 一个热爱生活与技术的普通人！
     navigation:
       title: 网站导航
-      subtitle: 收藏的常用网站和工具链接
+      subtitle: 收藏的3常用网站和工具链接
     project:
       title: Projects
       subtitle: 收录优质开源项目，欢迎提交你的作品！

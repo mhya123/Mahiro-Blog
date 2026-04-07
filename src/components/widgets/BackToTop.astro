@@ -4,7 +4,7 @@ import { Icon } from "astro-icon/components";
 
 <button
   id="back-to-top"
-  class="group fixed right-6 bottom-[5.5rem] z-[90] grid h-12 w-12 place-items-center rounded-full border border-primary-content/10 bg-primary/85 text-primary-content shadow-[0_18px_40px_-20px_oklch(var(--p)/0.9)] opacity-0 pointer-events-none backdrop-blur-xl will-change-[transform,opacity] transition-[box-shadow,background-color,border-color,transform] duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:bg-primary hover:shadow-[0_24px_48px_-20px_oklch(var(--p)/1)] active:scale-95"
+  class="group fixed right-6 bottom-[5.5rem] z-[90] grid h-12 w-12 place-items-center rounded-full border border-primary-content/10 bg-primary/85 text-primary-content shadow-[0_18px_40px_-20px_oklch(var(--p)/0.9)] opacity-0 pointer-events-none backdrop-blur-xl will-change-[transform,opacity] transition-[box-shadow,background-color,border-color,transform,opacity] duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:bg-primary hover:shadow-[0_24px_48px_-20px_oklch(var(--p)/1)] active:scale-95"
   aria-label="返回顶部"
 >
   <span
@@ -26,7 +26,6 @@ import { Icon } from "astro-icon/components";
   let scrollHandler: (() => void) | null = null;
   let clickHandler: (() => void) | null = null;
   let rafId: number | null = null;
-  let scrollTweenState: { y: number } | null = null;
 
   document.addEventListener("astro:page-load", () => {
     const btn = document.getElementById("back-to-top");
@@ -34,77 +33,88 @@ import { Icon } from "astro-icon/components";
     const icon = document.getElementById("back-to-top-icon");
     if (!btn || !glow || !icon) return;
 
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const SHOW_THRESHOLD = 360;
     let isVisible = false;
 
     const stopAnimations = () => {
       remove(btn);
       remove(glow);
       remove(icon);
-      if (scrollTweenState) {
-        remove(scrollTweenState);
-      }
     };
 
     const playShowAnimation = () => {
+      if (prefersReducedMotion) {
+        btn.style.opacity = "1";
+        btn.style.transform = "translateY(0) scale(1)";
+        return;
+      }
+
       animate(btn, {
         opacity: [0, 1],
-        translateY: [22, 0],
-        scale: [0.82, 1],
-        rotate: [-10, 0],
-        duration: 520,
-        ease: "outBack(1.4)",
+        translateY: [16, 0],
+        scale: [0.9, 1],
+        duration: 380,
+        ease: "outExpo",
       });
 
       animate(icon, {
-        translateY: [8, 0],
-        scale: [0.75, 1],
-        duration: 480,
-        ease: "outBack(1.6)",
-      });
-
-      animate(glow, {
-        opacity: [0, 0.45, 0],
-        scale: [0.7, 1.65],
-        duration: 700,
-        ease: "outCubic",
-      });
-    };
-
-    const playHideAnimation = () => {
-      animate(btn, {
-        opacity: 0,
-        translateY: 18,
-        scale: 0.9,
-        rotate: 0,
-        duration: 180,
-        ease: "inQuad",
-      });
-
-      animate(icon, {
-        translateY: 0,
-        scale: 0.92,
-        duration: 180,
-        ease: "inQuad",
-      });
-    };
-
-    const playClickAnimation = () => {
-      animate(btn, {
-        scale: [1, 0.9, 1.02],
-        duration: 260,
-        ease: "outBack(1.5)",
-      });
-
-      animate(icon, {
-        translateY: [0, -6, 0],
+        translateY: [6, 0],
+        scale: [0.92, 1],
         duration: 320,
         ease: "outQuad",
       });
 
       animate(glow, {
-        opacity: [0, 0.5, 0],
-        scale: [0.8, 1.9],
+        opacity: [0, 0.35, 0],
+        scale: [0.8, 1.45],
         duration: 520,
+        ease: "outCubic",
+      });
+    };
+
+    const playHideAnimation = () => {
+      if (prefersReducedMotion) {
+        btn.style.opacity = "0";
+        btn.style.transform = "translateY(8px) scale(0.96)";
+        return;
+      }
+
+      animate(btn, {
+        opacity: 0,
+        translateY: 8,
+        scale: 0.96,
+        duration: 160,
+        ease: "inSine",
+      });
+
+      animate(icon, {
+        translateY: 0,
+        scale: 0.96,
+        duration: 140,
+        ease: "inSine",
+      });
+    };
+
+    const playClickAnimation = () => {
+      if (prefersReducedMotion) return;
+
+      animate(btn, {
+        scale: [1, 0.94, 1],
+        duration: 220,
+        ease: "outQuad",
+      });
+
+      animate(icon, {
+        translateY: [0, -4, 0],
+        duration: 240,
+        ease: "outQuad",
+      });
+
+      animate(glow, {
+        opacity: [0, 0.35, 0],
+        scale: [0.9, 1.6],
+        duration: 420,
         ease: "outCubic",
       });
     };
@@ -126,7 +136,7 @@ import { Icon } from "astro-icon/components";
 
     const updateVisibility = () => {
       const currentScroll = window.scrollY || document.documentElement.scrollTop;
-      setVisible(currentScroll > 420);
+      setVisible(currentScroll > SHOW_THRESHOLD);
     };
 
     scrollHandler = () => {
@@ -138,24 +148,10 @@ import { Icon } from "astro-icon/components";
     };
 
     clickHandler = () => {
-      const currentY = window.scrollY || document.documentElement.scrollTop;
-      if (currentY <= 0) return;
-
-      stopAnimations();
       playClickAnimation();
-      scrollTweenState = { y: currentY };
-
-      animate(scrollTweenState, {
-        y: 0,
-        duration: Math.min(950, Math.max(480, currentY * 0.42)),
-        ease: "inOutQuart",
-        onUpdate: () => {
-          if (!scrollTweenState) return;
-          window.scrollTo(0, scrollTweenState.y);
-        },
-        onComplete: () => {
-          scrollTweenState = null;
-        },
+      window.scrollTo({
+        top: 0,
+        behavior: prefersReducedMotion ? "auto" : "smooth",
       });
     };
 
@@ -196,9 +192,5 @@ import { Icon } from "astro-icon/components";
       remove(icon);
     }
 
-    if (scrollTweenState) {
-      remove(scrollTweenState);
-      scrollTweenState = null;
-    }
   });
 </script>

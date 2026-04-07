@@ -6,7 +6,7 @@ import Pagination from "@components/widgets/Pagination.astro";
 import CardGroup from "@components/temple/CardGroup.astro";
 import { Icon } from "astro-icon/components";
 import { t } from "@config";
-import { generatePageLinks } from "@utils/blogUtils";
+import { generatePageLinksByCurrent } from "@utils/blogUtils";
 import { getMainBlogPaginationPaths } from "@utils/paginationUtils";
 
 export async function getStaticPaths({ paginate }: { paginate: any }) {
@@ -15,7 +15,7 @@ export async function getStaticPaths({ paginate }: { paginate: any }) {
 
 const { page }: { page: Page } = Astro.props;
 const totalPages = Math.ceil(page.total / page.size);
-const pageLinks = generatePageLinks(totalPages);
+const pageLinks = generatePageLinksByCurrent(totalPages, page.current);
 ---
 
 <BaseLayout title="Blog" isIndexed={false}>
