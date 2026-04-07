@@ -6,6 +6,26 @@ import { toast } from 'sonner'
 
 export const GH_API = 'https://api.github.com'
 
+function base64FromBytes(bytes: Uint8Array): string {
+	let binary = ''
+	const chunkSize = 0x8000
+	for (let i = 0; i < bytes.length; i += chunkSize) {
+		const chunk = bytes.subarray(i, i + chunkSize)
+		binary += String.fromCharCode(...chunk)
+	}
+	return btoa(binary)
+}
+
+function bytesFromBase64(base64: string): Uint8Array {
+	const normalized = base64.replace(/\s/g, '')
+	const binary = atob(normalized)
+	const bytes = new Uint8Array(binary.length)
+	for (let i = 0; i < binary.length; i++) {
+		bytes[i] = binary.charCodeAt(i)
+	}
+	return bytes
+}
+
 function handle401Error(): void {
 	if (typeof sessionStorage === 'undefined') return
 	try {
@@ -20,7 +40,7 @@ function handle422Error(): void {
 }
 
 export function toBase64Utf8(input: string): string {
-	return btoa(unescape(encodeURIComponent(input)))
+	return base64FromBytes(new TextEncoder().encode(input))
 }
 
 export function signAppJwt(appId: string, privateKeyPem: string): string {
@@ -205,7 +225,7 @@ export async function readTextFileFromRepo(token: string | null | undefined, own
 	const data: any = await res.json()
 	if (Array.isArray(data) || !data.content) return null
 	try {
-		return decodeURIComponent(escape(atob(data.content)))
+		return new TextDecoder().decode(bytesFromBase64(data.content))
 	} catch {
 		return atob(data.content)
 	}

@@ -246,7 +246,7 @@ const themes = [
         
         // Sync with other toggles if any
         const allToggles = document.querySelectorAll("[data-theme-toggle]");
-        allToggles.forEach((toggle) => {
+      allToggles.forEach(() => {
            // Assuming other toggles have similar structure or logic, 
            // but since we are in mobile settings, we might be the only one active or visible.
            // If needed, dispatch a custom event or manually update them.

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Bell, X, Trash2, HelpCircle, ExternalLink, Rss } from 'lucide-react';
+import { Bell, X, Trash2, HelpCircle, Rss } from 'lucide-react';
 import gsap from 'gsap';
 import {
     fetchAndCompare,
@@ -15,7 +15,7 @@ export default function UpdateNotifier() {
     const [isOpen, setIsOpen] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
-    const [isChecking, setIsChecking] = useState(false);
+    const [, setIsChecking] = useState(false);
     const [lastCheck, setLastCheck] = useState<string | null>(null);
 
     const overlayRef = useRef<HTMLDivElement>(null);

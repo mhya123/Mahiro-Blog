@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { useWriteStore } from '../../stores/write-store'
 

@@ -1,5 +1,5 @@
 import { GITHUB_CONFIG } from '@/consts'
-import { listRepoFilesRecursive, listRepoDir, type TreeItem } from '@/lib/github-client'
+import { listRepoFilesRecursive, type TreeItem } from '@/lib/github-client'
 
 /**
  * 根据 slug 列表，收集需要删除的 Git Tree 条目

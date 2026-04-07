@@ -119,7 +119,7 @@ export type PushBlogParams = {
 }
 
 export async function pushBlog(params: PushBlogParams): Promise<void> {
-    const { form, cover, images, mode = 'create', originalSlug, originalFileFormat } = params
+    const { form, cover, images, mode = 'create', originalFileFormat } = params
 
     if (!form?.slug) throw new Error('需要 slug')
     if (!/^[a-z0-9][a-z0-9\-_]*$/.test(form.slug)) throw new Error('slug 格式不合法')

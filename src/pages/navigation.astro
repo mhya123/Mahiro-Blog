@@ -306,13 +306,6 @@ const issueUrl = `https://github.com/mhya123/Mahiro-Blog/issues/new?title=${enco
     }
 
     // ─── 匹配判断 ──────────────────────────────────────
-    function matchesItem(d: ItemData, search: string, category: string): boolean {
-      const matchCat = category === 'all' || d.parentCategory === category;
-      if (!matchCat) return false;
-      if (!search) return true;
-      return d.name.includes(search) || d.desc.includes(search) || d.url.includes(search);
-    }
-
     // ─── 更新 UI 辅助 ──────────────────────────────────
     function updateSearchStatus(visibleCount: number, keyword: string) {
       if (!searchStatus) return;

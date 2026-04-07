@@ -76,8 +76,6 @@ const initialSong = playlists[0]?.songs[0] || {};
 
     // ─── 统一缓存管理器 ───────────────────────────────
     const STORAGE_KEY = 'mahiro_player_state';
-    const SAVE_THROTTLE = 2000; // 节流 2s（避免 timeupdate 高频写入）
-
     const PlayerCache = {
         _timer: null,
         /** 读取缓存，返回默认结构 */

@@ -83,7 +83,7 @@ const schema = isPostPage ? {
 {ogImage && <meta name="twitter:image" content={ogImage.toString()} />}
 
 <!-- 结构化数据 -->
-<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+<script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />

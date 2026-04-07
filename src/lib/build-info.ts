@@ -17,7 +17,7 @@ export interface BuildInfoData {
 /**
  * 获取构建时的项目信息（优先使用预生成 JSON）
  */
-export async function getBuildInfo(owner: string, repo: string): Promise<BuildInfoData> {
+export async function getBuildInfo(_owner: string, _repo: string): Promise<BuildInfoData> {
     if (prebuiltBuildInfo && prebuiltBuildInfo.commitSha) {
         return prebuiltBuildInfo as BuildInfoData;
     }

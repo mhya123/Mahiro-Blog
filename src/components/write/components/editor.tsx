@@ -17,22 +17,19 @@ export function WriteEditor() {
 
 	// ─── 底层文本操作 ───────────────────────────────────
 
-	/** 在光标处插入文本（优先用 execCommand 保留 undo 栈） */
+	/** 在光标处插入文本 */
 	const insertText = useCallback((text: string) => {
 		const textarea = textareaRef.current
 		if (!textarea) return
 
 		textarea.focus()
-		if (!document.execCommand('insertText', false, text)) {
-			// fallback
-			const { selectionStart, selectionEnd, value } = textarea
-			updateForm({ md: value.substring(0, selectionStart) + text + value.substring(selectionEnd) })
-			const cur = selectionStart + text.length
-			requestAnimationFrame(() => {
-				textarea.setSelectionRange(cur, cur)
-				textarea.focus()
-			})
-		}
+		const { selectionStart, selectionEnd, value } = textarea
+		updateForm({ md: value.substring(0, selectionStart) + text + value.substring(selectionEnd) })
+		const cur = selectionStart + text.length
+		requestAnimationFrame(() => {
+			textarea.setSelectionRange(cur, cur)
+			textarea.focus()
+		})
 	}, [updateForm])
 
 	/** 用 marker 包裹选区，支持 toggle 去除；无选区时插入占位并选中 */

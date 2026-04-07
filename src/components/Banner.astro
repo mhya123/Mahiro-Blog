@@ -161,7 +161,7 @@ const initialRandomImage = isRandomEnabled
   window.__USE_TYPEWRITER = useTypewriter;
 </script>
 <script>
-  import { createTimeline, splitText, stagger, animate } from "animejs";
+  import { splitText, stagger, animate } from "animejs";
 
   document.addEventListener("astro:page-load", () => {
     const texts = (window as any).__TYPEWRITER_TEXTS as string[] | undefined;

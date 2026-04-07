@@ -1,5 +1,5 @@
 import rss from "@astrojs/rss";
-import { SITE_DESCRIPTION, SITE_LANGUAGE, SITE_TAB, SITE_TITLE, USER_NAME, USER_SITE } from "@config";
+import { SITE_DESCRIPTION, SITE_LANGUAGE, SITE_TITLE, USER_NAME } from "@config";
 import { getCollection } from "astro:content";
 import { marked } from "marked";
 

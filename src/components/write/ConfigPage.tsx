@@ -4,7 +4,6 @@ import { getAuthToken } from "@/lib/auth";
 import { GITHUB_CONFIG } from "@/consts";
 import {
   readTextFileFromRepo,
-  putFile,
   toBase64Utf8,
   createBlob,
   createTree,
@@ -42,7 +41,7 @@ const COMMENT_PROVIDERS = [
 
 export function ConfigPage() {
   const [configContent, setConfigContent] = useState("");
-  const [lastFetchedContent, setLastFetchedContent] = useState<string | null>(
+  const [, setLastFetchedContent] = useState<string | null>(
     null,
   );
   const [isDirty, setIsDirty] = useState(false);
@@ -54,7 +53,7 @@ export function ConfigPage() {
   const keyInputRef = useRef<HTMLInputElement>(null);
 
   // Image upload state
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingImage] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<string>("");
   const imageInputRef = useRef<HTMLInputElement>(null);
   // 缓存待上传图片 { [targetKey]: { file, previewUrl } }
@@ -231,16 +230,14 @@ export function ConfigPage() {
             { id: toastId },
           );
           const base64 = await fileToBase64NoPrefix(file);
-          let path, filename, publicPath;
+          let path, publicPath;
 
           // 处理favicon和profile.png，直接覆盖原文件
           if (target === "site.favicon") {
             path = "public/favicon.ico";
-            filename = "favicon.ico";
             publicPath = "/favicon.ico";
           } else if (target === "user.avatar") {
             path = "public/profile.png";
-            filename = "profile.png";
             publicPath = "/profile.png";
           } else {
             // 不处理其他图片类型
@@ -398,7 +395,7 @@ export function ConfigPage() {
   const onChoosePrivateKey = async (file: File) => {
     try {
       const pem = await readFileAsText(file);
-      await setPrivateKey(pem);
+  setPrivateKey(pem);
       toast.success("密钥导入成功");
     } catch (e) {
       toast.error("密钥导入失败");

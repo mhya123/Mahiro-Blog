@@ -248,7 +248,7 @@ const getCategoryDisplayName = (category: string): string => {
     {tagEntries.length > 8 && (  
       <div class="hidden-tags" style="display: none;">  
         <div class="flex gap-1 flex-wrap mt-1">  
-          {tagEntries.slice(8).map(([tag, count]) => (  
+          {tagEntries.slice(8).map(([tag]) => (  
             <a href={`/blog/tag/${tag}`} aria-label={`View all posts with the ${tag} tag`} class="h-6 text-base px-2 rounded-md border border-secondary text-base-content hover:bg-secondary hover:text-secondary-content hover:scale-110 transition-all inline-flex items-center justify-center">  
               {tag}  
             </a>  
