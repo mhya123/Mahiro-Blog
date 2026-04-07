@@ -8,17 +8,17 @@ const { categories = [], tags = [] } = Astro.props as PostData;
 <div class="flex flex-wrap items-center gap-2">
   {
     categories.map((category) => (
-      <a href={`/blog/category/${category}`} class="btn btn-xs btn-category">
-        <Icon name="lucide:folder" class="w-4 h-4" />
-        <span>{category}</span>
+      <a href={`/blog/category/${category}`} class="btn btn-xs btn-category h-auto min-h-[1.5rem] py-1 px-2 max-w-full whitespace-normal break-all text-left leading-tight">
+        <Icon name="lucide:folder" class="w-4 h-4 shrink-0" />
+        <span class="whitespace-normal break-all">{category}</span>
       </a>
     ))
   }
   {
     tags.map((tag) => (
-      <a href={`/blog/tag/${tag}`} class="btn btn-xs btn-tag">
-        <Icon name="lucide:tag" class="w-4 h-4" />
-        <span>{tag}</span>
+      <a href={`/blog/tag/${tag}`} class="btn btn-xs btn-tag h-auto min-h-[1.5rem] py-1 px-2 max-w-full whitespace-normal break-all text-left leading-tight">
+        <Icon name="lucide:tag" class="w-4 h-4 shrink-0" />
+        <span class="whitespace-normal break-all">{tag}</span>
       </a>
     ))
   }

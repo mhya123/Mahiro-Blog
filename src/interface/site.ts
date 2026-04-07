@@ -58,6 +58,40 @@ export interface SocialIcon {
   svg: string;
 }
 
+export interface FooterQuickLink {
+  href: string;
+  icon: string;
+  label: string;
+}
+
+export interface FooterTechItem {
+  name: string;
+  href: string;
+}
+
+export interface FooterConfig {
+  poweredByName?: string;
+  poweredByUrl?: string;
+  poweredByText?: string;
+  builtWithText?: string;
+  quickLinks?: FooterQuickLink[];
+  quickLinksTitle?: string;
+  techStack?: FooterTechItem[];
+  socialTitle?: string;
+  startYear?: number;
+  craftedByText?: string;
+  enableBuildInfoCard?: boolean;
+  showBrand?: boolean;
+  showQuickLinks?: boolean;
+  showSocial?: boolean;
+  showTechStack?: boolean;
+  showStats?: boolean;
+  showRecordInfo?: boolean;
+  showRssIcon?: boolean;
+  showLicense?: boolean;
+  showCraftedBy?: boolean;
+}
+
 export interface BlogConfig {
   pageSize: number;
   ellipsisThreshold?: number;
@@ -108,6 +142,7 @@ export interface SiteConfig {
   pages?: {
     [key: string]: PageConfig;
   };
+  footer?: FooterConfig;
   icp?: string;
   icp_link?: string;
   police_beian?: string;

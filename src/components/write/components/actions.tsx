@@ -1,9 +1,10 @@
 import { motion } from 'motion/react'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useWriteStore } from '../stores/write-store'
 import { usePreviewStore } from '../stores/preview-store'
 import { usePublish } from '../hooks/use-publish'
+import { WRITE_DRAFT_STORAGE_KEY, isDraftFormMeaningful } from '../constants'
 
 export function WriteActions() {
 	const { loading, mode, form, originalSlug, updateForm } = useWriteStore()
@@ -11,6 +12,64 @@ export function WriteActions() {
 	const { isAuth, onChoosePrivateKey, onPublish, onDelete } = usePublish()
 	const keyInputRef = useRef<HTMLInputElement>(null)
 	const mdInputRef = useRef<HTMLInputElement>(null)
+	const [lastDraftSavedAt, setLastDraftSavedAt] = useState<number | null>(null)
+
+	const refreshDraftMeta = useCallback(() => {
+		try {
+			const raw = localStorage.getItem(WRITE_DRAFT_STORAGE_KEY)
+			if (!raw) {
+				setLastDraftSavedAt(null)
+				return
+			}
+			const parsed = JSON.parse(raw) as { updatedAt?: number }
+			setLastDraftSavedAt(typeof parsed?.updatedAt === 'number' ? parsed.updatedAt : null)
+		} catch {
+			setLastDraftSavedAt(null)
+		}
+	}, [])
+
+	useEffect(() => {
+		if (mode !== 'create') {
+			setLastDraftSavedAt(null)
+			return
+		}
+
+		const timer = window.setTimeout(refreshDraftMeta, 750)
+		return () => window.clearTimeout(timer)
+	}, [form, mode, refreshDraftMeta])
+
+	const handleManualSaveDraft = () => {
+		if (mode !== 'create') {
+			toast.info('编辑模式下不启用草稿缓存')
+			return
+		}
+		if (!isDraftFormMeaningful(form)) {
+			toast.warning('当前内容为空，暂无可保存草稿')
+			return
+		}
+		try {
+			const updatedAt = Date.now()
+			localStorage.setItem(
+				WRITE_DRAFT_STORAGE_KEY,
+				JSON.stringify({ form, updatedAt }),
+			)
+			setLastDraftSavedAt(updatedAt)
+			toast.success('草稿已手动保存')
+		} catch {
+			toast.error('草稿保存失败，请检查浏览器存储权限')
+		}
+	}
+
+	const handleClearDraft = () => {
+		if (!window.confirm('确定清空本地草稿吗？此操作不可恢复。')) return
+		try {
+			localStorage.removeItem(WRITE_DRAFT_STORAGE_KEY)
+			setLastDraftSavedAt(null)
+			toast.success('本地草稿已清空')
+		} catch {
+			toast.error('清空草稿失败')
+		}
+	}
 
 	// Ctrl/Cmd + S → 发布/更新
 	useEffect(() => {
@@ -159,6 +218,26 @@ export function WriteActions() {
 					onClick={handleImportMd}>
 					导入 MD
 				</motion.button>
+				<div className='dropdown dropdown-end'>
+					<motion.button
+						initial={{ opacity: 0, scale: 0.6 }}
+						animate={{ opacity: 1, scale: 1 }}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className='btn btn-sm btn-ghost rounded-xl text-base-content'
+						disabled={loading || mode !== 'create'}>
+						草稿
+					</motion.button>
+					<div className='dropdown-content z-[60] mt-2 w-64 rounded-xl border border-base-200 bg-base-100 p-3 shadow-xl'>
+						<div className='text-xs text-base-content/70 mb-2'>
+							最近保存：{lastDraftSavedAt ? new Date(lastDraftSavedAt).toLocaleString('zh-CN') : '暂无'}
+						</div>
+						<div className='grid grid-cols-2 gap-2'>
+							<button type='button' className='btn btn-xs btn-primary' onClick={handleManualSaveDraft}>手动保存</button>
+							<button type='button' className='btn btn-xs btn-outline btn-error' onClick={handleClearDraft}>清空草稿</button>
+						</div>
+					</div>
+				</div>
 				<motion.button
 					initial={{ opacity: 0, scale: 0.6 }}
 					animate={{ opacity: 1, scale: 1 }}

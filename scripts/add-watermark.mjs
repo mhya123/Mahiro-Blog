@@ -10,6 +10,45 @@ const CACHE_FILE  = 'scripts/.watermark-cache.json';
 const TARGET_DIR  = 'public/images';
 const CONCURRENCY = 8;                    // 并行处理数
 const SUPPORTED   = '{jpg,jpeg,png,webp}'; // gif 不做水印（会丢帧）
+const WATERMARK_FONT_PATH = 'public/watermarkfont/HFSimpleElegance-2.ttf';
+
+let cachedFontDataUri = undefined;
+
+function getFontMimeByExt(fontPath) {
+    const ext = path.extname(fontPath).toLowerCase();
+    if (ext === '.ttf') return 'font/ttf';
+    if (ext === '.otf') return 'font/otf';
+    if (ext === '.woff') return 'font/woff';
+    if (ext === '.woff2') return 'font/woff2';
+    return 'application/octet-stream';
+}
+
+function loadWatermarkFontDataUri() {
+    if (cachedFontDataUri !== undefined) return cachedFontDataUri;
+    const absFontPath = path.resolve(process.cwd(), WATERMARK_FONT_PATH);
+
+    try {
+        if (!fs.existsSync(absFontPath)) {
+            cachedFontDataUri = null;
+            return cachedFontDataUri;
+        }
+        const base64 = fs.readFileSync(absFontPath).toString('base64');
+        cachedFontDataUri = `data:${getFontMimeByExt(absFontPath)};base64,${base64}`;
+        return cachedFontDataUri;
+    } catch {
+        cachedFontDataUri = null;
+        return cachedFontDataUri;
+    }
+}
+
+function escapeXml(input) {
+    return String(input)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
 
 // ─── 字符 → SVG path 映射（等宽简化字形，不依赖任何系统字体）───
 // 每个字形基于 10×14 的网格绘制，字符间距由渲染时的 translate 控制
@@ -67,6 +106,8 @@ function getSiteUrl() {
 const args = process.argv.slice(2);
 const FORCE  = args.includes('--force');   // 忽略缓存，全部重新处理
 const DRY    = args.includes('--dry-run'); // 仅列出将要处理的文件
+const FILE_ARG_INDEX = args.indexOf('--file');
+const SINGLE_FILE_ARG = FILE_ARG_INDEX >= 0 ? args[FILE_ARG_INDEX + 1] : null;
 
 // ─── 缓存：基于文件内容 hash，比 mtime 更可靠 ─────────
 function loadCache() {
@@ -88,9 +129,9 @@ function fileHash(buf) {
 }
 
 // ─── SVG 水印生成（用 path 绘制文字，不依赖系统字体）──────
-function generateWatermarkSvg(width, height, text) {
+function generateWatermarkSvgWithGlyphs(width, height, text) {
     const baseFontSize = Math.max(14, Math.floor(Math.min(width, height) / 30));
-    const opacity   = 0.15;
+    const opacity   = 0.08;
     const rotate    = -30;
 
     // 每个字形基于 10×14 网格，按 fontSize 缩放
@@ -98,7 +139,7 @@ function generateWatermarkSvg(width, height, text) {
     const glyphH = 16; // 留余量给 descender (g, y, p 等)
     const scale  = baseFontSize / 14;  // 14 是字形设计高度
     const charW  = glyphW * scale;
-    const gap    = charW * 0.15; // 字间距
+    const gap    = charW * 0.4; // 字间距（增大，避免粘连）
 
     // 构建文字 path 组
     const chars = text.toLowerCase().split('');
@@ -115,8 +156,8 @@ function generateWatermarkSvg(width, height, text) {
     const textTotalH = glyphH * scale;
 
     // 瓦片尺寸（带间距）
-    const tileW = Math.round(textTotalW * 1.5);
-    const tileH = Math.round(textTotalH * 5);
+    const tileW = Math.round(textTotalW * 2.4);
+    const tileH = Math.round(textTotalH * 6.5);
 
     // 居中偏移
     const offsetX = (tileW - textTotalW) / 2;
@@ -128,7 +169,7 @@ function generateWatermarkSvg(width, height, text) {
              patternTransform="rotate(${rotate})">
       <g transform="translate(${offsetX.toFixed(1)},${offsetY.toFixed(1)})"
          fill="none"
-         stroke="white" stroke-opacity="${opacity}" stroke-width="${Math.max(1, scale * 1.2).toFixed(1)}"
+         stroke="white" stroke-opacity="${opacity}" stroke-width="${Math.max(0.8, scale * 0.95).toFixed(1)}"
          stroke-linecap="round" stroke-linejoin="round">
         ${pathsGroup}
       </g>
@@ -136,6 +177,49 @@ function generateWatermarkSvg(width, height, text) {
   </defs>
   <rect width="100%" height="100%" fill="url(#wm)"/>
 </svg>`;
+}
+
+function generateWatermarkSvgWithFont(width, height, text, fontDataUri) {
+        const safeText = escapeXml(text);
+        const fontSize = Math.max(18, Math.floor(Math.min(width, height) / 22));
+        const opacity = 0.1;
+        const rotate = -30;
+
+        const tileW = Math.round(fontSize * Math.max(18, safeText.length * 0.9));
+        const tileH = Math.round(fontSize * 4.8);
+        const x = Math.round(tileW * 0.1);
+        const y = Math.round(tileH * 0.55);
+
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <defs>
+        <style>
+            @font-face {
+                font-family: 'WatermarkFont';
+                src: url('${fontDataUri}') format('truetype');
+                font-display: block;
+            }
+            .wm-text {
+                font-family: 'WatermarkFont', sans-serif;
+                font-size: ${fontSize}px;
+                fill: rgba(255,255,255,${opacity});
+                letter-spacing: 0.04em;
+            }
+        </style>
+        <pattern id="wm" width="${tileW}" height="${tileH}" patternUnits="userSpaceOnUse"
+                         patternTransform="rotate(${rotate})">
+            <text class="wm-text" x="${x}" y="${y}">${safeText}</text>
+        </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#wm)"/>
+</svg>`;
+}
+
+function generateWatermarkSvg(width, height, text) {
+        const fontDataUri = loadWatermarkFontDataUri();
+        if (fontDataUri) {
+                return generateWatermarkSvgWithFont(width, height, text, fontDataUri);
+        }
+        return generateWatermarkSvgWithGlyphs(width, height, text);
 }
 
 // ─── 并发控制器 ───────────────────────────────────────
@@ -192,14 +276,32 @@ async function processOne(file, siteUrl, cache) {
 async function main() {
     const siteUrl = getSiteUrl();
     const t0 = performance.now();
+    const fontReady = Boolean(loadWatermarkFontDataUri());
 
     console.log(`\n🖼  Watermark Script`);
     console.log(`   Text : ${siteUrl}`);
+    console.log(`   Font : ${fontReady ? WATERMARK_FONT_PATH : 'fallback (built-in glyph paths)'}`);
     console.log(`   Dir  : ${TARGET_DIR}/`);
+    if (SINGLE_FILE_ARG) console.log(`   File : ${SINGLE_FILE_ARG}`);
     if (FORCE) console.log('   Mode : --force (ignore cache)');
     if (DRY)   console.log('   Mode : --dry-run');
 
-    const files = await glob(`${TARGET_DIR}/**/*.${SUPPORTED}`);
+    let files = [];
+    if (SINGLE_FILE_ARG) {
+        const resolvedFile = path.resolve(process.cwd(), SINGLE_FILE_ARG);
+        if (!fs.existsSync(resolvedFile)) {
+            throw new Error(`指定文件不存在: ${SINGLE_FILE_ARG}`);
+        }
+
+        const ext = path.extname(resolvedFile).toLowerCase();
+        if (!['.jpg', '.jpeg', '.png', '.webp'].includes(ext)) {
+            throw new Error(`不支持的图片格式: ${ext}`);
+        }
+        files = [resolvedFile];
+    } else {
+        files = await glob(`${TARGET_DIR}/**/*.${SUPPORTED}`);
+    }
+
     console.log(`   Found: ${files.length} images\n`);
 
     if (files.length === 0) return;

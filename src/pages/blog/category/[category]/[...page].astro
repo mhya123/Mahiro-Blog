@@ -16,6 +16,7 @@ export async function getStaticPaths({ paginate }: { paginate: any }) {
 
 const { page } = Astro.props as { page: Page };
 const params = Astro.params as { category: string; page: string };
+const displayCategoryName = decodeURIComponent(params.category);
 
 const totalPages = Math.ceil(page.total / page.size);
 const pageLinks = generatePageLinksByCurrent(totalPages, page.current);
@@ -40,18 +41,24 @@ const pageLinks = generatePageLinksByCurrent(totalPages, page.current);
   <CardGroup cols="1" gap="6">
     {
       page.data.map((blog: Post) => (
-        <PostCard
-          title={blog.data.title}
-          image={blog.data.image}
-          description={blog.data.description}
-          url={"/blog/" + blog.slug}
-          pubDate={blog.data.pubDate}
-          badge={blog.data.badge}
-          categories={blog.data.categories}
-          tags={blog.data.tags}
-          word={blog.remarkPluginFrontmatter.totalCharCount}
-          time={blog.remarkPluginFrontmatter.readingTime}
-        />
+        <div class="space-y-2">
+          <div class="lg:hidden inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20 max-w-full">
+            <Icon name="lucide:folder" class="w-3.5 h-3.5 shrink-0" />
+            <span class="whitespace-normal break-all leading-tight">{displayCategoryName}</span>
+          </div>
+          <PostCard
+            title={blog.data.title}
+            image={blog.data.image}
+            description={blog.data.description}
+            url={"/blog/" + blog.slug}
+            pubDate={blog.data.pubDate}
+            badge={blog.data.badge}
+            categories={blog.data.categories}
+            tags={blog.data.tags}
+            word={blog.remarkPluginFrontmatter.totalCharCount}
+            time={blog.remarkPluginFrontmatter.readingTime}
+          />
+        </div>
       ))
     }
   </CardGroup>

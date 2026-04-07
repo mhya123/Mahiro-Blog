@@ -73,6 +73,62 @@ export const USER_AVATAR = config.user.avatar;
 export const USER_SIDEBAR_SOCIAL_ICONS = config.user.sidebar.social;
 export const USER_FOOTER_SOCIAL_ICONS = config.user.footer.social;
 
+const DEFAULT_FOOTER_QUICK_LINKS = [
+  { href: "/", icon: "lucide:home", label: "首页" },
+  { href: "/about", icon: "lucide:user", label: "关于" },
+  { href: "/friend", icon: "lucide:users", label: "友链" },
+  { href: "/project", icon: "lucide:folder-kanban", label: "项目" },
+  { href: "/navigation", icon: "lucide:compass", label: "导航" },
+  { href: "/rss.xml", icon: "ri:rss-line", label: "RSS" },
+];
+
+const DEFAULT_FOOTER_TECH_STACK = [
+  { name: "Astro", href: "https://astro.build" },
+  { name: "Tailwind CSS", href: "https://tailwindcss.com" },
+  { name: "anime.js", href: "https://animejs.com" },
+  { name: "daisyUI", href: "https://daisyui.com" },
+  { name: "GSAP", href: "https://gsap.com" },
+];
+
+const footerConfig = config.site.footer || {};
+
+export const FOOTER_POWERED_BY_NAME = footerConfig.poweredByName || "Mahiro-Blog";
+export const FOOTER_POWERED_BY_URL = footerConfig.poweredByUrl || "https://github.com/mhya123/Mahiro-Blog";
+export const FOOTER_POWERED_BY_TEXT = footerConfig.poweredByText || "Powered by";
+export const FOOTER_BUILT_WITH_TEXT = footerConfig.builtWithText || "Built with";
+export const FOOTER_QUICK_LINKS_TITLE = footerConfig.quickLinksTitle || "导航";
+export const FOOTER_SOCIAL_TITLE = footerConfig.socialTitle || "社交";
+export const FOOTER_START_YEAR = Number(footerConfig.startYear ?? 2025) || 2025;
+export const FOOTER_CRAFTED_BY_TEXT = footerConfig.craftedByText || "Crafted with";
+
+export const FOOTER_ENABLE_BUILD_INFO_CARD = footerConfig.enableBuildInfoCard ?? true;
+export const FOOTER_SHOW_BRAND = footerConfig.showBrand ?? true;
+export const FOOTER_SHOW_QUICK_LINKS = footerConfig.showQuickLinks ?? true;
+export const FOOTER_SHOW_SOCIAL = footerConfig.showSocial ?? true;
+export const FOOTER_SHOW_TECH_STACK = footerConfig.showTechStack ?? true;
+export const FOOTER_SHOW_STATS = footerConfig.showStats ?? true;
+export const FOOTER_SHOW_RECORD_INFO = footerConfig.showRecordInfo ?? true;
+export const FOOTER_SHOW_RSS_ICON = footerConfig.showRssIcon ?? true;
+export const FOOTER_SHOW_LICENSE = footerConfig.showLicense ?? true;
+export const FOOTER_SHOW_CRAFTED_BY = footerConfig.showCraftedBy ?? true;
+
+export const FOOTER_QUICK_LINKS = (
+  Array.isArray(config.site.footer?.quickLinks)
+    ? config.site.footer!.quickLinks!.filter(
+      (item: any) => item && typeof item.href === "string" && typeof item.icon === "string" && typeof item.label === "string",
+    )
+    : []
+);
+export const FOOTER_TECH_STACK = (
+  Array.isArray(config.site.footer?.techStack)
+    ? config.site.footer!.techStack!.filter(
+      (item: any) => item && typeof item.name === "string" && typeof item.href === "string",
+    )
+    : []
+);
+export const FINAL_FOOTER_QUICK_LINKS = FOOTER_QUICK_LINKS.length > 0 ? FOOTER_QUICK_LINKS : DEFAULT_FOOTER_QUICK_LINKS;
+export const FINAL_FOOTER_TECH_STACK = FOOTER_TECH_STACK.length > 0 ? FOOTER_TECH_STACK : DEFAULT_FOOTER_TECH_STACK;
+
 // 网站菜单项配置
 export const SITE_MENU = config.site.menu;
 

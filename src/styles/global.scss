@@ -695,13 +695,32 @@ body,
     /* anime.js animateTagItems() 接管入场动画 */
     opacity: 0;
     transform: translateY(8px);
+    transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 
     // Height fix - improved tag height
     @apply h-auto py-0;
+
+    &:hover,
+    &:focus-visible {
+      transform: translateY(-3px) scale(1.03);
+
+      .tags-content {
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+        border-color: oklch(var(--p) / 0.28);
+        background: color-mix(in oklab, oklch(var(--b1)) 90%, oklch(var(--p)) 10%);
+      }
+
+      .tags-count {
+        transform: scale(1.08);
+        background-color: oklch(var(--p) / 0.16);
+        color: oklch(var(--p));
+      }
+    }
   }
 
   &-content {
     @apply flex items-center gap-2 px-4 py-2 rounded-full bg-base-100 shadow-sm border border-transparent;
+    transition: box-shadow 0.24s ease, border-color 0.24s ease, background-color 0.24s ease;
   }
 
   &-icon {
@@ -710,6 +729,7 @@ body,
 
   &-count {
     @apply inline-flex items-center justify-center min-w-6 h-6 px-2 text-xs font-bold rounded-full bg-base-300/30 text-base-content/80 duration-300;
+    transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.24s ease;
   }
 }
 

@@ -1,6 +1,37 @@
 ---
 import { Icon } from "astro-icon/components";
-import { USER_NAME, USER_SITE, USER_FOOTER_SOCIAL_ICONS, SITE_ICP, SITE_ICP_LINK, SITE_POLICE_BEIAN, SITE_POLICE_BEIAN_LINK, GITHUB_CONFIG, SITE_TITLE, SITE_DESCRIPTION } from "@config";
+import {
+  USER_NAME,
+  USER_SITE,
+  USER_FOOTER_SOCIAL_ICONS,
+  SITE_ICP,
+  SITE_ICP_LINK,
+  SITE_POLICE_BEIAN,
+  SITE_POLICE_BEIAN_LINK,
+  GITHUB_CONFIG,
+  SITE_TITLE,
+  SITE_DESCRIPTION,
+  FOOTER_POWERED_BY_NAME,
+  FOOTER_POWERED_BY_URL,
+  FOOTER_POWERED_BY_TEXT,
+  FOOTER_BUILT_WITH_TEXT,
+  FOOTER_QUICK_LINKS_TITLE,
+  FOOTER_SOCIAL_TITLE,
+  FOOTER_START_YEAR,
+  FOOTER_CRAFTED_BY_TEXT,
+  FOOTER_ENABLE_BUILD_INFO_CARD,
+  FOOTER_SHOW_BRAND,
+  FOOTER_SHOW_QUICK_LINKS,
+  FOOTER_SHOW_SOCIAL,
+  FOOTER_SHOW_TECH_STACK,
+  FOOTER_SHOW_STATS,
+  FOOTER_SHOW_RECORD_INFO,
+  FOOTER_SHOW_RSS_ICON,
+  FOOTER_SHOW_LICENSE,
+  FOOTER_SHOW_CRAFTED_BY,
+  FINAL_FOOTER_QUICK_LINKS,
+  FINAL_FOOTER_TECH_STACK,
+} from "@config";
 import { getBuildInfo } from "@/lib/build-info";
 import dayjs from "@utils/dayjs";
 import { getAllPosts } from "@utils/blogUtils";
@@ -10,16 +41,24 @@ const repo = GITHUB_CONFIG?.repo || '';
 const buildInfo = await getBuildInfo(owner, repo);
 const allPosts = await getAllPosts();
 const totalPosts = allPosts.length;
-const startYear = 2025;
+const startYear = FOOTER_START_YEAR;
 const currentYear = new Date().getFullYear();
 const yearDisplay = startYear === currentYear ? `${currentYear}` : `${startYear}–${currentYear}`;
+
+const showBrandBlock = FOOTER_SHOW_BRAND;
+const showQuickLinksBlock = FOOTER_SHOW_QUICK_LINKS && FINAL_FOOTER_QUICK_LINKS.length > 0;
+const showSocialBlock = FOOTER_SHOW_SOCIAL;
+const topColumnCount = [showBrandBlock, showQuickLinksBlock, showSocialBlock].filter(Boolean).length || 1;
+const topGridClass = topColumnCount === 1 ? "md:grid-cols-1" : topColumnCount === 2 ? "md:grid-cols-2" : "md:grid-cols-3";
+const hasRecordInfo = FOOTER_SHOW_RECORD_INFO && (SITE_ICP || SITE_POLICE_BEIAN);
 ---
 
-<footer class="bg-base-100 py-6 px-4 md:px-10 md:py-8 rounded-2xl shadow-lg flex flex-col gap-6">
+<footer class="bg-base-100/95 border border-base-200/70 py-6 px-4 md:px-10 md:py-8 rounded-2xl shadow-lg backdrop-blur-sm flex flex-col gap-6">
   <!-- 上半部分：品牌 + 导航 + 社交 三栏 -->
-  <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+  <div class={`w-full grid grid-cols-1 ${topGridClass} gap-6 md:gap-8`}>
     
     <!-- 左栏：品牌信息 -->
+    {showBrandBlock && (
     <div class="flex flex-col gap-3">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -31,19 +70,24 @@ const yearDisplay = startYear === currentYear ? `${currentYear}` : `${startYear}
         </div>
       </div>
       <p class="text-xs text-base-content/40 leading-relaxed">
-        Powered by
-        <a href="https://github.com/mhya123/Mahiro-Blog" target="_blank" class="text-primary/70 hover:text-primary hover:underline underline-offset-2 transition-colors">Mahiro-Blog</a>
+        {FOOTER_POWERED_BY_TEXT}
+        <a href={FOOTER_POWERED_BY_URL} target="_blank" rel="noopener noreferrer" class="text-primary/70 hover:text-primary hover:underline underline-offset-2 transition-colors">{FOOTER_POWERED_BY_NAME}</a>
       </p>
-      <p class="text-xs text-base-content/40 leading-relaxed">
-        Built with
-        <a href="https://astro.build" target="_blank" class="hover:text-primary transition-colors">Astro</a>,
-        <a href="https://tailwindcss.com" target="_blank" class="hover:text-primary transition-colors">Tailwind CSS</a>,
-        <a href="https://animejs.com" target="_blank" class="hover:text-primary transition-colors">anime.js</a>,
-        <a href="https://daisyui.com" target="_blank" class="hover:text-primary transition-colors">daisyUI</a>
-        &
-        <a href="https://gsap.com" target="_blank" class="hover:text-primary transition-colors">GSAP</a>
-      </p>
+      {FOOTER_SHOW_TECH_STACK && FINAL_FOOTER_TECH_STACK.length > 0 && (
+        <p class="text-xs text-base-content/40 leading-relaxed">
+          {FOOTER_BUILT_WITH_TEXT}
+          {
+            FINAL_FOOTER_TECH_STACK.map((item, index) => (
+              <>
+                <a href={item.href} target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">{item.name}</a>
+                {index < FINAL_FOOTER_TECH_STACK.length - 1 && (index === FINAL_FOOTER_TECH_STACK.length - 2 ? " & " : ", ")}
+              </>
+            ))
+          }
+        </p>
+      )}
       <!-- 站点统计 -->
+      {FOOTER_SHOW_STATS && (
       <div class="flex items-center gap-3 text-xs text-base-content/40">
         <span class="flex items-center gap-1">
           <Icon name="lucide:file-text" class="w-3 h-3" />
@@ -54,36 +98,28 @@ const yearDisplay = startYear === currentYear ? `${currentYear}` : `${startYear}
           {buildInfo.totalCommits} 次提交
         </span>
       </div>
+      )}
     </div>
+    )}
 
     <!-- 中栏：快速导航 -->
+    {showQuickLinksBlock && (
     <div class="flex flex-col gap-2">
-      <span class="footer-title text-xs opacity-60 mb-0">导航</span>
+      <span class="footer-title text-xs opacity-60 mb-0">{FOOTER_QUICK_LINKS_TITLE}</span>
       <div class="grid grid-cols-2 gap-x-6 gap-y-1">
-        <a href="/" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
-          <Icon name="lucide:home" class="w-3 h-3 shrink-0" />首页
-        </a>
-        <a href="/about" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
-          <Icon name="lucide:user" class="w-3 h-3 shrink-0" />关于
-        </a>
-        <a href="/friend" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
-          <Icon name="lucide:users" class="w-3 h-3 shrink-0" />友链
-        </a>
-        <a href="/project" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
-          <Icon name="lucide:folder-kanban" class="w-3 h-3 shrink-0" />项目
-        </a>
-        <a href="/navigation" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
-          <Icon name="lucide:compass" class="w-3 h-3 shrink-0" />导航
-        </a>
-        <a href="/rss.xml" class="text-xs text-base-content/50 hover:text-primary transition-colors duration-200 flex items-center gap-1.5 py-0.5">
-          <Icon name="ri:rss-line" class="w-3 h-3 shrink-0" />RSS
-        </a>
+        {FINAL_FOOTER_QUICK_LINKS.map((item) => (
+          <a href={item.href} class="text-xs text-base-content/50 hover:text-primary transition-all duration-200 flex items-center gap-1.5 py-0.5 hover:translate-x-[2px]">
+            <Icon name={item.icon} class="w-3 h-3 shrink-0" />{item.label}
+          </a>
+        ))}
       </div>
     </div>
+    )}
 
     <!-- 右栏：社交 + 备案 -->
+    {showSocialBlock && (
     <div class="flex flex-col gap-2">
-      <span class="footer-title text-xs opacity-60 mb-0">社交</span>
+      <span class="footer-title text-xs opacity-60 mb-0">{FOOTER_SOCIAL_TITLE}</span>
       <div class="flex flex-wrap gap-1">
         {
           USER_FOOTER_SOCIAL_ICONS.map((icon) => {
@@ -106,15 +142,17 @@ const yearDisplay = startYear === currentYear ? `${currentYear}` : `${startYear}
             );
           })
         }
-        <div class="tooltip" data-tip="RSS Feed">
-          <a href="/rss.xml" aria-label="RSS Feed" class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-primary hover:bg-primary/10 transition-all duration-300">
-            <Icon name="ri:rss-line" class="text-lg" />
-          </a>
-        </div>
+        {FOOTER_SHOW_RSS_ICON && (
+          <div class="tooltip" data-tip="RSS Feed">
+            <a href="/rss.xml" aria-label="RSS Feed" class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-primary hover:bg-primary/10 transition-all duration-300">
+              <Icon name="ri:rss-line" class="text-lg" />
+            </a>
+          </div>
+        )}
       </div>
 
       {/* ICP 和公安备案信息 */}
-      {(SITE_ICP || SITE_POLICE_BEIAN) && (
+      {hasRecordInfo && (
         <div class="mt-1 text-xs flex flex-col gap-0.5 text-base-content/40">
           {SITE_ICP && (
             <a
@@ -140,6 +178,7 @@ const yearDisplay = startYear === currentYear ? `${currentYear}` : `${startYear}
         </div>
       )}
     </div>
+    )}
   </div>
 
   <!-- 底部分割线 + 版权 -->
@@ -147,24 +186,31 @@ const yearDisplay = startYear === currentYear ? `${currentYear}` : `${startYear}
     <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-base-content/40">
       <div class="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
         <span>&copy; {yearDisplay}</span>
-        <a href={USER_SITE} target="_blank" class="font-bold hover:text-primary transition-colors">{USER_NAME}</a>
-        <span class="opacity-50 px-1">|</span>
-        <div class="tooltip tooltip-top" data-tip="署名-非商业性使用-相同方式共享 4.0 国际">
-          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors flex items-center gap-1">
-            <Icon name="ri:creative-commons-line" class="text-sm" />
-            <span>CC BY-NC-SA 4.0</span>
-          </a>
-        </div>
+        <a href={USER_SITE} target="_blank" rel="noopener noreferrer" class="font-bold hover:text-primary transition-colors">{USER_NAME}</a>
+        {FOOTER_SHOW_LICENSE && (
+          <>
+            <span class="opacity-50 px-1">|</span>
+            <div class="tooltip tooltip-top" data-tip="署名-非商业性使用-相同方式共享 4.0 国际">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors flex items-center gap-1">
+                <Icon name="ri:creative-commons-line" class="text-sm" />
+                <span>CC BY-NC-SA 4.0</span>
+              </a>
+            </div>
+          </>
+        )}
       </div>
-      <p class="flex items-center gap-1.5">
-        Crafted with <Icon name="lucide:heart" class="w-3 h-3 text-red-500 fill-red-500 animate-pulse inline" /> by {USER_NAME}
-      </p>
+      {FOOTER_SHOW_CRAFTED_BY && (
+        <p class="flex items-center gap-1.5">
+          {FOOTER_CRAFTED_BY_TEXT} <Icon name="lucide:heart" class="w-3 h-3 text-red-500 fill-red-500 animate-pulse inline" /> by {USER_NAME}
+        </p>
+      )}
     </div>
   </div>
 </footer>
 
 <!-- 构建信息 -->
-<div class="bg-base-100 rounded-2xl shadow-lg mt-4 px-4 py-3">
+{FOOTER_ENABLE_BUILD_INFO_CARD && (
+<div class="bg-base-100/90 border border-base-200/70 rounded-2xl shadow-lg mt-4 px-4 py-3 backdrop-blur-sm">
   <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-base-content/50">
     <div class="flex items-center gap-3 flex-wrap">
       <span class="flex items-center gap-1">
@@ -192,3 +238,4 @@ const yearDisplay = startYear === currentYear ? `${currentYear}` : `${startYear}
     )}
   </div>
 </div>
+)}

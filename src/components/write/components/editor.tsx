@@ -306,7 +306,11 @@ export function WriteEditor() {
 	// ─── slug 输入净化 ──────────────────────────────────
 
 	const handleSlugChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		const cleaned = e.target.value.toLowerCase().replace(SLUG_REGEX, '-')
+		const cleaned = e.target.value
+			.toLowerCase()
+			.replace(SLUG_REGEX, '-')
+			.replace(/-+/g, '-')
+			.replace(/^-+|-+$/g, '')
 		updateForm({ slug: cleaned })
 	}, [updateForm])
 

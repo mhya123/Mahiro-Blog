@@ -5,6 +5,7 @@ import { pushBlog } from '../services/push-blog'
 import { deleteBlog } from '../services/delete-blog'
 import { useWriteStore } from '../stores/write-store'
 import { useAuthStore } from './use-auth'
+import { WRITE_DRAFT_STORAGE_KEY } from '../constants'
 
 /** slug 只允许小写字母、数字、连字符、下划线 */
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9\-_]*$/
@@ -49,6 +50,13 @@ export function usePublish() {
 				originalSlug,
 				originalFileFormat
 			})
+			if (mode === 'create') {
+				try {
+					localStorage.removeItem(WRITE_DRAFT_STORAGE_KEY)
+				} catch {
+					// ignore storage errors
+				}
+			}
 		} catch (err: any) {
 			console.error(err)
 			// error is already toasted in pushBlog

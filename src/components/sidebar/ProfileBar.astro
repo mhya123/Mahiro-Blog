@@ -40,6 +40,7 @@ const categoryNameMap = {
 const tagMap = getTagsWithCount(allPosts);  
 const tagEntries = Array.from(tagMap.entries());  
 tagEntries.sort((a, b) => b[1] - a[1]); // 按使用频率排序
+const hiddenTagCount = Math.max(0, tagEntries.length - 8);
   
 // 获取中文分类名称的函数  
 const getCategoryDisplayName = (category: string): string => {  
@@ -235,22 +236,29 @@ const getCategoryDisplayName = (category: string): string => {
   <div class="font-bold transition text-lg text-base-content relative ml-4 mb-2 before:w-1 before:h-4 before:rounded-md before:bg-primary before:absolute before:left-[-16px] before:top-[5.5px]">  
     标签  
   </div>  
+
+  <div class="px-2 mb-2 text-[11px] text-base-content/55 flex items-center justify-between">
+    <span>热门标签</span>
+    <span>共 {tagEntries.length} 个</span>
+  </div>
     
-  <div id="tags" class="collapse-wrapper px-2 overflow-hidden" style="--collapsedHeight: 7.5rem;" data-pagefind-ignore>  
-    <div class="flex gap-1 flex-wrap">  
-      {tagEntries.slice(0, 8).map(([tag]) => (  
-        <a href={`/blog/tag/${tag}`} aria-label={`View all posts with the ${tag} tag`} class="h-6 text-base px-2 rounded-md border border-secondary text-base-content hover:bg-secondary hover:text-secondary-content hover:scale-110 transition-all inline-flex items-center justify-center">  
-          {tag}  
+  <div id="tags" class="collapse-wrapper px-2" style="--collapsedHeight: 7.5rem;" data-pagefind-ignore>  
+    <div class="primary-tags flex gap-2 flex-wrap">  
+      {tagEntries.slice(0, 8).map(([tag, count]) => (  
+        <a href={`/blog/tag/${tag}`} title={tag} aria-label={`View all posts with the ${tag} tag`} class="tag-chip is-primary-tag h-8 text-base px-3 rounded-full border border-primary/25 bg-base-100/80 text-base-content hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-all inline-flex items-center gap-1.5 max-w-full">  
+          <span class="font-medium truncate max-w-[9rem]">#{tag}</span>
+          <span class="text-xs px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-semibold leading-none">{count}</span>
         </a>
       ))}  
     </div>  
       
     {tagEntries.length > 8 && (  
-      <div class="hidden-tags" style="display: none;">  
-        <div class="flex gap-1 flex-wrap mt-1">  
-          {tagEntries.slice(8).map(([tag]) => (  
-            <a href={`/blog/tag/${tag}`} aria-label={`View all posts with the ${tag} tag`} class="h-6 text-base px-2 rounded-md border border-secondary text-base-content hover:bg-secondary hover:text-secondary-content hover:scale-110 transition-all inline-flex items-center justify-center">  
-              {tag}  
+  <div class="hidden-tags max-h-64 overflow-y-auto pr-1">  
+        <div class="extra-tags flex gap-2 flex-wrap mt-2">  
+          {tagEntries.slice(8).map(([tag, count]) => (  
+            <a href={`/blog/tag/${tag}`} title={tag} aria-label={`View all posts with the ${tag} tag`} class="tag-chip is-extra-tag h-8 text-base px-3 rounded-full border border-primary/25 bg-base-100/80 text-base-content hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-all inline-flex items-center gap-1.5 max-w-full">  
+              <span class="font-medium truncate max-w-[9rem]">#{tag}</span>
+              <span class="text-xs px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-semibold leading-none">{count}</span>
             </a>  
           ))}  
         </div>  
@@ -262,7 +270,7 @@ const getCategoryDisplayName = (category: string): string => {
     <div class="expand-btn px-2 -mb-2">  
       <button class="btn btn-ghost rounded-lg w-full h-9" id="expand-tags">  
         <div class="text-primary flex items-center justify-center" id="tags-more">  
-          <Icon name="lucide:chevron-down" class="w-5 h-5 mr-1" /> 更多  
+          <Icon name="lucide:chevron-down" class="w-5 h-5 mr-1" /> 更多（{hiddenTagCount}）  
         </div>
         <div class="text-primary flex items-center justify-center hidden" id="tags-collapse" style="display: none;">  
           <Icon name="lucide:chevron-up" class="w-5 h-5 mr-1" /> 收起  
@@ -392,28 +400,49 @@ function initCategoriesToggle() {
 }
   
  // 标签展开/折叠功能      
-function initTagsToggle() {      
-  const expandBtn = document.getElementById('expand-tags');      
-  const hiddenTags = document.querySelector('.hidden-tags');      
-  
-  if (expandBtn && hiddenTags) {      
-    let isExpanded = false;      
-    const moreDiv = expandBtn.querySelector('#tags-more');
-    const collapseDiv = expandBtn.querySelector('#tags-collapse');
-    
-    expandBtn.addEventListener('click', () => {      
-      if (isExpanded) {      
-        hiddenTags.style.display = 'none';  
-        moreDiv.style.display = 'flex';
-        collapseDiv.style.display = 'none';
-      } else {      
-        hiddenTags.style.display = 'block';  
-        moreDiv.style.display = 'none';
-        collapseDiv.style.display = 'flex';
-      }      
-      isExpanded = !isExpanded;      
-    });      
-  }      
+function initTagsToggle() {
+  const MAX_TAG_HEIGHT_PX = 256;
+  const expandBtn = document.getElementById('expand-tags');
+  const hiddenTags = document.querySelector('.hidden-tags');
+
+  if (!expandBtn || !hiddenTags) return;
+  if (expandBtn.dataset.bound === 'true') return;
+  expandBtn.dataset.bound = 'true';
+
+  const moreDiv = expandBtn.querySelector('#tags-more');
+  const collapseDiv = expandBtn.querySelector('#tags-collapse');
+  const arrowIcons = expandBtn.querySelectorAll('svg');
+  let isExpanded = hiddenTags.classList.contains('expanded');
+
+  const collapseTags = () => {
+    hiddenTags.style.maxHeight = '0px';
+    hiddenTags.style.opacity = '0';
+    hiddenTags.classList.remove('expanded', 'is-expanded');
+    if (moreDiv) moreDiv.style.display = 'flex';
+    if (collapseDiv) collapseDiv.style.display = 'none';
+    arrowIcons.forEach((icon) => icon.classList.remove('rotate-180'));
+  };
+
+  const expandTags = () => {
+    const scrollHeight = hiddenTags.scrollHeight;
+    hiddenTags.style.maxHeight = Math.min(scrollHeight, MAX_TAG_HEIGHT_PX) + 'px';
+    hiddenTags.style.opacity = '1';
+    hiddenTags.classList.add('expanded', 'is-expanded');
+    if (moreDiv) moreDiv.style.display = 'none';
+    if (collapseDiv) collapseDiv.style.display = 'flex';
+    arrowIcons.forEach((icon) => icon.classList.add('rotate-180'));
+  };
+
+  collapseTags();
+
+  expandBtn.addEventListener('click', () => {
+    if (isExpanded) {
+      collapseTags();
+    } else {
+      expandTags();
+    }
+    isExpanded = !isExpanded;
+  });
 }
 
   // 初始化函数  
@@ -448,7 +477,7 @@ function initTagsToggle() {
     init();  
   });  
 </script> 
-  
+
 <style>  
 .card-base {  
   @apply bg-base-100 rounded-2xl shadow-lg border border-base-200;  
@@ -463,4 +492,69 @@ function initTagsToggle() {
   50% { transform: translateX(0%); }  
   100% { transform: translateX(100%); }  
 }  
+
+#tags .primary-tags {
+  position: relative;
+  z-index: 2;
+  padding: 0.2rem 0;
+}
+
+#tags .is-primary-tag {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+#tags .tag-chip {
+  transform: translateY(0) scale(1);
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.24s ease, border-color 0.24s ease, background-color 0.24s ease;
+  will-change: transform;
+}
+
+#tags .tag-chip:hover,
+#tags .tag-chip:focus-visible {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.10);
+  border-color: oklch(var(--p) / 0.34);
+  background: color-mix(in oklab, oklch(var(--b1)) 90%, oklch(var(--p)) 10%);
+}
+
+#tags .tag-chip span:last-child {
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.24s ease;
+}
+
+#tags .tag-chip:hover span:last-child,
+#tags .tag-chip:focus-visible span:last-child {
+  transform: scale(1.06);
+  background-color: oklch(var(--p) / 0.16);
+}
+
+#tags .hidden-tags {
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.45rem 0.4rem;
+  border-top: 1px dashed oklch(var(--bc) / 0.2);
+  border-radius: 0.65rem;
+  background: color-mix(in oklab, oklch(var(--b2)) 84%, transparent);
+  transform-origin: top center;
+  max-height: 0;
+  opacity: 0;
+  overflow-y: auto;
+  transition: max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+}
+
+#tags .hidden-tags.is-expanded {
+  box-shadow: inset 0 1px 0 oklch(var(--bc) / 0.05);
+}
+
+#expand-tags svg {
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#tags .is-extra-tag {
+  border-color: oklch(var(--bc) / 0.18);
+  background: color-mix(in oklab, oklch(var(--b1)) 90%, oklch(var(--b2)) 10%);
+  opacity: 0.92;
+}
+
+#tags .is-extra-tag:hover {
+  opacity: 1;
+}
 </style>

@@ -71,9 +71,10 @@ const totalCategories = categoryMap.size;
                     <ul class="post-list">
                       {posts.map((post) => (
                         <li class="post-item">
-                          <a href={`/blog/${post.slug}`} class="post-link">
+                          <a href={`/blog/${post.slug}`} class="post-link post-link-with-tooltip" aria-label={post.data.title}>
                             <span class="post-title">{post.data.title}</span>
                             <span class="post-date">{dayjs(post.data.pubDate).format(DATE_FORMAT)}</span>
+                            <span class="post-title-tooltip" role="tooltip">{post.data.title}</span>
                           </a>
                         </li>
                       ))}
@@ -169,3 +170,73 @@ const totalCategories = categoryMap.size;
     });
   });
 </script>
+
+<style>
+  .post-link-with-tooltip {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.6rem;
+    row-gap: 0.35rem;
+    overflow: visible;
+  }
+
+  .post-link-with-tooltip .post-title {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .post-link-with-tooltip .post-date {
+    font-size: 0.72rem;
+    white-space: nowrap;
+    justify-self: end;
+  }
+
+  .post-title-tooltip {
+    position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+    top: 50%;
+  transform: translateY(-50%) scale(0.98);
+  max-width: none;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.6rem;
+    font-size: 0.75rem;
+    line-height: 1.25;
+    color: oklch(var(--bc));
+    background: color-mix(in oklab, oklch(var(--b1)) 92%, black 8%);
+    border: 1px solid color-mix(in oklab, oklch(var(--bc)) 14%, transparent);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    white-space: normal;
+    word-break: break-word;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+
+  .post-link-with-tooltip:hover .post-title-tooltip,
+  .post-link-with-tooltip:focus-visible .post-title-tooltip {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+
+  @media (hover: none) {
+    .post-title-tooltip {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .post-link-with-tooltip {
+      grid-template-columns: 1fr;
+    }
+
+    .post-link-with-tooltip .post-date {
+      justify-self: start;
+    }
+  }
+</style>

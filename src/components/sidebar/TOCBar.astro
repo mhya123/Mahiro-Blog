@@ -10,10 +10,10 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
 
 {
   showTOC && headings.length > 0 && (
-    <div id="toc-container" class="mt-4 z-10 md:max-h-[calc(100vh-2rem)] ">
+    <div id="toc-container" class="mt-4 z-10 md:sticky md:top-4 md:max-h-[calc(100vh-2rem)]">
       <Card>
         <div class="p-4">
-          <nav class="toc-nav max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none relative">
+          <nav class="toc-nav relative max-h-[calc(100vh-200px)] overflow-y-auto overscroll-contain scroll-smooth pr-1">
             {/* Animated active indicator - now moved outside the ul structure */}
             <div
               id="active-indicator"
@@ -47,6 +47,28 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
 }
 
 <style>
+  #toc-container {
+    contain: layout style;
+  }
+
+  .toc-nav {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--p) 45%, transparent) transparent;
+  }
+
+  .toc-nav::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .toc-nav::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--p) 35%, transparent);
+    border-radius: 9999px;
+  }
+
+  .toc-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
   .toc-link:hover .link-text {
     transform: translateX(2px);
   }
@@ -67,14 +89,42 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
 </style>
 
 <script>
+  import { animate, stagger } from "animejs";
+
   // Highlight active heading in TOC and manage the active indicator
   document.addEventListener("astro:page-load", () => {
     // Cache DOM elements and reduce DOM queries
-    const tocNav = document.querySelector(".toc-nav") as HTMLElement;
-    const activeIndicator = document.getElementById("active-indicator") as HTMLElement;
-    const tocLinks = Array.from(document.querySelectorAll(".toc-nav a")) as HTMLAnchorElement[];
+    const tocContainer = document.getElementById("toc-container") as HTMLElement | null;
+    if (!tocContainer) return;
 
-    if (!tocNav || !activeIndicator || tocLinks.length === 0) return;
+  const tocNavEl = tocContainer.querySelector(".toc-nav") as HTMLElement | null;
+  const activeIndicatorEl = tocContainer.querySelector("#active-indicator") as HTMLElement | null;
+  const tocLinks = Array.from(tocNavEl?.querySelectorAll("a") || []) as HTMLAnchorElement[];
+
+  if (!tocNavEl || !activeIndicatorEl || tocLinks.length === 0) return;
+
+  const tocNav = tocNavEl;
+  const activeIndicator = activeIndicatorEl;
+
+    // 目录整体与条目入场动画（轻量）
+    animate(tocContainer, {
+      opacity: [0, 1],
+      translateY: [6, 0],
+      duration: 280,
+      ease: "out(2)",
+    }).then();
+
+    animate(tocLinks, {
+      opacity: [0, 1],
+      translateX: [-6, 0],
+      duration: 320,
+      delay: stagger(35),
+      ease: "out(3)",
+    }).then();
+
+    // 防止在同一页面生命周期内重复绑定监听
+    if (tocNav.dataset.tocBound === "true") return;
+    tocNav.dataset.tocBound = "true";
 
     // Prepare headings once
     const headings = document.querySelectorAll("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]");
@@ -85,14 +135,12 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
     let resizeTimer: number | null = null;
 
     // Update IDs only once at initialization
-    const headingIds = new Map<string, string>();
     headings.forEach((heading, index) => {
       const oldId = heading.getAttribute("id");
       const newId = `heading-${index}`;
 
       if (oldId && oldId !== newId) {
         heading.setAttribute("id", newId);
-        headingIds.set(oldId, newId);
 
         // Only update non-TOC links that point to this heading
         document
@@ -158,6 +206,15 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
       link.classList.add("active");
       activeLink = link;
       updateActiveIndicator(link);
+
+      const textEl = link.querySelector(".link-text") as HTMLElement | null;
+      if (textEl) {
+        animate(textEl, {
+          translateX: [0, 3, 0],
+          duration: 240,
+          ease: "out(3)",
+        }).then();
+      }
 
       // Only scroll if needed
       if (!isElementInViewport(link, tocNav)) {
@@ -238,7 +295,7 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
         const id = bestEntry.target.getAttribute("id");
         if (!id) return;
 
-        const tocLink = document.querySelector(`.toc-nav a[href="#${id}"]`) as HTMLAnchorElement | null;
+  const tocLink = tocNav.querySelector(`a[href="#${id}"]`) as HTMLAnchorElement | null;
 
         if (tocLink && tocLink !== activeLink) {
           setActiveLink(tocLink);
@@ -263,7 +320,7 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
         const id = initialHeading.getAttribute("id");
         if (!id) return;
 
-        const tocLink = document.querySelector(`.toc-nav a[href="#${id}"]`) as HTMLAnchorElement | null;
+  const tocLink = tocNav.querySelector(`a[href="#${id}"]`) as HTMLAnchorElement | null;
 
         if (tocLink) {
           setActiveLink(tocLink);
@@ -282,7 +339,7 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
 
       const heading = document.getElementById(hash);
       if (heading) {
-        const tocLink = document.querySelector(`.toc-nav a[href="#${hash}"]`) as HTMLAnchorElement | null;
+  const tocLink = tocNav.querySelector(`a[href="#${hash}"]`) as HTMLAnchorElement | null;
         if (tocLink) {
           setActiveLink(tocLink);
         }

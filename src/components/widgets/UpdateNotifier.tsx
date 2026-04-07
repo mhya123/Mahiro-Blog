@@ -66,6 +66,11 @@ export default function UpdateNotifier() {
     const hasChanges = changes.length > 0;
     const newCount = changes.filter((c) => c.type === 'new').length;
     const updateCount = changes.filter((c) => c.type === 'update').length;
+    const bellAriaLabel = isOpen
+        ? '关闭文章更新通知面板'
+        : hasChanges
+            ? `查看文章更新，当前有 ${changes.length} 条更新（新文章 ${newCount} 篇，更新 ${updateCount} 篇）`
+            : '查看文章更新，当前暂无新变更';
 
     // 当发现变更时，给铃铛一个弹出的 GSAP 动画
     useEffect(() => {
@@ -108,7 +113,14 @@ export default function UpdateNotifier() {
                     onClick={() => setIsOpen(false)}
                 />
                 {/* 面板 */}
-                <div ref={panelRef} className="absolute bottom-20 right-4 w-[calc(100vw-2rem)] max-w-[420px] max-h-[70vh] flex flex-col bg-base-100 rounded-2xl shadow-2xl border border-base-200 overflow-hidden sm:right-6">
+                <div
+                    id="update-notifier-panel"
+                    role="dialog"
+                    aria-modal="false"
+                    aria-label="文章更新通知"
+                    ref={panelRef}
+                    className="absolute bottom-20 right-4 w-[calc(100vw-2rem)] max-w-[420px] max-h-[70vh] flex flex-col bg-base-100 rounded-2xl shadow-2xl border border-base-200 overflow-hidden sm:right-6"
+                >
                     {/* Header */}
                     <div className="flex items-center justify-between px-5 py-3.5 border-b border-base-200 shrink-0">
                         <h3 className="font-bold text-base flex items-center gap-2 text-base-content">
@@ -208,7 +220,11 @@ export default function UpdateNotifier() {
                 ref={bellRef}
                 onClick={() => setIsOpen(!isOpen)}
                 className={`fixed bottom-6 right-6 z-[9997] btn btn-circle btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform`}
-                aria-label="查看文章更新"
+                aria-label={bellAriaLabel}
+                aria-haspopup="dialog"
+                aria-expanded={isOpen}
+                aria-controls="update-notifier-panel"
+                title={bellAriaLabel}
             >
                 <div className="relative">
                     <Bell className="w-5 h-5" />
@@ -217,6 +233,9 @@ export default function UpdateNotifier() {
                             {changes.length > 9 ? '9+' : changes.length}
                         </span>
                     )}
+                    <span className="sr-only" aria-live="polite">
+                        {hasChanges ? `当前有 ${changes.length} 条文章更新` : '当前暂无文章更新'}
+                    </span>
                 </div>
             </button>
 
