@@ -1,4 +1,4 @@
---
+---
 import { t } from "@config";
 import { Icon } from "astro-icon/components";
 import Card from "@/components/temple/Card.astro";
@@ -181,48 +181,45 @@ const heroTitleClass = "maincard-hero-title text-balance break-words text-[clamp
 </script>
 
 <style>
-  .maincard-hero-header {
-    .maincard-hero-title-wrap {
-      flex: 1 1 auto;
-      min-width: 0;
-      transition: max-width 320ms cubic-bezier(0.22, 1, 0.36, 1),
-        padding 280ms ease,
-        background-color 280ms ease,
-        border-color 280ms ease,
-        transform 280ms ease;
-    }
+  .maincard-hero-header .maincard-hero-title-wrap {
+    flex: 1 1 auto;
+    min-width: 0;
+    transition: max-width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      padding 280ms ease,
+      background-color 280ms ease,
+      border-color 280ms ease,
+      transform 280ms ease;
+  }
 
-    .maincard-hero-title {
-      transition: font-size 300ms ease,
-        letter-spacing 280ms ease,
-        line-height 280ms ease,
-        opacity 220ms ease,
-        transform 280ms ease,
-        filter 240ms ease;
-      transform-origin: left center;
-      will-change: transform, opacity;
-    }
+  .maincard-hero-header .maincard-hero-title {
+    transition: font-size 300ms ease,
+      letter-spacing 280ms ease,
+      line-height 280ms ease,
+      opacity 220ms ease,
+      transform 280ms ease,
+      filter 240ms ease;
+    transform-origin: left center;
+    will-change: transform, opacity;
   }
 
   @media (hover: hover) {
     @supports selector(:has(*)) {
-      .maincard-hero-header:has(.maincard-hero-help:hover),
-      .maincard-hero-header:has(.maincard-hero-help:focus-visible) {
-        .maincard-hero-title-wrap {
-          max-width: clamp(18rem, calc(100% - 8.25rem), 50rem);
-          padding-inline: clamp(0.75rem, 1.4vw, 1rem);
-          transform: translateY(-1px);
-          background-color: rgb(0 0 0 / 0.4);
-          border-color: rgb(255 255 255 / 0.3);
-        }
+      .maincard-hero-header:has(.maincard-hero-help:hover) .maincard-hero-title-wrap,
+      .maincard-hero-header:has(.maincard-hero-help:focus-visible) .maincard-hero-title-wrap {
+        max-width: clamp(18rem, calc(100% - 8.25rem), 50rem);
+        padding-inline: clamp(0.75rem, 1.4vw, 1rem);
+        transform: translateY(-1px);
+        background-color: rgb(0 0 0 / 0.4);
+        border-color: rgb(255 255 255 / 0.3);
+      }
 
-        .maincard-hero-title {
-          letter-spacing: 0;
-          line-height: 1.2;
-          opacity: 0.92;
-          filter: saturate(0.94);
-          transform: translateX(-1px) scale(0.988);
-        }
+      .maincard-hero-header:has(.maincard-hero-help:hover) .maincard-hero-title,
+      .maincard-hero-header:has(.maincard-hero-help:focus-visible) .maincard-hero-title {
+        letter-spacing: 0;
+        line-height: 1.2;
+        opacity: 0.92;
+        filter: saturate(0.94);
+        transform: translateX(-1px) scale(0.988);
       }
     }
   }
