@@ -9,12 +9,144 @@ interface Props {
 const { l, r, rightAlt = "Right image", leftAlt = "Left image" } = Astro.props;
 ---
 
-<div class="not-prose diff aspect-[16/9] rounded-lg overflow-hidden fade-in-up">
-  <div class="diff-item-1">
-    <img alt={rightAlt} src={r} loading="lazy" />
+<mdx-diff class="not-prose mdx-diff" style="--pos:50%" tabindex="0" aria-label="Image comparison slider">
+  <div class="mdx-diff-base" role="img" aria-label={rightAlt}>
+    <img alt={rightAlt} src={r} loading="lazy" class="w-full h-full object-cover select-none" draggable="false" />
   </div>
-  <div class="diff-item-2">
-    <img alt={leftAlt} src={l} loading="lazy" />
+  <div class="mdx-diff-overlay" role="img" aria-label={leftAlt}>
+    <img alt={leftAlt} src={l} loading="lazy" class="w-full h-full object-cover select-none" draggable="false" />
   </div>
-  <div class="diff-resizer"></div>
-</div>
+
+  <input class="mdx-diff-range" type="range" min="0" max="100" value="50" aria-label="Slide to compare images" />
+  <div class="mdx-diff-handle" aria-hidden="true"></div>
+</mdx-diff>
+
+<script>
+  class MdxDiff extends HTMLElement {
+    connectedCallback() {
+      const range = this.querySelector('.mdx-diff-range') as HTMLInputElement | null;
+      const baseImg = this.querySelector('.mdx-diff-base img') as HTMLImageElement | null;
+      const overlayImg = this.querySelector('.mdx-diff-overlay img') as HTMLImageElement | null;
+
+      const sync = () => {
+        const value = Math.max(0, Math.min(100, Number(range?.value || 50)));
+        this.style.setProperty('--pos', `${value}%`);
+      };
+
+      const applyBestSize = () => {
+        const candidates = [baseImg, overlayImg]
+          .filter((img): img is HTMLImageElement => Boolean(img && img.naturalWidth > 0 && img.naturalHeight > 0))
+          .map((img) => ({ w: img.naturalWidth, h: img.naturalHeight }));
+
+        if (!candidates.length) return;
+
+        const maxWidth = Math.max(...candidates.map((item) => item.w));
+        const maxHeight = Math.max(...candidates.map((item) => item.h));
+
+        if (maxWidth <= 0 || maxHeight <= 0) return;
+
+        this.style.setProperty('--diff-max-width', `${maxWidth}px`);
+        this.style.setProperty('--diff-max-height', `${maxHeight}px`);
+        this.style.setProperty('--diff-aspect-ratio', `${maxWidth} / ${maxHeight}`);
+      };
+
+      const onImageReady = (img: HTMLImageElement | null) => {
+        if (!img) return;
+        if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+          applyBestSize();
+          return;
+        }
+        img.addEventListener('load', applyBestSize, { once: true });
+      };
+
+      if (range) {
+        range.addEventListener('input', sync);
+        range.addEventListener('change', sync);
+      }
+
+      onImageReady(baseImg);
+      onImageReady(overlayImg);
+
+      // Handle cached images / very fast loads.
+      applyBestSize();
+      sync();
+    }
+  }
+
+  if (!customElements.get('mdx-diff')) customElements.define('mdx-diff', MdxDiff);
+</script>
+
+<style>
+  .mdx-diff {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: var(--diff-max-width, 100%);
+    max-height: var(--diff-max-height, none);
+    aspect-ratio: var(--diff-aspect-ratio, 16 / 9);
+    overflow: hidden;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background: rgb(255 255 255 / 0.04);
+  }
+
+  .mdx-diff-base,
+  .mdx-diff-overlay {
+    position: absolute;
+    inset: 0;
+  }
+
+  .mdx-diff-overlay {
+    clip-path: inset(0 calc(100% - var(--pos, 50%)) 0 0);
+  }
+
+  .mdx-diff img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .mdx-diff-range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    z-index: 20;
+  }
+
+  .mdx-diff-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos, 50%);
+    width: 2px;
+    transform: translateX(-1px);
+    background: rgb(255 255 255 / 0.9);
+    z-index: 10;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.2);
+  }
+
+  .mdx-diff-handle::after {
+    content: "↔";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    display: grid;
+    place-items: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: rgb(255 255 255 / 0.95);
+    background: rgb(0 0 0 / 0.55);
+    border: 1px solid rgb(255 255 255 / 0.4);
+    backdrop-filter: blur(4px);
+  }
+</style>

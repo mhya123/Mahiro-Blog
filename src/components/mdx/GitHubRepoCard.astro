@@ -1,0 +1,125 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface GitHubRepoCardProps {
+  repo: string; // owner/repo
+  description?: string;
+  href?: string;
+  theme?: "dark" | "auto";
+}
+
+const {
+  repo,
+  description,
+  href,
+  theme = "dark",
+} = Astro.props as GitHubRepoCardProps;
+
+const [owner = "", repoName = ""] = String(repo || "").split("/");
+const isValidRepo = !!owner && !!repoName;
+
+type RepoApi = {
+  html_url?: string;
+  description?: string;
+  stargazers_count?: number;
+  forks_count?: number;
+  language?: string;
+  license?: { spdx_id?: string; name?: string } | null;
+  owner?: { login?: string; avatar_url?: string };
+};
+
+let repoData: RepoApi | null = null;
+
+if (isValidRepo) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "Mahiro-Blog",
+      },
+    });
+    if (res.ok) repoData = (await res.json()) as RepoApi;
+  } catch {
+    repoData = null;
+  }
+}
+
+const cardUrl = href || repoData?.html_url || (isValidRepo ? `https://github.com/${owner}/${repoName}` : "#");
+const cardDesc = description || repoData?.description || "No description provided.";
+const avatar = repoData?.owner?.avatar_url || (owner ? `https://github.com/${owner}.png` : "");
+const language = repoData?.language || "Unknown";
+const license = repoData?.license?.spdx_id || repoData?.license?.name || "No License";
+
+const formatCount = (value?: number) => {
+  const n = Number(value || 0);
+  if (!Number.isFinite(n)) return "0";
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  return String(n);
+};
+
+const stars = formatCount(repoData?.stargazers_count);
+const forks = formatCount(repoData?.forks_count);
+---
+
+<a
+  href={cardUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  class:list={[
+    "not-prose block rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl",
+    theme === "dark"
+      ? "bg-[linear-gradient(145deg,#14070e,#0f0a14)] text-white"
+      : "bg-base-100 text-base-content",
+  ]}
+  aria-label={`Open GitHub repository ${repo}`}
+>
+  <div class="p-5 sm:p-6">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0 flex items-center gap-3">
+        {
+          avatar ? (
+            <img
+              src={avatar}
+              alt={owner}
+              width="40"
+              height="40"
+              loading="lazy"
+              class="h-10 w-10 rounded-full ring-1 ring-white/20"
+            />
+          ) : (
+            <div class="h-10 w-10 rounded-full bg-white/10" />
+          )
+        }
+        <div class="min-w-0">
+          <div class="truncate text-2xl font-bold tracking-tight">
+            <span class="opacity-90">{owner}</span>
+            <span class="opacity-70"> / </span>
+            <span>{repoName || repo}</span>
+          </div>
+          <p class="mt-1 truncate text-sm opacity-85">{cardDesc}</p>
+        </div>
+      </div>
+      <Icon name="lucide:github" class="h-6 w-6 shrink-0 opacity-90" />
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm opacity-85">
+      <span class="inline-flex items-center gap-1.5">
+        <Icon name="lucide:star" class="h-4 w-4" />
+        {stars}
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <Icon name="lucide:git-fork" class="h-4 w-4" />
+        {forks}
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <Icon name="lucide:scale" class="h-4 w-4" />
+        {license}
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <span class="inline-block h-2.5 w-2.5 rounded-full bg-cyan-400"></span>
+        {language}
+      </span>
+    </div>
+  </div>
+</a>

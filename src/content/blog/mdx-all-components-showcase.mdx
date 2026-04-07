@@ -1,0 +1,289 @@
+---
+title: MDX 全组件演示帖（Mahiro-Blog）
+description: 一篇用于展示 Mahiro-Blog 当前 MDX 组件能力的示例文章，涵盖提示框、卡片、时间线、Diff 对比、GitHub 卡片等。
+pubDate: 2026-04-07
+updated: 2026-04-07
+image: /home.webp
+badge: Pin
+draft: false
+categories:
+  - MDX
+tags:
+  - MDX
+  - 组件示例
+  - 教程
+---
+
+import Info from "@/components/mdx/Info.astro";
+import Success from "@/components/mdx/Success.astro";
+import Warning from "@/components/mdx/Warning.astro";
+import ErrorBox from "@/components/mdx/Error.astro";
+import Collapse from "@/components/mdx/Collapse.astro";
+import Kbd from "@/components/mdx/Kbd.astro";
+import Diff from "@/components/mdx/Diff.astro";
+import TimeLine from "@/components/mdx/TimeLine.astro";
+import LinkCard from "@/components/mdx/LinkCard.astro";
+import FeatureCard from "@/components/mdx/FeatureCard.astro";
+import FriendCard from "@/components/mdx/FriendCard.astro";
+import NavigationCard from "@/components/mdx/NavigationCard.astro";
+import ProjectCard from "@/components/mdx/ProjectCard.astro";
+import RepositoryCard from "@/components/mdx/RepositoryCard.astro";
+import GitHubRepoCard from "@/components/mdx/GitHubRepoCard.astro";
+import GitHubStats from "@/components/mdx/GitHubStats.astro";
+import Showcase from "@/components/mdx/Showcase.astro";
+import TocCollapse from "@/components/mdx/TocCollapse.astro";
+import AlertBase from "@/components/mdx/alerts/AlertBase.astro";
+import Card from "@/components/temple/Card.astro";
+import CardGroup from "@/components/temple/CardGroup.astro";
+
+# MDX 全组件演示
+
+这篇文章是一个“功能样板间”。你可以直接复制其中任意组件片段到自己的 `.mdx` 文章里。
+
+<TocCollapse
+  title="本页组件目录（移动端可折叠）"
+  headings={[
+    { id: "#提示框-alerts", text: "提示框 Alerts", level: 2 },
+  { id: "#自定义提示框-alertbase", text: "自定义提示框 AlertBase", level: 2 },
+    { id: "#折叠与键盘-collapse--kbd", text: "折叠与键盘", level: 2 },
+    { id: "#图片对比-diff", text: "图片对比 Diff", level: 2 },
+    { id: "#时间线-timeline", text: "时间线", level: 2 },
+    { id: "#链接与功能卡片", text: "链接与功能卡片", level: 2 },
+    { id: "#站点导航与友链卡片", text: "导航与友链", level: 2 },
+    { id: "#项目与仓库卡片", text: "项目与仓库卡片", level: 2 },
+    { id: "#github-统计卡片", text: "GitHub 统计卡片", level: 2 },
+    { id: "#卡片模板-card--cardgroup", text: "卡片模板 Card / CardGroup", level: 2 },
+    { id: "#数学公式-katex行内--块级", text: "数学公式 KaTeX", level: 2 },
+    { id: "#高亮代码块行号--复制按钮", text: "高亮代码块", level: 2 },
+  ]}
+/>
+
+## 提示框 Alerts
+
+<Info>
+这是一个信息提示框，适合放背景说明、注意事项、概念解释。
+</Info>
+
+<Success>
+这是一个成功提示框，适合放“操作已完成”“配置成功”等内容。
+</Success>
+
+<Warning>
+这是一个警告提示框，适合提醒兼容性、风险项、前置条件。
+</Warning>
+
+<ErrorBox>
+这是一个错误提示框，适合放排错建议和失败原因。
+</ErrorBox>
+
+## 自定义提示框 AlertBase
+
+<AlertBase type="info" icon="lucide:rocket">
+  这是通过 `AlertBase` 自定义出来的提示框，你可以自由组合 `type` 和 `icon`。
+</AlertBase>
+
+<AlertBase type="warning" icon="lucide:shield-alert">
+  在生产环境启用新功能前，建议先在预览环境回归测试。
+</AlertBase>
+
+## 折叠与键盘（Collapse + Kbd）
+
+<Collapse title="点击展开：常用快捷键">
+  <ul>
+    <li><Kbd>Ctrl</Kbd> + <Kbd>K</Kbd>：打开搜索</li>
+    <li><Kbd>Ctrl</Kbd> + <Kbd>S</Kbd>：保存草稿</li>
+    <li><Kbd>Shift</Kbd> + <Kbd>Enter</Kbd>：换行</li>
+  </ul>
+</Collapse>
+
+## 图片对比 Diff
+
+<Diff
+  l="/image/131036299_p0.png"
+  r="/image/134181389_p0.png"
+  leftAlt="优化前"
+  rightAlt="优化后"
+/>
+
+## 时间线 TimeLine
+
+<TimeLine
+  items={[
+    { year: "2024", event: "项目初始化，完成基础页面结构与主题系统。" },
+    { year: "2025", event: "接入写作后台，支持文章创建、编辑、发布。" },
+    { year: "2026", event: "完善 MDX 组件生态，支持更强的内容表达。" },
+  ]}
+/>
+
+## 链接与功能卡片
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
+  <LinkCard
+    title="Astro 官网"
+    desc="现代内容站点框架，支持 Islands 架构与高性能静态输出。"
+    url="https://astro.build"
+    badge="Framework"
+    categories={["Frontend", "SSG"]}
+  />
+
+  <FeatureCard
+    title="组件化内容"
+    description="在 MDX 内直接使用组件，构建更丰富的图文内容。"
+    icon="lucide:layout-template"
+    color="oklch(0.7 0.2 260)"
+  />
+</div>
+
+## 站点导航与友链卡片
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
+  <NavigationCard
+    name="Mahiro 导航"
+    avatar="/favicon.png"
+    description="收录优质开发与设计资源，持续更新。"
+    url="https://www.mahiro.work/navigation"
+    category="导航"
+    id="nav-001"
+    badge="精选"
+    badgeIcon="lucide:sparkles"
+    badgeColor="primary"
+  />
+
+  <FriendCard
+    name="Astro"
+    avatar="/logo.png"
+    description="Build faster websites with less client-side JavaScript."
+    url="https://astro.build"
+    badge="Friend"
+  />
+</div>
+
+## 项目与仓库卡片
+
+<div class="grid grid-cols-1 gap-4 not-prose">
+  <ProjectCard
+    name="Mahiro-Blog"
+    avatar="/logo.png"
+    description="一个偏内容创作体验的 Astro 博客模板，支持写作后台与丰富组件。"
+    url="https://github.com/mhya123/Mahiro-Blog"
+    badge="Open Source"
+    tags={["Astro", "TypeScript", "MDX", "DaisyUI"]}
+    author="mhya123"
+    github="https://github.com/mhya123/Mahiro-Blog"
+  />
+
+  <RepositoryCard repo="withastro/astro" isPinned={true} />
+
+  <GitHubRepoCard repo="MikeWang000000/Natter" />
+
+  <GitHubRepoCard
+    repo="withastro/astro"
+    theme="auto"
+    description="Astro：用于构建高性能内容网站的现代框架。"
+  />
+</div>
+
+## GitHub 统计卡片
+
+<GitHubStats username="MhYa123" repositoryName="Mahiro-Blog" showCommitGraph={false} />
+
+## Showcase（站点可达性小徽章）
+
+<div class="not-prose flex flex-wrap gap-2">
+  <Showcase name="GitHub" url="https://github.com" />
+  <Showcase name="Astro" url="https://astro.build" />
+  <Showcase name="Mahiro" url="https://www.mahiro.work" />
+</div>
+
+## 卡片模板 Card / CardGroup
+
+<CardGroup cols="3" class="not-prose">
+  <Card class="p-4 border border-base-200/80">
+    <h4 class="font-semibold mb-2">卡片 A</h4>
+    <p class="text-sm opacity-80">适合放简要结论、步骤摘要或模块说明。</p>
+  </Card>
+
+  <Card class="p-4 border border-base-200/80">
+    <h4 class="font-semibold mb-2">卡片 B</h4>
+    <p class="text-sm opacity-80">可以和 FeatureCard、LinkCard 混用，统一视觉节奏。</p>
+  </Card>
+
+  <Card class="p-4 border border-base-200/80">
+    <h4 class="font-semibold mb-2">卡片 C</h4>
+    <p class="text-sm opacity-80">支持响应式列数，移动端会自动堆叠。</p>
+  </Card>
+</CardGroup>
+
+## 数学公式（KaTeX：行内 + 块级）
+
+行内公式示例：当学习率使用余弦退火时，常见写法是 $\eta_t = \eta_{\min} + \frac{1}{2}(\eta_{\max}-\eta_{\min})(1+\cos(\frac{t\pi}{T}))$。
+
+块级公式示例（高斯分布概率密度）：
+
+$$
+f(x) = \frac{1}{\sigma\sqrt{2\pi}}\exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+$$
+
+再来一个矩阵示例：
+
+$$
+A =
+\begin{bmatrix}
+1 & 2 & 3 \\
+0 & 1 & 4 \\
+5 & 6 & 0
+\end{bmatrix}
+$$
+
+## 高亮代码块（行号 / 复制按钮）
+
+下面两个代码块会走你当前站点的代码增强链路（语言标签、行号、复制按钮）。
+
+```ts
+type PostMeta = {
+  title: string;
+  slug: string;
+  tags: string[];
+  updatedAt?: string;
+};
+
+export function normalizeSlug(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9\-]/g, "");
+}
+
+export function toPostMeta(title: string, tags: string[]): PostMeta {
+  return {
+    title,
+    slug: normalizeSlug(title),
+    tags: [...new Set(tags.map(t => t.trim()).filter(Boolean))],
+    updatedAt: new Date().toISOString(),
+  };
+}
+```
+
+```bash
+# install dependencies
+pnpm install
+
+# run dev server
+pnpm dev
+
+# type/lint checks
+pnpm check
+```
+
+---
+
+## 复制建议
+
+如果你是第一次用 MDX，建议先从这三个组件开始：
+
+1. `Info / Warning`（表达结构更清晰）
+2. `LinkCard`（外链更美观）
+3. `GitHubRepoCard`（技术文章里很实用）
+
+等内容稳定后，再逐步加入 `Diff`、`TimeLine` 这类增强组件。

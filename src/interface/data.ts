@@ -153,6 +153,13 @@ export interface GitHubStatsProps {
   layout?: "default" | "compact";
 }
 
+export interface GitHubRepoCardProps {
+  repo: string;
+  description?: string;
+  href?: string;
+  theme?: "dark" | "auto";
+}
+
 export interface TimelineItem {
   title: string;
   date: string;

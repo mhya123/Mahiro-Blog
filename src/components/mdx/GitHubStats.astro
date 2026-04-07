@@ -147,7 +147,7 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
 <script>
   class GitHubStats extends HTMLElement {
     private abortController: AbortController | null = null;
-    private readonly githubToken = import.meta.env.GITHUB_TOKEN || "";
+    private readonly githubToken = import.meta.env.PUBLIC_GITHUB_TOKEN || import.meta.env.GITHUB_TOKEN || "";
 
     connectedCallback() {
       this.abortController = new AbortController();
@@ -206,7 +206,8 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
             const resetTime = response.headers.get("X-RateLimit-Reset");
             const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000) : new Date();
             console.warn(`GitHub API rate limit exceeded. Resets at ${resetDate.toLocaleTimeString()}`);
-            throw new Error("GitHub API rate limit exceeded");
+            // 速率限制属于预期状态，返回响应由上层做降级处理，避免抛错刷屏
+            return response;
           }
         }
 
@@ -222,14 +223,17 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
       }
     }
 
+    private isRateLimitedResponse(response: Response): boolean {
+      return response.status === 403 && response.headers.get("X-RateLimit-Remaining") === "0";
+    }
+
     // 从本地存储获取缓存的数据
-    private getCachedData(key: string): any {
+    private getCachedData(key: string, maxAge = 24 * 60 * 60 * 1000): any {
       try {
         const cachedData = localStorage.getItem(`github-stats:${key}`);
         if (cachedData) {
           const { data, timestamp } = JSON.parse(cachedData);
-          // 检查缓存是否在24小时内
-          if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+          if (typeof maxAge !== "number" || maxAge < 0 || Date.now() - timestamp < maxAge) {
             return data;
           }
         }
@@ -237,6 +241,10 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
         console.warn("Error reading from cache:", e);
       }
       return null;
+    }
+
+    private getStaleCachedData(key: string): any {
+      return this.getCachedData(key, -1);
     }
 
     // 缓存数据到本地存储
@@ -257,7 +265,8 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
     async fetchRepoData(username: string, repoName: string, signal: AbortSignal) {
       // 首先尝试读取缓存
       const cacheKey = `repo:${username}/${repoName}`;
-      const cachedData = this.getCachedData(cacheKey);
+  const cachedData = this.getCachedData(cacheKey);
+  const staleData = this.getStaleCachedData(cacheKey);
 
       if (cachedData) {
         console.log("Using cached repository data");
@@ -271,6 +280,17 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
       try {
         const url = `https://api.github.com/repos/${username}/${repoName}`;
         const response = await this.fetchWithRetry(url, this.getRequestOptions(signal));
+
+        if (this.isRateLimitedResponse(response)) {
+          if (staleData) {
+            this.updateRepoUI(staleData);
+            this.renderCommitGraph();
+            this.showError("GitHub API 受限，已显示缓存数据");
+          } else {
+            this.showError("GitHub API 达到速率限制，请稍后刷新");
+          }
+          return;
+        }
 
         if (!response.ok) {
           throw new Error(`Failed to fetch repository data: ${response.status}`);
@@ -290,7 +310,17 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
         if (error instanceof DOMException && error.name === "AbortError") {
           console.log("Fetch aborted");
         } else {
-          console.error("Error fetching repository data:", error);
+          // 对于外层捕获，只记录非限流场景，避免控制台噪音
+          if (!(error instanceof Error && error.message.includes("rate limit"))) {
+            console.error("Error fetching repository data:", error);
+          }
+
+          if (staleData) {
+            this.updateRepoUI(staleData);
+            this.renderCommitGraph();
+            this.showError("GitHub API 受限，已显示缓存数据");
+            return;
+          }
 
           // 显示对用户友好的错误消息
           let errorMessage = "Failed to load repository data";
@@ -308,7 +338,8 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
     async fetchUserData(username: string, signal: AbortSignal) {
       // 首先尝试读取缓存
       const cacheKey = `user:${username}`;
-      const cachedData = this.getCachedData(cacheKey);
+  const cachedData = this.getCachedData(cacheKey);
+  const staleData = this.getStaleCachedData(cacheKey);
 
       if (cachedData) {
         console.log("Using cached user data");
@@ -337,6 +368,10 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
           const reposUrl = `https://api.github.com/users/${username}/repos?per_page=100&page=${page}`;
           const reposResponse = await this.fetchWithRetry(reposUrl, this.getRequestOptions(signal));
 
+          if (this.isRateLimitedResponse(reposResponse)) {
+            break;
+          }
+
           if (!reposResponse.ok) {
             break;
           }
@@ -360,7 +395,15 @@ const repoUrl = repositoryName ? `https://github.com/${username}/${repositoryNam
         if (error instanceof DOMException && error.name === "AbortError") {
           console.log("Fetch aborted");
         } else {
-          console.error("Error fetching user data:", error);
+          if (!(error instanceof Error && error.message.includes("rate limit"))) {
+            console.error("Error fetching user data:", error);
+          }
+
+          if (staleData) {
+            this.updateUserUI(staleData.userData, staleData.totalStars || 0);
+            this.showError("GitHub API 受限，已显示缓存数据");
+            return;
+          }
 
           // 显示对用户友好的错误消息
           let errorMessage = "Failed to load user data";
