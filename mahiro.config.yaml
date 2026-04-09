@@ -20,11 +20,11 @@ site:
   banner:
     defaultMode: background
     enableRandom: false
-    randomUrl: https://i.mahiro.work/i/2026/02/26/sjago9.png
+    randomUrl: https://sta.mahiro.work/i/2026/04/09/69d7596fcf8df.png
     randomCount: 5
     height: 60vh
     images:
-      - https://i.mahiro.work/i/2026/02/26/sjago9.png
+      - https://sta.mahiro.work/i/2026/04/09/69d7596fcf8df.png
   footer:
     # 区块显示开关
     showBrand: true
