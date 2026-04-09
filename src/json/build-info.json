@@ -1,10 +1,10 @@
 {
-  "commitSha": "9396ac4394df53e366367c0a1f90f11930be0691",
-  "commitShort": "9396ac4",
-  "commitMessage": "修复样式：优化 MainCard 组件的标题和帮助按钮的样式过渡效果",
+  "commitSha": "ac7d947a8cc42f5199c3ebfe5841af58bce90aac",
+  "commitShort": "ac7d947",
+  "commitMessage": "修复配置：更新横幅图片的 URL",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-07T21:13:52+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/9396ac4394df53e366367c0a1f90f11930be0691",
-  "buildTime": "2026/4/7 21:14:34",
-  "totalCommits": 318
+  "commitDate": "2026-04-09T15:47:31+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/ac7d947a8cc42f5199c3ebfe5841af58bce90aac",
+  "buildTime": "2026/4/9 15:48:05",
+  "totalCommits": 320
 }
