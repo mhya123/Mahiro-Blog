@@ -44,7 +44,7 @@ import CardGroup from "@/components/temple/CardGroup.astro";
   title="本页组件目录（移动端可折叠）"
   headings={[
     { id: "#提示框-alerts", text: "提示框 Alerts", level: 2 },
-  { id: "#自定义提示框-alertbase", text: "自定义提示框 AlertBase", level: 2 },
+    { id: "#自定义提示框-alertbase", text: "自定义提示框 AlertBase", level: 2 },
     { id: "#折叠与键盘-collapse--kbd", text: "折叠与键盘", level: 2 },
     { id: "#图片对比-diff", text: "图片对比 Diff", level: 2 },
     { id: "#时间线-timeline", text: "时间线", level: 2 },
@@ -55,8 +55,11 @@ import CardGroup from "@/components/temple/CardGroup.astro";
     { id: "#卡片模板-card--cardgroup", text: "卡片模板 Card / CardGroup", level: 2 },
     { id: "#数学公式-katex行内--块级", text: "数学公式 KaTeX", level: 2 },
     { id: "#高亮代码块行号--复制按钮", text: "高亮代码块", level: 2 },
+    { id: "#更多原生-mdx-与-markdown-进阶语法", text: "深入：MDX 与 Markdown 进阶", level: 2 },
   ]}
 />
+
+---
 
 ## 提示框 Alerts
 
@@ -278,6 +281,69 @@ pnpm check
 
 ---
 
+## 更多原生 MDX 与 Markdown 进阶语法
+
+MDX 的强大不仅在于可以直接引入框架组件，还完全兼容并扩展了你日常用到的 Markdown 的原生高阶特性：
+
+### 1. 复杂嵌套组件流 (Component Nesting)
+
+你不仅可以直接书写内容，还可以随意嵌套我们的任何 MDX 组件！比如，把代码块、提醒框丢到 `<Collapse>` 中：
+
+<Collapse title="点击展开一个带有提醒的代码高阶用法">
+  **你可以在折叠框里随心所欲写 Markdown：**
+  
+  <Warning>
+    记得先配置环境变量 `.env`，否则项目起不来！
+  </Warning>
+  
+  ```bash
+  # 假装这是一个神奇的部署命令
+  npm run deploy --force
+  ```
+</Collapse>
+
+### 2. Markdown 原生表格 (Tables)
+
+自带完美的 Tailwind 原生表格增强和悬停动效：
+
+| 框架名称 | 首推架构 | 渲染模式 | 适合搭配的宿主环境 |
+| :--- | :---: | :---: | ---: |
+| **Astro** | Islands | SSG / SSR | 极强的内容站点、博客 |
+| **Next.js** | App Router | SSR / RSC | 复杂的面板、全栈交互应用 |
+| **Nuxt** | Vue 3 | SSR / SSG | 偏爱 Vue 生态的高交互站点 |
+
+### 3. 脚标标注 / Markdown Footnotes
+
+当你在内容中需要解释某个专有名词但不想打断正文阅读体验时，可以善用脚注功能。
+比如说，这个项目的主题使用的是现代化色彩空间 OKLCH[^1]。而在排版中，为了更好的无障碍响应，全部使用了 `rem`[^2] 相对单位而不是僵硬的像素。
+
+[^1]: **OKLCH:** 基于人眼感知的现代极品色彩空间模型，可以生成非常丝滑的渐变色谱，完爆传统 HSL。
+[^2]: **rem:** CSS 原生单位，意为 `root em`，会根据系统缩放按比例响应。
+
+### 4. 任务列表与代办事项 (Task Lists)
+
+非常适合用于撰写教程进度或者是自己的学习清单：
+
+- [x] 重构 Astro 基础全局布局
+- [x] 实现所有交互组件的平滑过渡动画
+- [ ] 接入文章 Algolia 模糊预搜索
+- [ ] 增加夜间模式/自适应光效探针
+
+### 5. 动态变量与 JSX 数据遍历
+
+利用 MDX 的原生生态，你可以直接在文件里随时定义 JS 变量并且当场 `.map()` 渲染：
+
+export const skillList = ["TypeScript", "Rust", "Swift", "C++"];
+
+**下面这一组炫目的徽章就是我们在 MDX 里用变量自动 `.map()` 写出来的：**
+<div class="not-prose flex flex-wrap gap-2 mt-4">
+  {skillList.map(skill => (
+    <span class="badge badge-accent badge-lg font-bold shadow-md">{skill}</span>
+  ))}
+</div>
+
+---
+
 ## 复制建议
 
 如果你是第一次用 MDX，建议先从这三个组件开始：
@@ -286,4 +352,4 @@ pnpm check
 2. `LinkCard`（外链更美观）
 3. `GitHubRepoCard`（技术文章里很实用）
 
-等内容稳定后，再逐步加入 `Diff`、`TimeLine` 这类增强组件。
+如果你想挑战进阶，就可以像上文演示的一样，使用 `export const` 来结合局部 JSX 数据生成图表与复杂的动态排版！
