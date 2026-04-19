@@ -1,0 +1,38 @@
+---
+/**
+ * ColorSwatch 色板展示组件
+ * 用于在设计文章中展示颜色和色阶
+ *
+ * @example
+ * <ColorSwatch colors={[
+ *   { name: "Primary", value: "#6366f1" },
+ *   { name: "Accent", value: "#f472b6" },
+ * ]} />
+ */
+
+interface ColorItem {
+  name: string;
+  value: string;
+}
+
+interface Props {
+  colors: ColorItem[];
+}
+
+const { colors } = Astro.props;
+---
+
+<div class="color-swatch-grid not-prose my-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+  {colors.map((color) => (
+    <div class="color-swatch-item group rounded-xl border border-base-content/10 overflow-hidden bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+      <div
+        class="h-20 w-full transition-transform duration-300 group-hover:scale-105"
+        style={`background-color: ${color.value};`}
+      />
+      <div class="px-3 py-2">
+        <div class="font-semibold text-sm text-base-content">{color.name}</div>
+        <div class="font-mono text-xs text-base-content/50 uppercase">{color.value}</div>
+      </div>
+    </div>
+  ))}
+</div>

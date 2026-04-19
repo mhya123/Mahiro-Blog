@@ -1,0 +1,87 @@
+---
+/**
+ * Tab / Tabs 选项卡组件
+ * 用于在同一区域切换展示不同内容（如多语言代码、多平台配置等）
+ *
+ * @example
+ * <Tab labels={["pnpm", "npm", "yarn"]}>
+ *   <div>pnpm install</div>
+ *   <div>npm install</div>
+ *   <div>yarn</div>
+ * </Tab>
+ */
+interface Props {
+  labels: string[];
+  /** 默认激活的 tab 索引 */
+  activeIndex?: number;
+}
+
+const { labels, activeIndex = 0 } = Astro.props;
+const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<div class="tabs-container not-prose my-6" data-tab-id={tabId}>
+  <!-- Tab 头部 -->
+  <div class="tab-headers flex border-b border-base-content/15 overflow-x-auto scrollbar-none" role="tablist">
+    {labels.map((label, i) => (
+      <button
+        role="tab"
+        aria-selected={i === activeIndex ? "true" : "false"}
+        class:list={[
+          "tab-header px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-200 border-b-2 cursor-pointer select-none",
+          i === activeIndex
+            ? "border-primary text-primary bg-primary/5"
+            : "border-transparent text-base-content/60 hover:text-base-content hover:bg-base-200/50",
+        ]}
+        data-tab-index={i}
+      >
+        {label}
+      </button>
+    ))}
+  </div>
+
+  <!-- Tab 内容 -->
+  <div class="tab-panels bg-base-200/30 rounded-b-xl border border-t-0 border-base-content/10">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .tabs-container :global(.tab-panels > *) {
+    display: none;
+    padding: 1rem 1.25rem;
+  }
+
+  .tabs-container :global(.tab-panels > *:first-child) {
+    display: block;
+  }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    document.querySelectorAll<HTMLElement>(".tabs-container").forEach((container) => {
+      const headers = container.querySelectorAll<HTMLButtonElement>(".tab-header");
+      const panels = container.querySelectorAll<HTMLElement>(".tab-panels > *");
+
+      headers.forEach((header) => {
+        header.addEventListener("click", () => {
+          const idx = Number(header.dataset.tabIndex);
+
+          headers.forEach((h, i) => {
+            const active = i === idx;
+            h.setAttribute("aria-selected", String(active));
+            h.classList.toggle("border-primary", active);
+            h.classList.toggle("text-primary", active);
+            h.classList.toggle("bg-primary/5", active);
+            h.classList.toggle("border-transparent", !active);
+            h.classList.toggle("text-base-content/60", !active);
+          });
+
+          panels.forEach((p, i) => {
+            p.style.display = i === idx ? "block" : "none";
+          });
+        });
+      });
+    });
+  });
+</script>

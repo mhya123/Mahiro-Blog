@@ -1,0 +1,82 @@
+---
+/**
+ * VideoPlayer 视频播放器组件
+ * 支持本地视频和 Bilibili / YouTube iframe 嵌入
+ *
+ * @example
+ * <VideoPlayer src="/videos/demo.mp4" title="演示视频" />
+ * <VideoPlayer bilibili="BV1xx411c7mD" title="Bilibili 视频" />
+ * <VideoPlayer youtube="dQw4w9WgXcQ" title="YouTube 视频" />
+ */
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  /** 本地或远程视频 URL */
+  src?: string;
+  /** Bilibili BV 号 */
+  bilibili?: string;
+  /** YouTube 视频 ID */
+  youtube?: string;
+  /** 标题 */
+  title?: string;
+  /** 封面图 */
+  poster?: string;
+  /** 宽高比 */
+  ratio?: string;
+}
+
+const { src, bilibili, youtube, title, poster, ratio = "16/9" } = Astro.props;
+
+const bilibiliSrc = bilibili
+  ? `https://player.bilibili.com/player.html?bvid=${bilibili}&high_quality=1&danmaku=0&autoplay=0`
+  : null;
+
+const youtubeSrc = youtube
+  ? `https://www.youtube-nocookie.com/embed/${youtube}`
+  : null;
+
+const iframeSrc = bilibiliSrc || youtubeSrc;
+---
+
+<figure class="video-player not-prose my-6 rounded-2xl border border-base-content/12 bg-base-200/30 overflow-hidden shadow-sm">
+  {title && (
+    <div class="px-4 py-2.5 border-b border-base-content/10 bg-base-200/60 flex items-center gap-2 text-sm font-semibold text-base-content/80">
+      <Icon name="lucide:play-circle" class="w-4 h-4 text-primary" />
+      {title}
+    </div>
+  )}
+
+  <div class="relative w-full" style={`aspect-ratio: ${ratio};`}>
+    {src ? (
+      <video
+        class="w-full h-full object-contain bg-black"
+        controls
+        preload="metadata"
+        poster={poster}
+        playsinline
+      >
+        <source src={src} type="video/mp4" />
+        你的浏览器不支持 HTML5 视频。
+      </video>
+    ) : iframeSrc ? (
+      <iframe
+        src={iframeSrc}
+        class="w-full h-full border-0"
+        allowfullscreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        loading="lazy"
+        title={title || "嵌入式视频"}
+      />
+    ) : (
+      <div class="w-full h-full flex items-center justify-center bg-base-200 text-base-content/50">
+        <span>请提供 src、bilibili 或 youtube 参数</span>
+      </div>
+    )}
+  </div>
+
+  {title && (
+    <figcaption class="px-4 py-2 text-center text-xs text-base-content/50">
+      {title}
+    </figcaption>
+  )}
+</figure>

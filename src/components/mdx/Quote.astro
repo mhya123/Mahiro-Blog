@@ -1,0 +1,45 @@
+---
+/**
+ * Quote 引用卡片组件
+ * 用于展示名人名言、重要引用或标注性文本
+ *
+ * @example
+ * <Quote author="Linus Torvalds" source="Just for Fun">
+ *   Talk is cheap. Show me the code.
+ * </Quote>
+ */
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  /** 作者名称 */
+  author?: string;
+  /** 来源 / 出处 */
+  source?: string;
+  /** 图标名称 */
+  icon?: string;
+}
+
+const { author, source, icon = "lucide:quote" } = Astro.props;
+---
+
+<figure class="quote-card not-prose my-6 relative overflow-hidden rounded-2xl border border-base-content/10 bg-gradient-to-br from-base-200/60 to-base-100 p-6 shadow-sm">
+  <!-- 装饰引号 -->
+  <div class="absolute -top-2 -left-1 text-primary/10 text-[6rem] font-serif leading-none select-none pointer-events-none" aria-hidden="true">
+    "
+  </div>
+
+  <blockquote class="relative z-10 text-lg sm:text-xl leading-relaxed text-base-content/90 italic pl-4 border-l-4 border-primary/40">
+    <slot />
+  </blockquote>
+
+  {(author || source) && (
+    <figcaption class="relative z-10 mt-4 flex items-center gap-2 text-sm text-base-content/60 pl-4">
+      <Icon name={icon} class="w-4 h-4 text-primary shrink-0" />
+      <span>
+        {author && <strong class="text-base-content/80 not-italic">{author}</strong>}
+        {author && source && <span class="mx-1">·</span>}
+        {source && <cite class="not-italic">{source}</cite>}
+      </span>
+    </figcaption>
+  )}
+</figure>

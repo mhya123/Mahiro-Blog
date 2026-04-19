@@ -1,0 +1,34 @@
+---
+/**
+ * Badge 徽章组件
+ * 用于在正文中标注版本号、状态标签、技术栈等
+ *
+ * @example
+ * <Badge>v2.0</Badge>
+ * <Badge color="success">稳定</Badge>
+ * <Badge color="warning" icon="lucide:alert-triangle">实验性</Badge>
+ */
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  /** 颜色变体 */
+  color?: "primary" | "secondary" | "accent" | "info" | "success" | "warning" | "error" | "ghost";
+  /** 可选的前置图标 */
+  icon?: string;
+  /** 大小 */
+  size?: "sm" | "md" | "lg";
+}
+
+const { color = "primary", icon, size = "md" } = Astro.props;
+
+const sizeMap = {
+  sm: "badge-sm text-xs",
+  md: "badge-md text-sm",
+  lg: "badge-lg text-base",
+};
+---
+
+<span class:list={["badge not-prose font-semibold gap-1 shadow-sm", `badge-${color}`, sizeMap[size]]}>
+  {icon && <Icon name={icon} class="w-3.5 h-3.5" />}
+  <slot />
+</span>

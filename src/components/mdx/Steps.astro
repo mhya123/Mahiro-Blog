@@ -1,0 +1,73 @@
+---
+/**
+ * Steps 步骤条组件
+ * 用于在教程/指南中按步骤展示操作流程
+ * 
+ * @example
+ * <Steps>
+ *   <div>第一步：安装依赖</div>
+ *   <div>第二步：配置文件</div>
+ *   <div>第三步：启动项目</div>
+ * </Steps>
+ */
+interface Props {
+  /** 起始步骤编号 */
+  start?: number;
+}
+
+const { start = 1 } = Astro.props;
+---
+
+<div class="steps-container not-prose my-6" data-start={start}>
+  <slot />
+</div>
+
+<style>
+  .steps-container {
+    --step-color: oklch(var(--p));
+    --step-line: oklch(var(--bc) / 0.12);
+    counter-reset: step-counter calc(var(--start, 1) - 1);
+    padding-left: 2.75rem;
+    position: relative;
+  }
+
+  .steps-container::before {
+    content: "";
+    position: absolute;
+    left: 1.1rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--step-color), var(--step-line));
+    border-radius: 999px;
+  }
+
+  .steps-container > :global(*) {
+    counter-increment: step-counter;
+    position: relative;
+    padding: 0.75rem 0 1.35rem;
+  }
+
+  .steps-container > :global(*:last-child) {
+    padding-bottom: 0.25rem;
+  }
+
+  .steps-container > :global(*)::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: -2.75rem;
+    top: 0.6rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--step-color);
+    color: oklch(var(--pc));
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 4px oklch(var(--b1)), 0 4px 12px oklch(var(--p) / 0.25);
+    z-index: 1;
+  }
+</style>
