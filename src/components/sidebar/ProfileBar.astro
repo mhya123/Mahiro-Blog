@@ -197,7 +197,7 @@ const getCategoryDisplayName = (category: string): string => {
     ))}  
       
     {categoryEntries.length > 3 && (  
-      <div class="hidden-categories" style="display: none;">  
+      <div class="hidden-categories">  
         {categoryEntries.slice(3).map(([category, posts]) => (  
           <a href={`/blog/category/${category}`} aria-label={`View all posts in the ${category} category`}>  
             <button class="w-full h-10 rounded-lg bg-none hover:bg-base-200 active:bg-base-300 transition-all pl-2 hover:pl-3 text-base-content hover:text-primary">  
@@ -384,15 +384,35 @@ function initCategoriesToggle() {
     const moreDiv = expandBtn.querySelector('#categories-more');
     const collapseDiv = expandBtn.querySelector('#categories-collapse');
             
+    const collapseCategories = () => {
+      hiddenCategories.style.maxHeight = '0px';
+      hiddenCategories.style.opacity = '0';
+      hiddenCategories.classList.remove('expanded');
+      if (moreDiv) moreDiv.style.display = 'flex';
+      if (collapseDiv) collapseDiv.style.display = 'none';
+      // 稍微处理一下箭头旋转
+      const svg = expandBtn.querySelector('svg');
+      if (svg) svg.style.transform = 'rotate(0deg)';
+    };
+
+    const expandCategories = () => {
+      const scrollHeight = hiddenCategories.scrollHeight;
+      hiddenCategories.style.maxHeight = scrollHeight + 'px';
+      hiddenCategories.style.opacity = '1';
+      hiddenCategories.classList.add('expanded');
+      if (moreDiv) moreDiv.style.display = 'none';
+      if (collapseDiv) collapseDiv.style.display = 'flex';
+      const svg = expandBtn.querySelector('svg');
+      if (svg) svg.style.transform = 'rotate(180deg)';
+    };
+
+    collapseCategories();
+            
     expandBtn.addEventListener('click', () => {      
       if (isExpanded) {      
-        hiddenCategories.style.display = 'none';  
-        moreDiv.style.display = 'flex';
-        collapseDiv.style.display = 'none';
+        collapseCategories();
       } else {      
-        hiddenCategories.style.display = 'block';  
-        moreDiv.style.display = 'none';
-        collapseDiv.style.display = 'flex';
+        expandCategories();
       }      
       isExpanded = !isExpanded;      
     });      
@@ -556,5 +576,16 @@ function initTagsToggle() {
 
 #tags .is-extra-tag:hover {
   opacity: 1;
+}
+
+#categories .hidden-categories {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+}
+
+#expand-categories svg {
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 </style>

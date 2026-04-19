@@ -9,16 +9,16 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
 <button
   id="mobile-toc-button"
   aria-label={t("label.tableOfContents")}
-  class="btn btn-circle btn-md fixed bottom-20 right-6 z-50 bg-base-100 shadow-lg md:hidden opacity-0 invisible transition-all hover:scale-110"
+  class="btn btn-circle btn-md fixed bottom-[5.5rem] right-6 z-[9999] bg-base-100 shadow-lg md:hidden opacity-0 invisible transition-all hover:scale-110"
   onclick="mobile_toc_modal.showModal()"
 >
   <Icon name="lucide:list" class="h-5 w-5" />
 </button>
 
-<dialog id="mobile_toc_modal" class="modal md:hidden">
-  <div class="modal-box w-10/12 max-w-md bg-base-100 rounded-lg shadow-xl">
-    <div class="flex justify-between items-center border-b border-base-200 pb-4">
-      <h3 class="font-medium">{t("label.tableOfContents")}</h3>
+<dialog id="mobile_toc_modal" class="modal modal-bottom md:hidden backdrop-blur-sm">
+  <div class="modal-box w-11/12 max-w-sm mx-auto mb-8 bg-base-100 rounded-3xl shadow-2xl pb-6 border border-base-200">
+    <div class="flex justify-between items-center border-b border-base-200 pb-4 mb-2">
+      <h3 class="font-bold text-lg">{t("label.tableOfContents")}</h3>
       <form method="dialog">
         <button class="btn btn-circle btn-ghost" aria-label={t("label.tableOfContents")}>
           <Icon name="lucide:x" class="h-5 w-5" />
@@ -33,11 +33,12 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
               <li class="my-1">
                 <a
                   href={`#${heading.slug}`}
-                  class="mobile-toc-link flex items-center rounded-lg transition-color hover:bg-base-200"
+                  class="mobile-toc-link flex items-center rounded-xl transition-all hover:bg-base-200 py-2 px-3 border-l-2 border-transparent"
                   style={`margin-left: ${(heading.depth - 1) * 12}px`}
                   data-mobile-heading-id={heading.slug}
+                  onclick="mobile_toc_modal.close()"
                 >
-                  <span class="text-sm truncate">{heading.text}</span>
+                  <span class="text-sm truncate opacity-80">{heading.text}</span>
                 </a>
               </li>
             ))}
@@ -111,9 +112,21 @@ const { headings = [], showTOC = true } = Astro.props as TOCBarProps;
       tocLinks.forEach((link) => {
         const headingId = link.getAttribute("data-mobile-heading-id");
         if (headingId === activeHeadingId) {
-          link.classList.add("bg-primary/10", "font-medium");
+          link.classList.add("bg-primary/10", "font-bold", "text-primary", "border-primary");
+          link.classList.remove("border-transparent");
+          const span = link.querySelector("span");
+          if (span) {
+             span.classList.remove("opacity-80");
+             span.classList.add("opacity-100");
+          }
         } else {
-          link.classList.remove("bg-primary/10", "font-medium");
+          link.classList.remove("bg-primary/10", "font-bold", "text-primary", "border-primary");
+          link.classList.add("border-transparent");
+          const span = link.querySelector("span");
+          if (span) {
+             span.classList.add("opacity-80");
+             span.classList.remove("opacity-100");
+          }
         }
       });
     };

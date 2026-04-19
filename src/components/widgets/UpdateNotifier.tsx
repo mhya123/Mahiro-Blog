@@ -129,16 +129,33 @@ export default function UpdateNotifier() {
         };
     }, [isOpen]);
 
-    const panel = createPortal(
-            <div className="fixed inset-0 z-[9998] pointer-events-none">
+    const [isMounted, setIsMounted] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setIsMounted(true);
+            // 使用 setTimeout 30ms 强制脱离当前事件循环，确保初始状态 DOM ( opacity-0 ) 已经绘制
+            // 从而使接下来 opacity-100 的改变能够触发 CSS transition
+            const timer = setTimeout(() => setIsVisible(true), 30);
+            return () => clearTimeout(timer);
+        } else {
+            setIsVisible(false);
+            const timer = setTimeout(() => setIsMounted(false), 200);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
+    const panel = !isMounted ? null : createPortal(
+            <div className="fixed inset-0 z-[10005] pointer-events-none">
                 <div
                     id="update-notifier-panel"
                     role="dialog"
                     aria-modal="false"
                     aria-label="文章更新通知"
                     ref={panelRef}
-                    className={`pointer-events-auto absolute bottom-20 right-4 w-[calc(100vw-2rem)] max-w-[420px] max-h-[70vh] flex flex-col bg-base-100 rounded-2xl shadow-2xl border border-base-200 overflow-hidden sm:right-6 will-change-transform transition-[opacity,transform] duration-200 ease-out ${isOpen
-                        ? 'opacity-100 translate-y-0 scale-100'
+                    className={`absolute bottom-[13rem] right-4 w-[calc(100vw-2rem)] max-w-[420px] max-h-[70vh] flex flex-col bg-base-100 rounded-2xl shadow-2xl border border-base-200 overflow-hidden sm:right-6 will-change-transform transition-[opacity,transform] duration-200 ease-out ${isVisible
+                        ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
                         : 'opacity-0 translate-y-3 scale-[0.98] pointer-events-none'}`}
                 >
                     {/* Header */}
@@ -241,7 +258,7 @@ export default function UpdateNotifier() {
                     animateBell();
                     setIsOpen(!isOpen);
                 }}
-                className={`fixed bottom-6 right-6 z-[9997] btn btn-circle btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform`}
+                className={`fixed bottom-[9rem] right-4 sm:right-6 z-[9997] btn btn-circle btn-primary shadow-xl hover:scale-110 active:scale-95 transition-transform`}
                 aria-label={bellAriaLabel}
                 aria-haspopup="dialog"
                 aria-expanded={isOpen}

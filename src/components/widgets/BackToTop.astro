@@ -2,18 +2,20 @@
 import { Icon } from "astro-icon/components";
 ---
 
-<button
-  id="back-to-top"
-  type="button"
-  class="group fixed right-6 bottom-[5.5rem] z-[10000] grid h-12 w-12 place-items-center rounded-full border border-primary-content/10 bg-primary/85 text-primary-content shadow-[0_18px_40px_-20px_oklch(var(--p)/0.9)] opacity-0 pointer-events-none backdrop-blur-xl will-change-[transform,opacity] overflow-visible"
-  aria-label="返回顶部"
->
-  <!-- 呼吸光晕（常驻，由JS控制) -->
-  <span
-    id="back-to-top-glow"
-    class="pointer-events-none absolute inset-0 rounded-full bg-primary/30 opacity-0 blur-lg"
-    aria-hidden="true"
-  ></span>
+<div class="fixed left-0 right-0 bottom-6 z-[10000] pointer-events-none flex justify-center">
+  <div class="w-full max-w-[83rem] flex justify-end px-4 sm:px-6">
+    <button
+      id="back-to-top"
+      type="button"
+      class="group relative grid h-12 w-12 place-items-center rounded-full border border-primary-content/10 bg-primary/85 text-primary-content shadow-[0_18px_40px_-20px_oklch(var(--p)/0.9)] opacity-0 pointer-events-none backdrop-blur-xl will-change-[transform,opacity] overflow-visible"
+      aria-label="返回顶部"
+    >
+      <!-- 呼吸光晕（常驻，由JS控制) -->
+      <span
+        id="back-to-top-glow"
+        class="pointer-events-none absolute inset-0 rounded-full bg-primary/30 opacity-0 blur-lg"
+        aria-hidden="true"
+      ></span>
 
   <!-- 点击涟漪（由JS控制） -->
   <span
@@ -62,6 +64,8 @@ import { Icon } from "astro-icon/components";
     <Icon name="lucide:arrow-up" class="h-5 w-5" />
   </span>
 </button>
+  </div>
+</div>
 
 <script>
   import { animate, spring, remove } from "animejs";

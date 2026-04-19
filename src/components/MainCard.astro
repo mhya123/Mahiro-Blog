@@ -110,8 +110,8 @@ const heroTitleClass = "maincard-hero-title text-balance break-words text-[clamp
 
           {/* Description Button */}
           {description && (
-            <div class="flex-shrink-0">
-              <div class="dropdown dropdown-top dropdown-end dropdown-hover">
+            <div class="flex-shrink-0 relative w-8 h-8 z-10">
+              <div class="dropdown dropdown-top dropdown-end dropdown-hover absolute right-0 bottom-0">
                 <label
                   tabindex="0"
                   aria-label={accessibleHelpText}
@@ -152,6 +152,8 @@ const heroTitleClass = "maincard-hero-title text-balance break-words text-[clamp
 </Card>
 
 <script>
+  import gsap from "gsap";
+
   document.addEventListener("astro:page-load", () => {
     // Get all info buttons and dropdown contents
     const infoButtons = document.querySelectorAll(".dropdown label");
@@ -177,6 +179,51 @@ const heroTitleClass = "maincard-hero-title text-balance break-words text-[clamp
         }
       });
     });
+
+    // 动画 GSAP 接管
+    // 根绝原生 CSS 由于 max-width 变化引发的文本折行跳动（Reflow Tear）
+    const heroHeaders = document.querySelectorAll(".maincard-hero-header");
+    heroHeaders.forEach((header) => {
+      const helpBtn = header.querySelector(".maincard-hero-help");
+      const titleWrap = header.querySelector(".maincard-hero-title-wrap");
+      const title = header.querySelector(".maincard-hero-title");
+      if (!helpBtn || !titleWrap || !title) return;
+
+      helpBtn.addEventListener("mouseenter", () => {
+        gsap.to(titleWrap, {
+          y: -2,
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          borderColor: "rgba(255, 255, 255, 0.4)",
+          duration: 0.5,
+          ease: "power3.out",
+        });
+        gsap.to(title, {
+          scale: 0.96,
+          x: 1,
+          opacity: 0.88,
+          duration: 0.8,
+          ease: "elastic.out(1.1, 0.75)",
+          transformOrigin: "left center"
+        });
+      });
+
+      helpBtn.addEventListener("mouseleave", () => {
+        gsap.to(titleWrap, {
+          y: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.46)",
+          borderColor: "rgba(255, 255, 255, 0.22)",
+          duration: 0.4,
+          ease: "power2.out",
+        });
+        gsap.to(title, {
+          scale: 1,
+          x: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: "elastic.out(1, 0.85)",
+        });
+      });
+    });
   });
 </script>
 
@@ -184,43 +231,10 @@ const heroTitleClass = "maincard-hero-title text-balance break-words text-[clamp
   .maincard-hero-header .maincard-hero-title-wrap {
     flex: 1 1 auto;
     min-width: 0;
-    transition: max-width 320ms cubic-bezier(0.22, 1, 0.36, 1),
-      padding 280ms ease,
-      background-color 280ms ease,
-      border-color 280ms ease,
-      transform 280ms ease;
+    /* 去除了所有导致 reflow 重排的动画属性（如 max-width / padding），将其转交由外部 GSAP 接管弹性拉伸 */
   }
 
   .maincard-hero-header .maincard-hero-title {
-    transition: font-size 300ms ease,
-      letter-spacing 280ms ease,
-      line-height 280ms ease,
-      opacity 220ms ease,
-      transform 280ms ease,
-      filter 240ms ease;
-    transform-origin: left center;
     will-change: transform, opacity;
-  }
-
-  @media (hover: hover) {
-    @supports selector(:has(*)) {
-      .maincard-hero-header:has(.maincard-hero-help:hover) .maincard-hero-title-wrap,
-      .maincard-hero-header:has(.maincard-hero-help:focus-visible) .maincard-hero-title-wrap {
-        max-width: clamp(18rem, calc(100% - 8.25rem), 50rem);
-        padding-inline: clamp(0.75rem, 1.4vw, 1rem);
-        transform: translateY(-1px);
-        background-color: rgb(0 0 0 / 0.4);
-        border-color: rgb(255 255 255 / 0.3);
-      }
-
-      .maincard-hero-header:has(.maincard-hero-help:hover) .maincard-hero-title,
-      .maincard-hero-header:has(.maincard-hero-help:focus-visible) .maincard-hero-title {
-        letter-spacing: 0;
-        line-height: 1.2;
-        opacity: 0.92;
-        filter: saturate(0.94);
-        transform: translateX(-1px) scale(0.988);
-      }
-    }
   }
 </style>
