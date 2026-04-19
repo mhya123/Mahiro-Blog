@@ -1,10 +1,10 @@
 {
-  "commitSha": "18609a6614d5db2f9d6aeb8087c1d1a4bd70ffd3",
-  "commitShort": "18609a6",
-  "commitMessage": "修复文档：添加更多 MDX 与 Markdown 进阶语法示例",
+  "commitSha": "942947ec1ad0e32b0ebebc0b6f1fe2738cf50212",
+  "commitShort": "942947e",
+  "commitMessage": "Merge branch 'main' of https://github.com/mhya123/Mahiro-Blog",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-19T20:57:14+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/18609a6614d5db2f9d6aeb8087c1d1a4bd70ffd3",
-  "buildTime": "2026/4/19 20:57:51",
-  "totalCommits": 324
+  "commitDate": "2026-04-19T21:13:04+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/942947ec1ad0e32b0ebebc0b6f1fe2738cf50212",
+  "buildTime": "2026/4/19 21:13:36",
+  "totalCommits": 327
 }

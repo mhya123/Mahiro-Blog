@@ -565,6 +565,13 @@
   ],
   "src/content/blog/mdx-all-components-showcase.mdx": [
     {
+      "sha": "866fdce4977c9bfd1eabb26ba8dd9ee0ed137ef9",
+      "message": "新增组件：添加 Badge、ColorSwatch、FileTree、Quote、Steps、Tab 和 VideoPlayer 组件，提供示例和详细文档",
+      "authorName": "MhYa123",
+      "date": "2026-04-19T21:12:52+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/866fdce4977c9bfd1eabb26ba8dd9ee0ed137ef9"
+    },
+    {
       "sha": "18609a6614d5db2f9d6aeb8087c1d1a4bd70ffd3",
       "message": "修复文档：添加更多 MDX 与 Markdown 进阶语法示例",
       "authorName": "MhYa123",
