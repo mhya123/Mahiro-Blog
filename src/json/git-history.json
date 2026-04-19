@@ -43,6 +43,43 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/a68a6a3029ed4badb7d86eaeb3e08a0bdf1b726b"
     }
   ],
+  "src/content/blog/geekerwan-2026-phone-review.md": [
+    {
+      "sha": "78735f1f13ca96331f837bfa99c122ee89e5871e",
+      "message": "feat(constants): add draft storage key and meaningful draft check function",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T15:19:12+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/78735f1f13ca96331f837bfa99c122ee89e5871e"
+    },
+    {
+      "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
+      "message": "新增功能：为博客文章添加随机封面缓存脚本",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T11:12:14+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/37cea7e64eed5768aa44c4f11df640388ca241c4"
+    },
+    {
+      "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
+      "message": "feat: Add AI model integration and summary generation for blog posts",
+      "authorName": "MhYa123",
+      "date": "2026-03-11T16:13:41+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/af23fa5dfa3458303410b83140ceb1a22c8064d4"
+    },
+    {
+      "sha": "1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
+      "message": "feat(blog): update post \"极客湾2026手机大横评补档\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-03-02T02:59:44Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/1d2b419a0256540adae7b0e8de7b671a1ef5a54c"
+    },
+    {
+      "sha": "d34e7922597811a2f57b95474ea974ec59e5f36e",
+      "message": "feat(blog): 添加极客湾2026手机大横评补档内容",
+      "authorName": "MhYa123",
+      "date": "2026-03-01T19:58:02+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d34e7922597811a2f57b95474ea974ec59e5f36e"
+    }
+  ],
   "src/content/blog/loookme.md": [
     {
       "sha": "78735f1f13ca96331f837bfa99c122ee89e5871e",
@@ -113,43 +150,6 @@
       "authorName": "mahiro-blog[bot]",
       "date": "2026-02-28T05:07:57Z",
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/4cc186bc81e0a5aa32026b9c74b13b86e9d475b5"
-    }
-  ],
-  "src/content/blog/geekerwan-2026-phone-review.md": [
-    {
-      "sha": "78735f1f13ca96331f837bfa99c122ee89e5871e",
-      "message": "feat(constants): add draft storage key and meaningful draft check function",
-      "authorName": "MhYa123",
-      "date": "2026-04-07T15:19:12+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/78735f1f13ca96331f837bfa99c122ee89e5871e"
-    },
-    {
-      "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
-      "message": "新增功能：为博客文章添加随机封面缓存脚本",
-      "authorName": "MhYa123",
-      "date": "2026-04-07T11:12:14+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/37cea7e64eed5768aa44c4f11df640388ca241c4"
-    },
-    {
-      "sha": "af23fa5dfa3458303410b83140ceb1a22c8064d4",
-      "message": "feat: Add AI model integration and summary generation for blog posts",
-      "authorName": "MhYa123",
-      "date": "2026-03-11T16:13:41+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/af23fa5dfa3458303410b83140ceb1a22c8064d4"
-    },
-    {
-      "sha": "1d2b419a0256540adae7b0e8de7b671a1ef5a54c",
-      "message": "feat(blog): update post \"极客湾2026手机大横评补档\"",
-      "authorName": "mahiro-blog[bot]",
-      "date": "2026-03-02T02:59:44Z",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/1d2b419a0256540adae7b0e8de7b671a1ef5a54c"
-    },
-    {
-      "sha": "d34e7922597811a2f57b95474ea974ec59e5f36e",
-      "message": "feat(blog): 添加极客湾2026手机大横评补档内容",
-      "authorName": "MhYa123",
-      "date": "2026-03-01T19:58:02+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/d34e7922597811a2f57b95474ea974ec59e5f36e"
     }
   ],
   "src/content/blog/mahiro-beginner-tutorial-index.md": [
@@ -564,6 +564,13 @@
     }
   ],
   "src/content/blog/mdx-all-components-showcase.mdx": [
+    {
+      "sha": "18609a6614d5db2f9d6aeb8087c1d1a4bd70ffd3",
+      "message": "修复文档：添加更多 MDX 与 Markdown 进阶语法示例",
+      "authorName": "MhYa123",
+      "date": "2026-04-19T20:57:14+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/18609a6614d5db2f9d6aeb8087c1d1a4bd70ffd3"
+    },
     {
       "sha": "fa5f74edaba27ca9437b12d7e857a1707ef7cbe6",
       "message": "chore(ci): update generated content [skip ci]",
