@@ -409,7 +409,7 @@ export function ConfigPage() {
         position="top-center"
         toastOptions={{
           className:
-            "shadow-xl rounded-2xl border-2 border-primary/20 backdrop-blur-sm",
+            "!flex-row flex !items-center shadow-xl rounded-2xl border-2 border-primary/20 backdrop-blur-sm",
           style: {
             fontSize: "1rem",
             padding: "14px 20px",

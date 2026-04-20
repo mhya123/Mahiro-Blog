@@ -108,7 +108,7 @@ export default function WritePage({ categories = [], aiModels = [] }: WritePageP
                 position="top-center"
                 offset={120}
                 toastOptions={{
-                    className: 'shadow-xl rounded-2xl border-2 border-primary/20 backdrop-blur-sm',
+                    className: '!flex-row flex !items-center shadow-xl rounded-2xl border-2 border-primary/20 backdrop-blur-sm',
                     style: {
                         fontSize: '1rem',
                         padding: '14px 20px',

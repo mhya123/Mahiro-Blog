@@ -265,6 +265,14 @@ export function WritePreview({ form, coverPreviewUrl, isOpen, onRequestClose, on
 
 	const wordCount = form.md.length
 	const readTime = `${Math.ceil(wordCount / 400)} min`
+
+	// 移除 MDX 特有的 import 语句，防止在纯 Markdown 预览器中作为普通文本渲染出丑
+	const cleanedMd = useMemo(() => {
+		let md = form.md || ''
+		md = md.replace(/^import\s+.*?from\s+['"].*?['"];?\s*$/gm, '')
+		return md.replace(/^\s+/, '')
+	}, [form.md])
+
 	const localImageMap = useMemo(() => {
 		const map = new Map<string, string>()
 
@@ -429,7 +437,7 @@ export function WritePreview({ form, coverPreviewUrl, isOpen, onRequestClose, on
 											},
 										}}
 									>
-										{form.md}
+										{cleanedMd}
 									</ReactMarkdown>
 								</article>
 							</div>
