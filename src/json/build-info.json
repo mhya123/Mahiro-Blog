@@ -1,10 +1,10 @@
 {
-  "commitSha": "942947ec1ad0e32b0ebebc0b6f1fe2738cf50212",
-  "commitShort": "942947e",
-  "commitMessage": "Merge branch 'main' of https://github.com/mhya123/Mahiro-Blog",
-  "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-19T21:13:04+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/942947ec1ad0e32b0ebebc0b6f1fe2738cf50212",
-  "buildTime": "2026/4/19 21:13:36",
-  "totalCommits": 327
+  "commitSha": "a0c2382c23c29594fc1ec0b12a5229d741be2bd2",
+  "commitShort": "a0c2382",
+  "commitMessage": "feat(blog): update post \"MDX 全组件演示帖\"",
+  "commitAuthor": "mahiro-blog[bot]",
+  "commitDate": "2026-04-20T03:20:05Z",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/a0c2382c23c29594fc1ec0b12a5229d741be2bd2",
+  "buildTime": "2026/4/20 11:20:40",
+  "totalCommits": 329
 }

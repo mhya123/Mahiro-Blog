@@ -540,30 +540,14 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
     }
   ],
-  "src/content/blog/mahiro-theme-and-navbar-customization.md": [
-    {
-      "sha": "3fe7e455b83ab91e4b5ed2dba591723835645349",
-      "message": "调整",
-      "authorName": "MhYa123",
-      "date": "2026-04-07T11:58:56+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/3fe7e455b83ab91e4b5ed2dba591723835645349"
-    },
-    {
-      "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
-      "message": "新增功能：为博客文章添加随机封面缓存脚本",
-      "authorName": "MhYa123",
-      "date": "2026-04-07T11:12:14+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/37cea7e64eed5768aa44c4f11df640388ca241c4"
-    },
-    {
-      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
-      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
-      "authorName": "MhYa123",
-      "date": "2026-04-07T10:30:38+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
-    }
-  ],
   "src/content/blog/mdx-all-components-showcase.mdx": [
+    {
+      "sha": "a0c2382c23c29594fc1ec0b12a5229d741be2bd2",
+      "message": "feat(blog): update post \"MDX 全组件演示帖\"",
+      "authorName": "mahiro-blog[bot]",
+      "date": "2026-04-20T03:20:05Z",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/a0c2382c23c29594fc1ec0b12a5229d741be2bd2"
+    },
     {
       "sha": "866fdce4977c9bfd1eabb26ba8dd9ee0ed137ef9",
       "message": "新增组件：添加 Badge、ColorSwatch、FileTree、Quote、Steps、Tab 和 VideoPlayer 组件，提供示例和详细文档",
@@ -591,6 +575,29 @@
       "authorName": "MhYa123",
       "date": "2026-04-07T21:07:07+08:00",
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/936ac63fde3c8e3ff013167ced85d027d7e54e56"
+    }
+  ],
+  "src/content/blog/mahiro-theme-and-navbar-customization.md": [
+    {
+      "sha": "3fe7e455b83ab91e4b5ed2dba591723835645349",
+      "message": "调整",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T11:58:56+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/3fe7e455b83ab91e4b5ed2dba591723835645349"
+    },
+    {
+      "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
+      "message": "新增功能：为博客文章添加随机封面缓存脚本",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T11:12:14+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/37cea7e64eed5768aa44c4f11df640388ca241c4"
+    },
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
     }
   ],
   "src/content/blog/test.md": [
