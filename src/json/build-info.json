@@ -1,10 +1,10 @@
 {
-  "commitSha": "842c5dca9ccb6ebdb59bb85d305c8b9372ed9c39",
-  "commitShort": "842c5dc",
-  "commitMessage": "feat: 添加多个新组件，包括 AuthorCard、Grid、Button 和 TerminalWindow，丰富 MDX 组件库",
+  "commitSha": "b00584eb9457ea8ffe7ef716056223c343d37d36",
+  "commitShort": "b00584e",
+  "commitMessage": "feat: 添加 Twikoo 配置支持到评论系统",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-20T12:25:25+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/842c5dca9ccb6ebdb59bb85d305c8b9372ed9c39",
-  "buildTime": "2026/4/20 12:25:54",
-  "totalCommits": 333
+  "commitDate": "2026-04-20T12:34:00+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/b00584eb9457ea8ffe7ef716056223c343d37d36",
+  "buildTime": "2026/4/20 12:34:28",
+  "totalCommits": 336
 }
