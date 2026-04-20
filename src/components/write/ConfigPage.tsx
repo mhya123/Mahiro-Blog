@@ -37,6 +37,7 @@ const SOCIAL_PRESETS = [
 const COMMENT_PROVIDERS = [
   { value: "giscus", label: "Giscus" },
   { value: "waline", label: "Waline" },
+  { value: "twikoo", label: "Twikoo" },
 ];
 
 export function ConfigPage() {
@@ -987,6 +988,49 @@ export function ConfigPage() {
                               )
                             }
                           />
+                        </div>
+                      )}
+
+                      {parsedConfig?.comments?.type === "twikoo" && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="form-control w-full">
+                            <label className="label">
+                              <span className="label-text text-xs text-base-content/60">
+                                环境 ID (EnvId)
+                              </span>
+                            </label>
+                            <input
+                              type="text"
+                              className="input input-sm input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                              placeholder="例如：https://your-twikoo-env.vercel.app"
+                              value={parsedConfig?.comments?.twikoo?.envId || ""}
+                              onChange={(e) =>
+                                updateConfigValue(
+                                  "comments.twikoo.envId",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </div>
+                          <div className="form-control w-full">
+                            <label className="label">
+                              <span className="label-text text-xs text-base-content/60">
+                                Region (腾讯云环境需要)
+                              </span>
+                            </label>
+                            <input
+                              type="text"
+                              className="input input-sm input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                              placeholder="例如：ap-shanghai"
+                              value={parsedConfig?.comments?.twikoo?.region || ""}
+                              onChange={(e) =>
+                                updateConfigValue(
+                                  "comments.twikoo.region",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </div>
                         </div>
                       )}
                     </div>

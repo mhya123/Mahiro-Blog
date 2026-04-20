@@ -1,0 +1,198 @@
+---
+/**
+ * Twikoo 评论系统
+ * https://twikoo.js.org/
+ */
+interface Props {
+  envId: string;
+  region?: string;
+  lang?: string;
+}
+
+const { envId, region = "", lang = "" } = Astro.props;
+---
+
+<div class="relative w-full">
+  <div id="tcomment-error" class="hidden absolute top-0 left-0 w-full p-4 bg-error/10 border border-error/20 text-error rounded-xl text-center shadow-sm">
+    <div class="font-bold mb-1">评论服务加载失败</div>
+    <div class="text-sm opacity-80" id="tcomment-error-text">无法连接到服务器，请检查网络或稍后再试。</div>
+  </div>
+  <div id="tcomment" class="w-full min-h-[120px]"></div>
+</div>
+
+<script is:inline src="https://s.mahiro.work/d/twikoo.min.js?sign=QiLndPJgjjFbsqK6BAwmmRiNDTv_Fc4Y0CeRTrkem2A=:0" onerror="document.getElementById('tcomment-error').classList.remove('hidden'); document.getElementById('tcomment-error-text').innerText='评论系统核心库加载失败';"></script>
+<script is:inline define:vars={{ envId, region, lang }}>
+  document.addEventListener("astro:page-load", () => {
+    initTwikoo();
+  });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initTwikoo);
+  } else {
+    initTwikoo();
+  }
+
+  function initTwikoo() {
+    if (window.twikoo) {
+      const config = {
+        envId: envId,
+        el: '#tcomment',
+        path: window.location.pathname,
+      };
+      if (region) config.region = region;
+      if (lang) config.lang = lang;
+      
+      try {
+        const initPromise = window.twikoo.init(config);
+        if (initPromise && initPromise.catch) {
+          initPromise.catch((err) => {
+            console.error("Twikoo 加载遭遇错误:", err);
+            document.getElementById('tcomment-error').classList.remove('hidden');
+            document.getElementById('tcomment-error-text').innerText = err.message || "环境 API 初始化或通信失败";
+          });
+        }
+      } catch (err) {
+        console.error("Twikoo 初始化系统异常:", err);
+        document.getElementById('tcomment-error').classList.remove('hidden');
+        document.getElementById('tcomment-error-text').innerText = "发生内部组件异常";
+      }
+    } else {
+      setTimeout(() => {
+        if (!window.twikoo) {
+           document.getElementById('tcomment-error').classList.remove('hidden');
+           document.getElementById('tcomment-error-text').innerText = "评论系统核心处于未响应状态";
+        }
+      }, 5000);
+    }
+  }
+</script>
+
+<style is:global>
+  /* 将所有样式包裹在 tk-comments 下，坚决不干扰 tk-admin 管理界面的 Element UI 原生样式 */
+  
+  /* 彻底清理冲突背景 */
+  .twikoo .tk-comments .tk-row,
+  .twikoo .tk-comments .tk-col,
+  .twikoo .tk-comments .el-input-group__append,
+  .twikoo .tk-comments .el-input-group__prepend {
+    background-color: transparent !important;
+  }
+  
+  /* 基础文字颜色跟随外部文本色 */
+  .twikoo .tk-comments {
+    color: inherit;
+    font-family: inherit;
+    width: 100%;
+  }
+
+  /* 输入框 3 等分比例优化 */
+  .twikoo .tk-comments .tk-meta-input {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+  }
+  .twikoo .tk-comments .tk-meta-input .el-input {
+    flex: 1;
+    width: 100% !important;
+  }
+  @media (max-width: 640px) {
+    .twikoo .tk-comments .tk-meta-input {
+      flex-wrap: wrap;
+    }
+    .twikoo .tk-comments .tk-meta-input .el-input {
+      min-width: 100%;
+    }
+  }
+
+  /* 输入框 & 文本域 - 质感内嵌块 */
+  .twikoo .tk-comments .el-input__inner,
+  .twikoo .tk-comments .el-textarea__inner,
+  .twikoo .tk-comments .tk-input textarea,
+  .twikoo .tk-comments .tk-input input {
+    background-color: rgba(128, 128, 128, 0.15) !important;
+    border: 1px solid rgba(128, 128, 128, 0.05) !important;
+    color: inherit !important;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem !important;
+    box-shadow: none !important;
+    transition: all 0.3s ease;
+  }
+  
+  .twikoo .tk-comments .tk-input textarea {
+    min-height: 120px !important;
+    margin-top: 0.75rem;
+  }
+  
+  .twikoo .tk-comments .el-input__inner:focus,
+  .twikoo .tk-comments .el-textarea__inner:focus,
+  .twikoo .tk-comments .tk-input textarea:focus,
+  .twikoo .tk-comments .tk-input input:focus {
+    border-color: rgba(128, 128, 128, 0.4) !important;
+    background-color: rgba(128, 128, 128, 0.25) !important;
+    outline: none !important;
+  }
+  
+  /* 图标 */
+  .twikoo .tk-comments .tk-action-icon {
+    fill: rgba(128, 128, 128, 0.8) !important;
+  }
+  .twikoo .tk-action-icon:hover {
+    fill: currentColor !important;
+  }
+  
+  /* 发送/预览按钮 - 质感风格 */
+  .twikoo .tk-submit {
+    background-color: rgba(128, 128, 128, 0.2) !important;
+    color: inherit !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    box-shadow: none !important;
+    padding: 0 1.5rem !important;
+    transition: all 0.2s ease;
+  }
+  .twikoo .tk-submit:hover {
+    background-color: rgba(128, 128, 128, 0.4) !important;
+  }
+  
+  /* Twikoo 各种内嵌 SVG 的强制尺寸兜底 */
+  /* 移除全部外层与评论块的默认背景，防止鼠标悬浮时的背景闪烁 */
+  .twikoo,
+  .twikoo .tk-comments,
+  .twikoo .tk-comment,
+  .twikoo .tk-comment:hover,
+  .twikoo .tk-replies,
+  .twikoo .tk-replies .tk-comment,
+  .twikoo .tk-replies .tk-comment:hover,
+  .twikoo .tk-meta-input,
+  .twikoo .tk-row,
+  .twikoo .tk-col,
+  .twikoo .el-input-group__append,
+  .twikoo .el-input-group__prepend {
+    background-color: transparent !important;
+  }
+  
+  /* 头像重置为圆形 */
+  .twikoo .tk-avatar {
+    margin-right: 1rem !important;
+  }
+  .twikoo .tk-avatar .tk-avatar-img,
+  .twikoo .tk-avatar svg {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-radius: 50% !important;
+  }
+  /* 控制部分功能区的小图标限制，避免影响文字按钮的排列 */
+  .twikoo .tk-icon,
+  .twikoo .tk-action-icon svg,
+  .twikoo .tk-action-icon,
+  .twikoo svg {
+    width: 1.25em;
+    height: 1.25em;
+    display: inline-block;
+  }
+  
+  /* 评论区底部动作（包括回复、置顶、隐藏）的原生排版恢复，避免 flex 吞噬空格 */
+  .twikoo .tk-action {
+    opacity: 1 !important; /* 强制所有管理员按钮始终显示，避免移入移出的闪烁（如果不想要始终显示可移除） */
+  }
+</style>

@@ -8,8 +8,10 @@ import { type CollectionEntry, getCollection } from "astro:content";
 import dayjs from "@utils/dayjs";
 import { DATE_FORMAT } from "@config";
 import MainCard from "@/components/MainCard.astro";
+import Card from "@/components/temple/Card.astro";
 import Giscus from "@components/comments/Giscus.astro";
 import Waline from "@components/comments/Waline.astro";
+import Twikoo from "@components/comments/Twikoo.astro";
 import CommitHistory from "@components/widgets/CommitHistory";
 import PostDiffInArticle from "@components/widgets/PostDiffInArticle.astro";
 import PostContentHighlighter from "@components/widgets/PostContentHighlighter.astro";
@@ -177,24 +179,22 @@ const commits = await getFileCommits(`src/content/blog/${blog.id}`, owner, repo)
 
   <!-- Comments Section -->
   {
-    commentsConfig?.enable &&
-      commentsConfig.type === "giscus" &&
-      commentsConfig.giscus && (
-        <section class="comments">
-          <h2>Comments</h2>
-          <Giscus {...commentsConfig.giscus} />
+    commentsConfig?.enable && (
+      <Card class="mt-8 mb-12 p-6 md:p-8 xl:p-10">
+        <section class="comments w-full">
+          <h2 class="text-2xl font-bold mb-6">Comments</h2>
+          {commentsConfig.type === "giscus" && commentsConfig.giscus && (
+            <Giscus {...commentsConfig.giscus} />
+          )}
+          {commentsConfig.type === "waline" && commentsConfig.waline && (
+            <Waline {...commentsConfig.waline} />
+          )}
+          {commentsConfig.type === "twikoo" && commentsConfig.twikoo && (
+            <Twikoo {...commentsConfig.twikoo} />
+          )}
         </section>
-      )
-  }
-  {
-    commentsConfig?.enable &&
-      commentsConfig.type === "waline" &&
-      commentsConfig.waline && (
-        <section class="comments">
-          <h2>Comments</h2>
-          <Waline {...commentsConfig.waline} />
-        </section>
-      )
+      </Card>
+    )
   }
 
   <!-- 在页面底部添加 Fancybox 初始化脚本 -->

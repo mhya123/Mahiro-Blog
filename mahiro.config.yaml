@@ -206,7 +206,13 @@ music:
 # ─── 评论系统配置 ───────────────────────────────────
 comments:
   enable: true          # 是否启用评论功能
-  type: giscus          # 评论系统类型：giscus | waline | none
+  type: twikoo          # 评论系统类型：giscus | waline | twikoo | none
+
+  # Twikoo 配置 (腾讯云开发/Vercel等部署的评论系统)
+  twikoo:
+    envId: "https://tk.mahiro.work" # 您的环境id/服务器地址
+    region: ""            # 环境地域（可选，腾讯云需要）
+    lang: "zh-CN"         # 语言
 
   # Giscus 配置（基于 GitHub Discussions 的评论系统）
   giscus:
