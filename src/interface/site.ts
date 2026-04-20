@@ -22,11 +22,18 @@ export interface WalineConfig {
   pageview?: boolean;
 }
 
+export interface TwikooConfig {
+  envId: string;
+  region?: string;
+  lang?: string;
+}
+
 export interface CommentsConfig {
   enable: boolean;
-  type: 'giscus' | 'waline' | 'none';
+  type: 'giscus' | 'waline' | 'twikoo' | 'none';
   giscus?: GiscusConfig;
   waline?: WalineConfig;
+  twikoo?: TwikooConfig;
 }
 export interface SubMenuItem {
   id: string;
