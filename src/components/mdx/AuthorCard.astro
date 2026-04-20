@@ -1,0 +1,84 @@
+---
+/**
+ * AuthorCard 名片卡片组件
+ * 用于展示作者、嘉宾或人物引言卡片
+ *
+ * @example
+ * <AuthorCard
+ *   name="Mahiro"
+ *   role="站长 / 开发者"
+ *   avatar="/avatar.png"
+ *   desc="热爱开源文化，前端工程师，喜欢写些有意思的代码。"
+ * />
+ */
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  /** 名字 */
+  name: string;
+  /** 头像 URL */
+  avatar?: string;
+  /** 头衔 / 角色 */
+  role?: string;
+  /** 个人介绍 */
+  desc?: string;
+  /** 可选的主页链接 */
+  link?: string;
+}
+
+const {
+  name,
+  avatar,
+  role,
+  desc,
+  link,
+} = Astro.props;
+---
+
+<div class="author-card not-prose my-8 overflow-hidden rounded-3xl border border-base-content/10 bg-base-200/40 p-6 md:p-8 shadow-sm transition-all hover:shadow-md">
+  <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+    {/* Avatar */}
+    {avatar ? (
+      <div class="flex-shrink-0 relative group">
+        <div class="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-base-100 shadow-xl transition-transform duration-300 group-hover:scale-105">
+          <img src={avatar} alt={name} class="w-full h-full object-cover" loading="lazy" />
+        </div>
+      </div>
+    ) : (
+      <div class="flex-shrink-0 w-24 h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-4 border-base-100 shadow-xl flex items-center justify-center">
+        <span class="text-4xl font-bold text-primary/50">{name.charAt(0).toUpperCase()}</span>
+      </div>
+    )}
+
+    {/* Info */}
+    <div class="flex flex-col items-center md:items-start flex-1 text-center md:text-left space-y-3">
+      <div class="space-y-1">
+        <div class="flex items-center justify-center md:justify-start gap-3">
+          <h3 class="text-2xl font-bold text-base-content">{name}</h3>
+          {link && (
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-base-content/40 hover:text-primary transition-colors tooltip tooltip-top"
+              data-tip="访问主页"
+            >
+              <Icon name="lucide:external-link" class="w-5 h-5" />
+            </a>
+          )}
+        </div>
+        {role && (
+          <p class="text-sm font-medium text-primary/80 bg-primary/10 px-3 py-1 rounded-full inline-block">
+            {role}
+          </p>
+        )}
+      </div>
+
+      {desc && (
+        <p class="text-base text-base-content/70 leading-relaxed max-w-2xl">
+          {desc}
+        </p>
+      )}
+    </div>
+  </div>
+</div>

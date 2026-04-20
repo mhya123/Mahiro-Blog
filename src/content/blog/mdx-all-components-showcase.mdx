@@ -40,6 +40,10 @@ import Badge from "@/components/mdx/Badge.astro";
 import FileTree from "@/components/mdx/FileTree.astro";
 import VideoPlayer from "@/components/mdx/VideoPlayer.astro";
 import ColorSwatch from "@/components/mdx/ColorSwatch.astro";
+import TerminalWindow from "@/components/mdx/TerminalWindow.astro";
+import Grid from "@/components/mdx/Grid.astro";
+import AuthorCard from "@/components/mdx/AuthorCard.astro";
+import Button from "@/components/mdx/Button.astro";
 
 # MDX 全组件演示
 
@@ -444,6 +448,67 @@ pnpm check
   { name: "Sky", value: "#0ea5e9" },
   { name: "Teal", value: "#14b8a6" },
 ]} />
+
+---
+
+## 作者卡片 AuthorCard
+
+适用于文章末尾或者嘉宾栏，做一张优雅的作者名片：
+
+<AuthorCard
+  name="Mahiro"
+  role="站长 / 魔法使"
+  avatar="/avatar.png"
+  desc="Ciallo～(∠・ω<)⌒★。喜欢折腾各种有趣的前端技术，开源爱好者，梦想是写出能让人感到温暖的代码。"
+  link="https://github.com"
+/>
+
+## 网格布局 Grid
+
+打破 Markdown 枯燥的单列排版，你可以将内容、图片或其他的 MDX 组件放入网格容器中。移动端会自动塌陷为单列响应式。
+
+<Grid columns={2}>
+  <FeatureCard 
+    icon="lucide:zap" 
+    title="极速响应" 
+    desc="这个卡片被放在了 Grid 的左侧，展现了网格布局的灵活性。" 
+  />
+  <FeatureCard 
+    icon="lucide:layout" 
+    title="完美排版" 
+    desc="这个卡片被放在了右侧，突破了 Markdown 单瀑布流的限制。" 
+  />
+</Grid>
+
+## 终端窗口 TerminalWindow
+
+对于开发者来说，代码块套上一个带有 macOS 小圆点的仿真终端容器，极客氛围拉满：
+
+<TerminalWindow title="bash">
+```bash
+# 一键部署你的个人博客
+git clone https://github.com/mahiro/blog.git
+cd blog
+pnpm install
+pnpm build
+```
+</TerminalWindow>
+
+## 交互按钮 Button
+
+不仅仅是文字链接，当需要一个重分量的 Call-To-Action (CTA) 时，你可以丢一个好看的按钮进去：
+
+<Grid columns={3} gap={4}>
+  <Button variant="primary" icon="lucide:rocket">
+    启动项目
+  </Button>
+  <Button variant="secondary" icon="lucide:download">
+    下载资源
+  </Button>
+  <Button variant="outline" icon="lucide:github" href="https://github.com">
+    前往开源
+  </Button>
+</Grid>
 
 ---
 

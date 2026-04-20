@@ -1,0 +1,48 @@
+---
+/**
+ * Grid 网格布局容器组件
+ * 允许在 MDX 中实现多列并排布局
+ *
+ * @example
+ * <Grid columns={2}>
+ *   <div>列 1</div>
+ *   <div>列 2</div>
+ * </Grid>
+ */
+interface Props {
+  /** 列数，默认 2 (目前支持 2, 3, 4) */
+  columns?: 2 | 3 | 4;
+  /** 每列间距 gap 的 tailwind 单位，默认 4 (1rem) */
+  gap?: number | string;
+}
+
+const { columns = 2, gap = 4 } = Astro.props;
+
+// Tailwind 不能动态拼接未在代码中出现过的类名，因此直接用行内 style 结合 CSS Grid
+const gridStyle = `
+  display: grid;
+  grid-template-columns: repeat(${columns}, minmax(0, 1fr));
+  gap: ${typeof gap === 'number' ? `${gap * 0.25}rem` : gap};
+`;
+---
+
+<div class="mdx-grid my-6 not-prose w-full">
+  <div class="grid-container" style={gridStyle}>
+    <slot />
+  </div>
+</div>
+
+<style>
+  /* 移动端自动单列塌陷以确保响应式友好 */
+  @media (max-width: 640px) {
+    .grid-container {
+      grid-template-columns: 1fr !important;
+      gap: 1rem !important;
+    }
+  }
+  
+  /* 修复在 MDX 里可能有的默认 p 标签包裹 */
+  .grid-container > :global(p:empty) {
+    display: none;
+  }
+</style>

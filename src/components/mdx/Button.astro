@@ -1,0 +1,57 @@
+---
+/**
+ * Button 引导按钮组件
+ * 适用于 MDX 正文里的 Call-To-Action (CTA) 和下载链接等
+ *
+ * @example
+ * <Button href="https://github.com" icon="lucide:github" variant="primary">
+ *   前往 GitHub
+ * </Button>
+ */
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  /** 按钮链接 */
+  href?: string;
+  /** 按钮文字 */
+  text?: string;
+  /** 左侧前缀图标 */
+  icon?: string;
+  /** 按钮主题变量 */
+  variant?: "primary" | "secondary" | "accent" | "neutral" | "outline" | "ghost";
+  /** 按钮大小 */
+  size?: "xs" | "sm" | "md" | "lg";
+  /** 占满整行 */
+  block?: boolean;
+}
+
+const {
+  href,
+  text,
+  icon,
+  variant = "primary",
+  size = "md",
+  block = false,
+} = Astro.props;
+
+// 动态拼接 DaisyUI / Tailwind 的按钮样式类
+const btnClasses = [
+  "btn",
+  "not-prose", // 防止受 Typography 默认下划线干扰
+  `btn-${variant}`,
+  size !== "md" ? `btn-${size}` : "",
+  block ? "w-full" : "",
+].filter(Boolean).join(" ");
+---
+
+{href ? (
+  <a href={href} class={btnClasses} target={href.startsWith('http') ? '_blank' : '_self'} rel={href.startsWith('http') ? 'noopener noreferrer' : ''}>
+    {icon && <Icon name={icon} class="w-5 h-5 flex-shrink-0" />}
+    <slot>{text}</slot>
+  </a>
+) : (
+  <button class={btnClasses} type="button">
+    {icon && <Icon name={icon} class="w-5 h-5 flex-shrink-0" />}
+    <slot>{text}</slot>
+  </button>
+)}

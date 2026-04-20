@@ -1,0 +1,47 @@
+---
+/**
+ * TerminalWindow 终端窗口组件
+ * 用于包含代码块，提供类似 macOS 终端的视觉效果
+ *
+ * @example
+ * <TerminalWindow title="bash">
+ *   ```bash
+ *   npm install mahiro
+ *   ```
+ * </TerminalWindow>
+ */
+interface Props {
+  /** 终端窗口标题 */
+  title?: string;
+}
+
+const { title = "Terminal" } = Astro.props;
+---
+
+<div class="terminal-window not-prose my-6 rounded-2xl border border-base-content/10 bg-[#1e1e1e] overflow-hidden shadow-xl">
+  {/* macOS style header */}
+  <div class="terminal-header flex items-center px-4 py-3 bg-[#2d2d2d] border-b border-white/5 relative">
+    <div class="window-controls flex items-center gap-2 absolute left-4">
+      <div class="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]"></div>
+      <div class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]"></div>
+      <div class="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]"></div>
+    </div>
+    <div class="w-full text-center text-xs font-mono font-medium text-white/50 tracking-wide select-none">
+      {title}
+    </div>
+  </div>
+  
+  {/* Content (usually a standard markdown codeblock) */}
+  <div class="terminal-content p-4 overflow-x-auto text-sm text-slate-300 font-mono [&>pre]:!m-0 [&>pre]:!bg-transparent [&>pre]:!p-0 [&_code]:!font-mono">
+    <slot />
+  </div>
+</div>
+
+<style>
+  /* 调整内部如果是 ReactMarkdown/Astro 渲染的 pre 代码块间距，以契合外层容器 */
+  .terminal-content :global(pre) {
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+</style>
