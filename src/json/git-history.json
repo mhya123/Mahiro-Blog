@@ -565,6 +565,13 @@
   ],
   "src/content/blog/mdx-all-components-showcase.mdx": [
     {
+      "sha": "842c5dca9ccb6ebdb59bb85d305c8b9372ed9c39",
+      "message": "feat: 添加多个新组件，包括 AuthorCard、Grid、Button 和 TerminalWindow，丰富 MDX 组件库",
+      "authorName": "MhYa123",
+      "date": "2026-04-20T12:25:25+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/842c5dca9ccb6ebdb59bb85d305c8b9372ed9c39"
+    },
+    {
       "sha": "a0c2382c23c29594fc1ec0b12a5229d741be2bd2",
       "message": "feat(blog): update post \"MDX 全组件演示帖\"",
       "authorName": "mahiro-blog[bot]",

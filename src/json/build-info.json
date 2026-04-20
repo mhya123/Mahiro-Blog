@@ -1,10 +1,10 @@
 {
-  "commitSha": "d1abc6ac6c4d029bb1d3651c29e341a5b3b17b2c",
-  "commitShort": "d1abc6a",
-  "commitMessage": "feat: 更新 Toast 组件样式，优化显示效果；在预览中移除 MDX 特有的 import 语句以改善 Markdown 渲染",
+  "commitSha": "842c5dca9ccb6ebdb59bb85d305c8b9372ed9c39",
+  "commitShort": "842c5dc",
+  "commitMessage": "feat: 添加多个新组件，包括 AuthorCard、Grid、Button 和 TerminalWindow，丰富 MDX 组件库",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-20T11:30:22+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/d1abc6ac6c4d029bb1d3651c29e341a5b3b17b2c",
-  "buildTime": "2026/4/20 11:30:57",
-  "totalCommits": 331
+  "commitDate": "2026-04-20T12:25:25+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/842c5dca9ccb6ebdb59bb85d305c8b9372ed9c39",
+  "buildTime": "2026/4/20 12:25:54",
+  "totalCommits": 333
 }
