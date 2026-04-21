@@ -94,6 +94,35 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       })();
     </script>
 
+    <script is:inline>
+      (function () {
+        if (typeof window === "undefined" || window.__mahiroPinchZoomLocked) {
+          return;
+        }
+
+        window.__mahiroPinchZoomLocked = true;
+
+        const isTouchDevice = window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
+        if (!isTouchDevice) {
+          return;
+        }
+
+        const preventGestureZoom = (event) => {
+          event.preventDefault();
+        };
+
+        const preventMultiTouchZoom = (event) => {
+          if (event.touches.length > 1) {
+            event.preventDefault();
+          }
+        };
+
+        document.addEventListener("gesturestart", preventGestureZoom, { passive: false });
+        document.addEventListener("gesturechange", preventGestureZoom, { passive: false });
+        document.addEventListener("touchmove", preventMultiTouchZoom, { passive: false });
+      })();
+    </script>
+
     <!-- Umami分析（自建） -->
     {
       umamiConfig.enable && umamiConfig.websiteId && (
