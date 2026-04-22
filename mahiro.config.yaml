@@ -4,7 +4,7 @@ site:
   title: Mahiro
   description: MhYa123 的个人博客，这里记录着对技术的探索、生活中的随想与各类有趣的杂谈。
   language: zh
-  favicon: https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg
+  favicon: https://headimg.mahiro.work/
   theme:
     light: garden
     dark: dracula
@@ -174,7 +174,7 @@ user:
   name: mhya520
   description: Ciallo～(∠・ω<)⌒★
   site: https://www.mahiro.work
-  avatar: https://q.qlogo.cn/headimg_dl?dst_uin=1015000721&spec=640&img_type=jpg
+  avatar: https://headimg.mahiro.work/
   sidebar:
     social:
       - href: https://github.com/mhya123
