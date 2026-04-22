@@ -469,7 +469,7 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
     }
   ],
-  "src/content/blog/mahiro-secondary-dev-config-evolution.md": [
+  "src/content/blog/mahiro-secondary-dev-data-pipeline.md": [
     {
       "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
       "message": "新增功能：为博客文章添加随机封面缓存脚本",
@@ -485,7 +485,7 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
     }
   ],
-  "src/content/blog/mahiro-secondary-dev-data-pipeline.md": [
+  "src/content/blog/mahiro-secondary-dev-config-evolution.md": [
     {
       "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
       "message": "新增功能：为博客文章添加随机封面缓存脚本",
