@@ -1,10 +1,10 @@
 {
-  "commitSha": "02d0468c8615cb08c27983b62a8b98dac950f1ff",
-  "commitShort": "02d0468",
-  "commitMessage": "新增日志功能，记录请求信息和错误，优化请求处理流程",
+  "commitSha": "34c3841c8b0d753bd9b0e5b4881d6bb904cc8cad",
+  "commitShort": "34c3841",
+  "commitMessage": "更新网站图标和头像链接，统一使用自有域名",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-22T21:40:50+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/02d0468c8615cb08c27983b62a8b98dac950f1ff",
-  "buildTime": "2026/4/22 21:41:34",
-  "totalCommits": 361
+  "commitDate": "2026-04-22T22:01:42+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/34c3841c8b0d753bd9b0e5b4881d6bb904cc8cad",
+  "buildTime": "2026/4/22 22:02:24",
+  "totalCommits": 363
 }
