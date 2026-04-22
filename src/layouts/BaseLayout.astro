@@ -159,6 +159,88 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     <!-- 主题管理脚本 -->
     <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>
       (function () {
+        const root = document.documentElement;
+        const darkThemes = ['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee'];
+        const systemThemeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+        const resolveThemeType = (theme) => {
+          return theme === SITE_THEME.dark || darkThemes.includes(theme) ? "dark" : "light";
+        };
+        const notifyThemeChange = (theme) => {
+          const themeType = resolveThemeType(theme);
+          window.dispatchEvent(new CustomEvent("mahiro:theme-change", {
+            detail: {
+              theme,
+              themeType,
+              isDark: themeType === "dark",
+            },
+          }));
+        };
+        const applyTheme = (theme, options = {}) => {
+          const resolvedTheme = theme || SITE_THEME.light;
+          const themeType = resolveThemeType(resolvedTheme);
+          const shouldPersist = options.persist !== false;
+          const shouldAnimate =
+            options.animate === true &&
+            typeof window.__mahiroRunThemeFallbackAnimation === "function" &&
+            window.matchMedia &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          const currentTheme = root.getAttribute("data-theme");
+          const currentThemeType = root.getAttribute("data-theme-type");
+          const clearThemeAnimationState = () => {
+            clearTimeout(window.__mahiroThemeSwitchTimer);
+            cancelAnimationFrame(window.__mahiroThemeSwitchFrame || 0);
+            root.classList.remove("theme-switching");
+            root.removeAttribute("data-theme-transition");
+          };
+          const commitTheme = () => {
+            root.setAttribute("data-theme-type", themeType);
+            root.style.colorScheme = themeType;
+            root.setAttribute("data-theme", resolvedTheme);
+            window.requestAnimationFrame(() => {
+              root.style.removeProperty("color-scheme");
+            });
+
+            if (shouldPersist) {
+              localStorage.setItem("theme", resolvedTheme);
+            }
+
+            notifyThemeChange(resolvedTheme);
+          };
+
+          if (currentTheme === resolvedTheme && currentThemeType === themeType) {
+            if (shouldPersist && localStorage.getItem("theme") !== resolvedTheme) {
+              localStorage.setItem("theme", resolvedTheme);
+            }
+
+            return resolvedTheme;
+          }
+
+          clearThemeAnimationState();
+
+          if (shouldAnimate) {
+            root.setAttribute("data-theme-transition", "overlay");
+            window.__mahiroRunThemeFallbackAnimation(commitTheme)
+              .catch(() => {
+                commitTheme();
+              })
+              .finally(() => {
+                clearThemeAnimationState();
+              });
+            return resolvedTheme;
+          }
+
+          commitTheme();
+
+          return resolvedTheme;
+        };
+
+        window.__mahiroResolveThemeType = resolveThemeType;
+        window.__mahiroApplyTheme = applyTheme;
+        window.__mahiroToggleTheme = (options = {}) => {
+          const currentTheme = root.getAttribute("data-theme") || SITE_THEME.light;
+          const nextTheme = currentTheme === SITE_THEME.light ? SITE_THEME.dark : SITE_THEME.light;
+          return applyTheme(nextTheme, options);
+        };
         const storedTheme = localStorage.getItem("theme");
         const storedBannerMode = localStorage.getItem("banner-mode") || DEFAULT_BANNER_MODE;
         let theme;
@@ -168,24 +250,12 @@ const bannerSubtitle = pageConfig?.subtitle || "";
           theme = SITE_THEME.light;
           localStorage.setItem("theme", theme);
         }
-        document.documentElement.setAttribute("data-theme", theme);
-        document.documentElement.setAttribute("data-banner-mode", storedBannerMode);
-        
-        const isDark = theme === SITE_THEME.dark || ['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee'].includes(theme);
-        const themeType = isDark ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme-type", themeType);
-        window
-          .matchMedia("(prefers-color-scheme: dark)")
-          .addEventListener("change", (e) => {
+        root.setAttribute("data-banner-mode", storedBannerMode);
+        applyTheme(theme, { animate: false });
+        systemThemeMedia.addEventListener("change", (e) => {
             if (!localStorage.getItem("theme")) {
               const newTheme = e.matches ? SITE_THEME.dark : SITE_THEME.light;
-              document.documentElement.setAttribute("data-theme", newTheme);
-              const newThemeType = e.matches ? "dark" : "light";
-              document.documentElement.setAttribute(
-                "data-theme-type",
-                newThemeType,
-              );
-              localStorage.setItem("theme", newTheme);
+              applyTheme(newTheme, { persist: false, animate: false });
             }
           });
       })();
@@ -238,10 +308,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
         const storedBannerMode = localStorage.getItem("banner-mode") || DEFAULT_BANNER_MODE;
         
         if (storedTheme) {
-          document.documentElement.setAttribute("data-theme", storedTheme);
-          const isDark = storedTheme === SITE_THEME.dark || ['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee'].includes(storedTheme);
-          const themeType = isDark ? "dark" : "light";
-          document.documentElement.setAttribute("data-theme-type", themeType);
+          window.__mahiroApplyTheme?.(storedTheme, { persist: false, animate: false });
         }
         
         document.documentElement.setAttribute("data-banner-mode", storedBannerMode);
@@ -249,6 +316,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     </script>
 
     <script>
+      import gsap from "gsap";
       import NProgress from "nprogress";
       import "nprogress/nprogress.css";
       import { initAnimateValues } from "@/lib/animate-value";
@@ -258,6 +326,182 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       import { initPageEntrance } from "@/lib/page-entrance";
       import { initSmoothTransitions } from "@/lib/smooth-transitions";
       import { decorateAiSummaryCards } from "@/lib/ai-summary-cards";
+
+      const mahiroWindow = window as typeof window & {
+        __mahiroClientAnimationHelpersReady?: boolean;
+        __mahiroSetThemeTrigger?: (element?: Element | null) => void;
+        __mahiroEnsureThemeTrigger?: () => void;
+        __mahiroAnimateThemeControl?: (element?: Element | null) => void;
+        __mahiroRunThemeFallbackAnimation?: (commitTheme: () => void) => Promise<void>;
+        __mahiroAnimateTranslateSuggestion?: (element?: Element | null) => Promise<void>;
+        __mahiroDismissTranslateSuggestion?: (element?: Element | null) => Promise<void>;
+      };
+
+      if (!mahiroWindow.__mahiroClientAnimationHelpersReady) {
+        mahiroWindow.__mahiroClientAnimationHelpersReady = true;
+
+        const root = document.documentElement;
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const THEME_ORIGIN_X = "--mahiro-theme-origin-x";
+        const THEME_ORIGIN_Y = "--mahiro-theme-origin-y";
+        const THEME_RADIUS = "--mahiro-theme-reveal-radius";
+
+        const setThemeTrigger = (element?: Element | null) => {
+          const target = element instanceof Element ? element : null;
+          const rect = target?.getBoundingClientRect();
+          const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+          const y = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+          const radius = Math.hypot(
+            Math.max(x, window.innerWidth - x),
+            Math.max(y, window.innerHeight - y),
+          );
+
+          root.style.setProperty(THEME_ORIGIN_X, `${x}px`);
+          root.style.setProperty(THEME_ORIGIN_Y, `${y}px`);
+          root.style.setProperty(THEME_RADIUS, `${Math.ceil(radius)}px`);
+        };
+
+        const ensureThemeTrigger = () => {
+          if (!root.style.getPropertyValue(THEME_ORIGIN_X)) {
+            setThemeTrigger(null);
+          }
+        };
+
+        const animateThemeControl = (element?: Element | null) => {
+          if (!(element instanceof HTMLElement) || prefersReducedMotion.matches) return;
+
+          const icon = element.querySelector("svg, .theme-toggle-icon, .light-icon, .dark-icon");
+          gsap.killTweensOf(element);
+          gsap.fromTo(
+            element,
+            { scale: 0.97 },
+            {
+              scale: 1,
+              duration: 0.22,
+              ease: "power2.out",
+              clearProps: "transform",
+            },
+          );
+
+          if (icon instanceof Element) {
+            gsap.killTweensOf(icon);
+            gsap.fromTo(
+              icon,
+              { scale: 0.94, opacity: 0.82 },
+              {
+                scale: 1,
+                opacity: 1,
+                duration: 0.2,
+                ease: "power2.out",
+                clearProps: "transform,opacity",
+              },
+            );
+          }
+        };
+
+        const runThemeFallbackAnimation = (commitTheme: () => void) => {
+          if (prefersReducedMotion.matches) {
+            commitTheme();
+            return Promise.resolve();
+          }
+
+          const overlay = document.createElement("div");
+          const bodyStyles = window.getComputedStyle(document.body);
+          overlay.className = "mahiro-theme-fallback-overlay";
+          overlay.style.position = "fixed";
+          overlay.style.inset = "0";
+          overlay.style.zIndex = "9999";
+          overlay.style.pointerEvents = "none";
+          overlay.style.background = bodyStyles.backgroundColor || "var(--custom-page-bg)";
+          overlay.style.opacity = "0";
+          overlay.style.willChange = "opacity";
+          document.body.appendChild(overlay);
+
+          return new Promise<void>((resolve) => {
+            const timeline = gsap.timeline({
+              defaults: {
+                ease: "power2.out",
+              },
+              onComplete: () => {
+                overlay.remove();
+                resolve();
+              },
+            });
+
+            timeline.to(overlay, {
+              opacity: 0.12,
+              duration: 0.1,
+              onComplete: () => {
+                commitTheme();
+                overlay.style.background =
+                  window.getComputedStyle(document.body).backgroundColor || "var(--custom-page-bg)";
+              },
+            });
+
+            timeline.to(overlay, {
+              opacity: 0,
+              duration: 0.16,
+            });
+          });
+        };
+
+        const animateTranslateSuggestion = (
+          element: Element | null | undefined,
+          direction: "enter" | "leave" = "enter",
+        ) => {
+          if (!(element instanceof HTMLElement)) return Promise.resolve();
+          if (prefersReducedMotion.matches) {
+            if (direction === "enter") {
+              element.style.opacity = "1";
+            }
+            return Promise.resolve();
+          }
+
+          gsap.killTweensOf(element);
+
+          return new Promise<void>((resolve) => {
+            if (direction === "enter") {
+              gsap.fromTo(
+                element,
+                { autoAlpha: 0, x: 20, y: 16, scale: 0.94, filter: "blur(10px)" },
+                {
+                  autoAlpha: 1,
+                  x: 0,
+                  y: 0,
+                  scale: 1,
+                  filter: "blur(0px)",
+                  duration: 0.44,
+                  ease: "power3.out",
+                  clearProps: "transform,filter",
+                  onComplete: () => resolve(),
+                },
+              );
+              return;
+            }
+
+            gsap.to(element, {
+              autoAlpha: 0,
+              x: 18,
+              y: 12,
+              scale: 0.96,
+              filter: "blur(8px)",
+              duration: 0.28,
+              ease: "power2.in",
+              onComplete: () => resolve(),
+            });
+          });
+        };
+
+        setThemeTrigger(null);
+        mahiroWindow.__mahiroSetThemeTrigger = setThemeTrigger;
+        mahiroWindow.__mahiroEnsureThemeTrigger = ensureThemeTrigger;
+        mahiroWindow.__mahiroAnimateThemeControl = animateThemeControl;
+        mahiroWindow.__mahiroRunThemeFallbackAnimation = runThemeFallbackAnimation;
+        mahiroWindow.__mahiroAnimateTranslateSuggestion = (element: Element | null | undefined) =>
+          animateTranslateSuggestion(element, "enter");
+        mahiroWindow.__mahiroDismissTranslateSuggestion = (element: Element | null | undefined) =>
+          animateTranslateSuggestion(element, "leave");
+      }
 
       // 配置 NProgress
       NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.2 });

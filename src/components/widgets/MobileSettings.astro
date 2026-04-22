@@ -1,6 +1,5 @@
 ---
 import { Icon } from "astro-icon/components";
-import { SITE_THEME } from "@config";
 import TranslateWidget from "./TranslateWidget.astro";
 
 const themes = [
@@ -34,14 +33,28 @@ const themes = [
   { name: "coffee", color: "#DB924B" },
   { name: "winter", color: "#047AFF" },
 ];
+
+const fonts = [
+  { value: "system-ui, -apple-system, sans-serif", label: "System UI", preview: "system-ui" },
+  { value: "'Noto Sans SC', sans-serif", label: "Noto Sans SC", preview: "'Noto Sans SC'" },
+  { value: "'Noto Serif SC', serif", label: "Noto Serif SC", preview: "'Noto Serif SC'" },
+  { value: "'LXGW WenKai', cursive", label: "LXGW WenKai", preview: "'LXGW WenKai'" },
+  { value: "'Ma Shan Zheng', cursive", label: "Ma Shan Zheng", preview: "'Ma Shan Zheng'" },
+  { value: "'ZCOOL XiaoWei', serif", label: "ZCOOL XiaoWei", preview: "'ZCOOL XiaoWei'" },
+  { value: "'Long Cang', cursive", label: "Long Cang", preview: "'Long Cang'" },
+  { value: "'ZCOOL QingKe HuangYou', cursive", label: "ZCOOL QingKe HuangYou", preview: "'ZCOOL QingKe HuangYou'" },
+  { value: "'ZCOOL KuaiLe', cursive", label: "ZCOOL KuaiLe", preview: "'ZCOOL KuaiLe'" },
+  { value: "'Liu Jian Mao Cao', cursive", label: "Liu Jian Mao Cao", preview: "'Liu Jian Mao Cao'" },
+  { value: "'Zhi Mang Xing', cursive", label: "Zhi Mang Xing", preview: "'Zhi Mang Xing'" },
+];
 ---
 
 <div class="dropdown dropdown-end">
   <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm hover:bg-transparent text-primary" title="Settings">
     <Icon name="material-symbols:settings-outline" class="w-6 h-6" />
   </div>
+
   <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-200 rounded-box w-64 mt-4">
-    <!-- Dark/Light Toggle -->
     <li>
       <button id="mobile-theme-toggle" class="flex justify-between items-center gap-2 p-2 hover:bg-base-300 rounded-lg w-full">
         <span class="font-medium">Dark/Light</span>
@@ -52,7 +65,6 @@ const themes = [
       </button>
     </li>
 
-    <!-- Banner Mode Settings -->
     <li>
       <details>
         <summary class="font-medium flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
@@ -90,7 +102,6 @@ const themes = [
       </details>
     </li>
 
-    <!-- Font Selector -->
     <li>
       <details>
         <summary class="font-medium flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
@@ -100,79 +111,20 @@ const themes = [
           </div>
         </summary>
         <ul class="p-2 bg-base-100 rounded-box max-h-60 overflow-y-auto flex-nowrap">
-          <li>
-            <button data-set-font="system-ui, -apple-system, sans-serif" class="flex gap-3 items-center">
-              <span style="font-family: system-ui;">Aa</span>
-              <span>系统默认</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'Noto Sans SC', sans-serif" class="flex gap-3 items-center">
-              <span style="font-family: 'Noto Sans SC';">Aa</span>
-              <span>思源黑体</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'Noto Serif SC', serif" class="flex gap-3 items-center">
-              <span style="font-family: 'Noto Serif SC';">Aa</span>
-              <span>思源宋体</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'LXGW WenKai', cursive" class="flex gap-3 items-center">
-              <span style="font-family: 'LXGW WenKai';">Aa</span>
-              <span>霞鹜文楷</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'Ma Shan Zheng', cursive" class="flex gap-3 items-center">
-              <span style="font-family: 'Ma Shan Zheng';">Aa</span>
-              <span>马善政楷体</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'ZCOOL XiaoWei', serif" class="flex gap-3 items-center">
-              <span style="font-family: 'ZCOOL XiaoWei';">Aa</span>
-              <span>站酷小薇</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'Long Cang', cursive" class="flex gap-3 items-center">
-              <span style="font-family: 'Long Cang';">Aa</span>
-              <span>龙藏</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'ZCOOL QingKe HuangYou', cursive" class="flex gap-3 items-center">
-              <span style="font-family: 'ZCOOL QingKe HuangYou';">Aa</span>
-              <span>站酷庆科黄油体</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'ZCOOL KuaiLe', cursive" class="flex gap-3 items-center">
-              <span style="font-family: 'ZCOOL KuaiLe';">Aa</span>
-              <span>站酷快乐体</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'Liu Jian Mao Cao', cursive" class="flex gap-3 items-center">
-              <span style="font-family: 'Liu Jian Mao Cao';">Aa</span>
-              <span>刘建毛草</span>
-            </button>
-          </li>
-          <li>
-            <button data-set-font="'Zhi Mang Xing', cursive" class="flex gap-3 items-center">
-              <span style="font-family: 'Zhi Mang Xing';">Aa</span>
-              <span>芝麻行</span>
-            </button>
-          </li>
+          {fonts.map((font) => (
+            <li>
+              <button data-set-font={font.value} class="flex gap-3 items-center">
+                <span style={`font-family: ${font.preview};`}>Aa</span>
+                <span>{font.label}</span>
+              </button>
+            </li>
+          ))}
         </ul>
       </details>
     </li>
 
     <TranslateWidget variant="inline" />
 
-    <!-- Config Button -->
     <li>
       <a href="/config" class="flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
         <div class="flex items-center gap-2">
@@ -182,7 +134,6 @@ const themes = [
       </a>
     </li>
 
-    <!-- Theme Selector -->
     <li>
       <details>
         <summary class="font-medium flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
@@ -210,72 +161,97 @@ const themes = [
   </ul>
 </div>
 
-<script is:inline define:vars={{ SITE_THEME }}>
+<script is:inline>
+  const updateMobileThemeToggleIcons = () => {
+    const toggle = document.getElementById("mobile-theme-toggle");
+    if (!toggle) return;
+
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "";
+    const themeType =
+      window.__mahiroResolveThemeType?.(currentTheme) ||
+      document.documentElement.getAttribute("data-theme-type") ||
+      "light";
+    const isDark = themeType === "dark";
+
+    toggle.querySelector(".light-icon")?.classList.toggle("hidden", isDark);
+    toggle.querySelector(".dark-icon")?.classList.toggle("hidden", !isDark);
+  };
+
+  const updateMobileThemeButtons = () => {
+    const currentTheme =
+      document.documentElement.getAttribute("data-theme") ||
+      localStorage.getItem("theme") ||
+      "light";
+
+    document.querySelectorAll("[data-set-theme-mobile]").forEach((btn) => {
+      const active = btn.getAttribute("data-set-theme-mobile") === currentTheme;
+      btn.classList.toggle("bg-primary/10", active);
+      btn.classList.toggle("text-primary", active);
+      btn.classList.toggle("font-bold", active);
+      btn.classList.toggle("active", active);
+    });
+  };
+
+  const updateActiveBannerButton = () => {
+    const currentMode =
+      document.documentElement.getAttribute("data-banner-mode") ||
+      localStorage.getItem("banner-mode") ||
+      "normal";
+
+    document.querySelectorAll("[data-set-banner-mobile]").forEach((btn) => {
+      const active = btn.getAttribute("data-set-banner-mobile") === currentMode;
+      btn.classList.toggle("bg-primary/10", active);
+      btn.classList.toggle("text-primary", active);
+      btn.classList.toggle("font-bold", active);
+      btn.classList.toggle("active", active);
+    });
+  };
+
+  const updateActiveFontButton = () => {
+    const currentFont =
+      document.documentElement.getAttribute("data-font") ||
+      localStorage.getItem("blog-font") ||
+      "";
+
+    document.querySelectorAll("[data-set-font]").forEach((btn) => {
+      const active = btn.getAttribute("data-set-font") === currentFont;
+      btn.classList.toggle("bg-primary/10", active);
+      btn.classList.toggle("text-primary", active);
+      btn.classList.toggle("font-bold", active);
+      btn.classList.toggle("active", active);
+    });
+  };
+
+  if (!window.__mahiroMobileSettingsThemeSyncBound) {
+    window.__mahiroMobileSettingsThemeSyncBound = true;
+    window.addEventListener("mahiro:theme-change", () => {
+      updateMobileThemeToggleIcons();
+      updateMobileThemeButtons();
+    });
+    document.addEventListener("astro:after-swap", () => {
+      window.setTimeout(() => {
+        updateMobileThemeToggleIcons();
+        updateMobileThemeButtons();
+        updateActiveBannerButton();
+        updateActiveFontButton();
+      }, 0);
+    });
+  }
+
   document.addEventListener("astro:page-load", () => {
-    // Dark/Light Toggle Logic
     const mobileThemeToggle = document.getElementById("mobile-theme-toggle");
-    
-    const updateMobileThemeIcons = (isDark) => {
-      if (!mobileThemeToggle) return;
-      const lightIcon = mobileThemeToggle.querySelector(".light-icon");
-      const darkIcon = mobileThemeToggle.querySelector(".dark-icon");
-      
-      if (lightIcon && darkIcon) {
-        if (isDark) {
-          lightIcon.classList.add("hidden");
-          darkIcon.classList.remove("hidden");
-        } else {
-          lightIcon.classList.remove("hidden");
-          darkIcon.classList.add("hidden");
-        }
-      }
-    };
-
-    // Initialize icon state
-    const currentTheme = document.documentElement.getAttribute("data-theme");
-    updateMobileThemeIcons(currentTheme === SITE_THEME.dark);
-
-    if (mobileThemeToggle) {
+    if (mobileThemeToggle && mobileThemeToggle.dataset.bound !== "true") {
+      mobileThemeToggle.dataset.bound = "true";
       mobileThemeToggle.addEventListener("click", () => {
-        const currentTheme = document.documentElement.getAttribute("data-theme");
-        const newTheme = currentTheme === SITE_THEME.light ? SITE_THEME.dark : SITE_THEME.light;
-        
-        document.documentElement.setAttribute("data-theme", newTheme);
-        const themeType = newTheme === SITE_THEME.dark ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme-type", themeType);
-        localStorage.setItem("theme", newTheme);
-        
-        updateMobileThemeIcons(newTheme === SITE_THEME.dark);
-        
-        // Sync with other toggles if any
-        const allToggles = document.querySelectorAll("[data-theme-toggle]");
-      allToggles.forEach(() => {
-           // Assuming other toggles have similar structure or logic, 
-           // but since we are in mobile settings, we might be the only one active or visible.
-           // If needed, dispatch a custom event or manually update them.
-           // For now, just updating the DOM attribute is enough for styles, 
-           // but icons on other toggles might need refresh if they are visible.
-        });
+        window.__mahiroSetThemeTrigger?.(mobileThemeToggle);
+        window.__mahiroAnimateThemeControl?.(mobileThemeToggle);
+        window.__mahiroToggleTheme?.({ animate: true });
       });
     }
 
-    // Banner Mode Logic
-    const bannerButtons = document.querySelectorAll("[data-set-banner-mobile]");
-    
-    const updateActiveBannerButton = () => {
-      const currentMode = document.documentElement.getAttribute("data-banner-mode") || localStorage.getItem("banner-mode") || "normal";
-      bannerButtons.forEach(btn => {
-        if (btn.getAttribute("data-set-banner-mobile") === currentMode) {
-          btn.classList.add("bg-primary/10", "text-primary", "font-bold", "active");
-        } else {
-          btn.classList.remove("bg-primary/10", "text-primary", "font-bold", "active");
-        }
-      });
-    };
-
-    updateActiveBannerButton();
-
-    bannerButtons.forEach(btn => {
+    document.querySelectorAll("[data-set-banner-mobile]").forEach((btn) => {
+      if (btn.dataset.bound === "true") return;
+      btn.dataset.bound = "true";
       btn.addEventListener("click", () => {
         const mode = btn.getAttribute("data-set-banner-mobile");
         document.documentElement.setAttribute("data-banner-mode", mode);
@@ -284,85 +260,32 @@ const themes = [
       });
     });
 
-    // Theme Selector Logic
-    const themeButtons = document.querySelectorAll('[data-set-theme-mobile]');
-
-    const updateActiveThemeButton = () => {
-      const currentTheme = document.documentElement.getAttribute("data-theme") || localStorage.getItem("theme");
-      themeButtons.forEach(btn => {
-        if (btn.getAttribute('data-set-theme-mobile') === currentTheme) {
-            btn.classList.add("bg-primary/10", "text-primary", "font-bold", "active");
-        } else {
-            btn.classList.remove("bg-primary/10", "text-primary", "font-bold", "active");
-        }
-      });
-    };
-    
-    updateActiveThemeButton();
-    
-    themeButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const theme = btn.getAttribute('data-set-theme-mobile');
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        
-        const isDark = ['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee'].includes(theme);
-        document.documentElement.setAttribute('data-theme-type', isDark ? 'dark' : 'light');
-
-        updateMobileThemeIcons(isDark);
-        updateActiveThemeButton();
+    document.querySelectorAll("[data-set-theme-mobile]").forEach((btn) => {
+      if (btn.dataset.bound === "true") return;
+      btn.dataset.bound = "true";
+      btn.addEventListener("click", () => {
+        const theme = btn.getAttribute("data-set-theme-mobile");
+        if (!theme) return;
+        window.__mahiroSetThemeTrigger?.(btn);
+        window.__mahiroAnimateThemeControl?.(btn);
+        window.__mahiroApplyTheme?.(theme, { animate: true });
       });
     });
 
-    // Observer for external changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes') {
-          if (mutation.attributeName === 'data-theme') {
-             updateActiveThemeButton();
-             const currentTheme = document.documentElement.getAttribute("data-theme");
-             // Helper logic for updating icon if present in this scope or make generic
-             // Re-evaluating isDark roughly here for icons update if needed,
-             // or rely on the function defined above if accessible.
-             // Since updateMobileThemeIcons is defined in scope, we can use it.
-             const isDark = ['dark', 'synthwave', 'halloween', 'forest', 'black', 'luxury', 'dracula', 'business', 'night', 'coffee'].includes(currentTheme);
-             updateMobileThemeIcons(isDark);
-          }
-          if (mutation.attributeName === 'data-banner-mode') {
-             updateActiveBannerButton();
-          }
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme', 'data-banner-mode', 'data-font']
-    });
-
-    // Font Selector Logic
-    const fontButtons = document.querySelectorAll('[data-set-font]');
-
-    const updateActiveFontButton = () => {
-      const currentFont = document.documentElement.getAttribute('data-font') || localStorage.getItem('blog-font') || '';
-      fontButtons.forEach(btn => {
-        if (btn.getAttribute('data-set-font') === currentFont) {
-          btn.classList.add('bg-primary/10', 'text-primary', 'font-bold', 'active');
-        } else {
-          btn.classList.remove('bg-primary/10', 'text-primary', 'font-bold', 'active');
-        }
-      });
-    };
-
-    updateActiveFontButton();
-
-    fontButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const font = btn.getAttribute('data-set-font');
-        if (typeof applyFont === 'function') applyFont(font);
-        localStorage.setItem('blog-font', font);
+    document.querySelectorAll("[data-set-font]").forEach((btn) => {
+      if (btn.dataset.bound === "true") return;
+      btn.dataset.bound = "true";
+      btn.addEventListener("click", () => {
+        const font = btn.getAttribute("data-set-font");
+        if (typeof applyFont === "function") applyFont(font);
+        localStorage.setItem("blog-font", font);
         updateActiveFontButton();
       });
     });
+
+    updateMobileThemeToggleIcons();
+    updateMobileThemeButtons();
+    updateActiveBannerButton();
+    updateActiveFontButton();
   });
 </script>

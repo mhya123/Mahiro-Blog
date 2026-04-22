@@ -316,6 +316,7 @@ const languages = [
     const MODEL_STORAGE_KEY = "mahiro-translate-model";
     const ACTIVE_STORAGE_KEY = "mahiro-translate-active";
     const GOOGLE_PENDING_RELOAD_KEY = "mahiro-translate-google-pending";
+    const SUGGESTION_DISMISSED_UNTIL_KEY = "mahiro-translate-suggestion-dismissed-until";
     const STATE_VERSION = "v5";
     const GOOGLE_HOST_ID = "mahiro-google-translate-host";
     const GOOGLE_SCRIPT_ID = "mahiro-google-translate-script";
@@ -417,6 +418,22 @@ const languages = [
       window.__mahiroTranslateSuggestionHidden = hidden === true;
     }
 
+    function getSuggestionDismissedUntil() {
+      const raw = Number(localStorage.getItem(SUGGESTION_DISMISSED_UNTIL_KEY) || "0");
+      return Number.isFinite(raw) ? raw : 0;
+    }
+
+    function isSuggestionDismissedRecently() {
+      return getSuggestionDismissedUntil() > Date.now();
+    }
+
+    function dismissSuggestionForOneDay() {
+      localStorage.setItem(
+        SUGGESTION_DISMISSED_UNTIL_KEY,
+        String(Date.now() + 24 * 60 * 60 * 1000),
+      );
+    }
+
     function setPendingGoogleReload(language, sourceLanguage) {
       try {
         sessionStorage.setItem(
@@ -479,8 +496,23 @@ const languages = [
       return "";
     }
 
-    function removeTranslateSuggestion() {
-      document.getElementById(SUGGESTION_ID)?.remove();
+    async function removeTranslateSuggestion(options = {}) {
+      const panel = document.getElementById(SUGGESTION_ID);
+      if (!panel) return;
+
+      if (options.animate === false) {
+        panel.remove();
+        return;
+      }
+
+      if (panel.dataset.closing === "true") return;
+      panel.dataset.closing = "true";
+
+      try {
+        await window.__mahiroDismissTranslateSuggestion?.(panel);
+      } catch {}
+
+      panel.remove();
     }
 
     function openTranslatePanel() {
@@ -511,6 +543,7 @@ const languages = [
       if (!widget) return false;
       if (isActiveTranslationEnabled()) return false;
       if (isSuggestionHiddenForPage()) return false;
+      if (isSuggestionDismissedRecently()) return false;
 
       const sourceLanguage = normalizeSourceLanguage(widget.dataset.pageLanguage || "zh-CN");
       if (!sourceLanguage.toLowerCase().startsWith("zh")) return false;
@@ -518,8 +551,8 @@ const languages = [
       return !!getPreferredBrowserLanguage();
     }
 
-    function renderTranslateSuggestion() {
-      removeTranslateSuggestion();
+    async function renderTranslateSuggestion() {
+      await removeTranslateSuggestion({ animate: false });
       if (!shouldShowTranslateSuggestion()) return;
 
       const preferredLanguage = getPreferredBrowserLanguage();
@@ -551,6 +584,10 @@ const languages = [
                 全站翻译
                 <span class="ml-1 opacity-70">Translate This Site</span>
               </button>
+              <button type="button" class="btn btn-outline btn-sm rounded-full w-full" data-translate-suggest-dismiss-day>
+                1 天内不再显示
+                <span class="ml-1 opacity-70">Hide for 1 day</span>
+              </button>
               <button type="button" class="btn btn-ghost btn-sm rounded-full w-full" data-translate-suggest-dismiss>
                 稍后再说 / Maybe later
               </button>
@@ -560,26 +597,35 @@ const languages = [
       `;
 
       document.body.appendChild(panel);
+      window.__mahiroAnimateTranslateSuggestion?.(panel);
 
       panel
         .querySelector("[data-translate-suggest-apply]")
-        ?.addEventListener("click", () => {
-          handleSuggestionApply(preferredLanguage);
+        ?.addEventListener("click", async () => {
+          await handleSuggestionApply(preferredLanguage);
         });
 
       panel
         .querySelector("[data-translate-suggest-open]")
-        ?.addEventListener("click", () => {
+        ?.addEventListener("click", async () => {
           setSuggestionHiddenForPage(true);
-          removeTranslateSuggestion();
+          await removeTranslateSuggestion();
           openTranslatePanel();
         });
 
       panel
-        .querySelector("[data-translate-suggest-dismiss]")
-        ?.addEventListener("click", () => {
+        .querySelector("[data-translate-suggest-dismiss-day]")
+        ?.addEventListener("click", async () => {
           setSuggestionHiddenForPage(true);
-          removeTranslateSuggestion();
+          dismissSuggestionForOneDay();
+          await removeTranslateSuggestion();
+        });
+
+      panel
+        .querySelector("[data-translate-suggest-dismiss]")
+        ?.addEventListener("click", async () => {
+          setSuggestionHiddenForPage(true);
+          await removeTranslateSuggestion();
         });
     }
 
@@ -1234,7 +1280,7 @@ const languages = [
       localStorage.setItem(PROVIDER_STORAGE_KEY, "google");
       localStorage.setItem(LANGUAGE_STORAGE_KEY, targetLanguage);
       setSuggestionHiddenForPage(true);
-      removeTranslateSuggestion();
+      await removeTranslateSuggestion();
       syncAllWidgets();
       startGoogleTranslationReload(targetLanguage, sourceLanguage);
     }

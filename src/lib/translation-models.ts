@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import registry from '../../scripts/translation-models.json'
 
 export type TranslationModelDefinition = {
   id: string
@@ -13,20 +13,20 @@ type TranslationModelRegistry = {
 }
 
 export async function loadTranslationModelRegistry(): Promise<TranslationModelRegistry> {
-  const filePath = new URL('../../scripts/translation-models.json', import.meta.url)
-  const raw = await readFile(filePath, 'utf8')
-  const parsed = JSON.parse(raw) as TranslationModelRegistry
+  const parsed = registry as TranslationModelRegistry
   return {
     models: Array.isArray(parsed.models) ? parsed.models : [],
   }
 }
 
 export async function getTranslationModels(): Promise<TranslationModelDefinition[]> {
-  const registry = await loadTranslationModelRegistry()
-  return registry.models
+  const resolvedRegistry = await loadTranslationModelRegistry()
+  return resolvedRegistry.models
 }
 
-export async function findTranslationModelById(id: string | undefined | null): Promise<TranslationModelDefinition | undefined> {
+export async function findTranslationModelById(
+  id: string | undefined | null,
+): Promise<TranslationModelDefinition | undefined> {
   if (!id) return undefined
   const models = await getTranslationModels()
   return models.find((model) => model.id === id)

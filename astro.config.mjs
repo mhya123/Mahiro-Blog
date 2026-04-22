@@ -1,9 +1,9 @@
 import mdx from "@astrojs/mdx";
+import node from "@astrojs/node";
 import sitemap from "@astrojs/sitemap";
 import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
 import playformCompress from "@playform/compress";
-import terser from "@rollup/plugin-terser";
 import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
@@ -16,16 +16,31 @@ import updateConfig from "./src/integration/updateConfig.ts";
 
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
+const enableHeavyBuild = process.env.MAHIRO_ENABLE_HEAVY_BUILD === "true";
+
 // https://astro.build/config
 export default defineConfig({
   vite: {
     envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_'],
     define: {
-      'import.meta.env.YAML_GITHUB_CONFIG': JSON.stringify(GITHUB_CONFIG || null)
-    }
+      'import.meta.env.YAML_GITHUB_CONFIG': JSON.stringify(GITHUB_CONFIG || null),
+    },
+    build: {
+      minify: "esbuild",
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: "modern-compiler",
+        },
+      },
+    },
   },
   site: USER_SITE,
   output: "static",
+  adapter: node({
+    mode: "standalone",
+  }),
   style: {
     scss: {
       includePaths: ["./src/styles"],
@@ -36,15 +51,11 @@ export default defineConfig({
     react(),
     mdx(),
     icon(),
-    terser({
-      compress: true,
-      mangle: true,
-    }),
     sitemap(),
     tailwind({
       configFile: "./tailwind.config.mjs",
     }),
-    playformCompress(),
+    ...(enableHeavyBuild ? [playformCompress()] : []),
   ],
   markdown: {
     shikiConfig: {
@@ -220,14 +231,5 @@ export default defineConfig({
         content: { type: "text", value: "↗" },
       },
     ]],
-  },
-  vite: {
-    css: {
-      preprocessorOptions: {
-        scss: {
-          api: "modern-compiler",
-        },
-      },
-    },
   },
 });

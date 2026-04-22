@@ -1655,3 +1655,37 @@ blockquote.admonition.bdm-ai {
     }
   }
 }
+
+/* ===================================================
+   View Transitions (Smooth Theme Toggle)
+   =================================================== */
+
+::view-transition-group(root) {
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.8, 0, 0.2, 1);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+[data-theme-transition="true"]::view-transition-old(root) {
+  z-index: 1;
+}
+
+[data-theme-transition="true"]::view-transition-new(root) {
+  z-index: 2;
+  animation: theme-reveal 0.7s cubic-bezier(0.8, 0, 0.2, 1);
+  clip-path: circle(0px at var(--mahiro-theme-origin-x, 50vw) var(--mahiro-theme-origin-y, 50vh));
+}
+
+@keyframes theme-reveal {
+  0% {
+    clip-path: circle(0px at var(--mahiro-theme-origin-x, 50vw) var(--mahiro-theme-origin-y, 50vh));
+  }
+  100% {
+    clip-path: circle(var(--mahiro-theme-reveal-radius, 150vw) at var(--mahiro-theme-origin-x, 50vw) var(--mahiro-theme-origin-y, 50vh));
+  }
+}

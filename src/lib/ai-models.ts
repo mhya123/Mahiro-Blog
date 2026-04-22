@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import registry from '../../scripts/ai-models.json'
 
 export type AiModelDefinition = {
   id: string
@@ -14,20 +14,20 @@ type AiModelRegistry = {
 }
 
 export async function loadAiModelRegistry(): Promise<AiModelRegistry> {
-  const filePath = new URL('../../scripts/ai-models.json', import.meta.url)
-  const raw = await readFile(filePath, 'utf8')
-  const parsed = JSON.parse(raw) as AiModelRegistry
+  const parsed = registry as AiModelRegistry
   return {
     models: Array.isArray(parsed.models) ? parsed.models : [],
   }
 }
 
 export async function getAiModels(): Promise<AiModelDefinition[]> {
-  const registry = await loadAiModelRegistry()
-  return registry.models
+  const resolvedRegistry = await loadAiModelRegistry()
+  return resolvedRegistry.models
 }
 
-export async function findAiModelById(id: string | undefined | null): Promise<AiModelDefinition | undefined> {
+export async function findAiModelById(
+  id: string | undefined | null,
+): Promise<AiModelDefinition | undefined> {
   if (!id) return undefined
   const models = await getAiModels()
   return models.find((model) => model.id === id)

@@ -1,5 +1,4 @@
 ---  
-import { SITE_THEME } from "@config";  
 import { Icon } from "astro-icon/components";  
 import type { ThemeToggleProps } from "@interfaces/data";  
 import { t } from "@config";  
@@ -32,8 +31,7 @@ const { className = "" } = Astro.props as ThemeToggleProps;
   />  
 </button>  
   
-<script is:inline define:vars={{ SITE_THEME, uniqueId }}>  
-  // Function to update icons based on current theme for a specific toggle button  
+<script is:inline define:vars={{ uniqueId }}>  
   const updateThemeIcons = (toggleButton, isDark) => {  
     if (!toggleButton) return;  
   
@@ -41,70 +39,71 @@ const { className = "" } = Astro.props as ThemeToggleProps;
     const darkIcon = toggleButton.querySelector(".dark-icon");  
   
     if (lightIcon && darkIcon) {  
-      if (isDark) {  
-        lightIcon.classList.add("hidden");  
-        darkIcon.classList.remove("hidden");  
-      } else {  
-        lightIcon.classList.remove("hidden");  
-        darkIcon.classList.add("hidden");  
-      }  
+      lightIcon.classList.toggle("hidden", isDark);  
+      darkIcon.classList.toggle("hidden", !isDark);  
     }  
   };  
+
+  const refreshAllThemeToggles = (forcedIsDark) => {
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "";
+    const resolvedThemeType =
+      typeof forcedIsDark === "boolean"
+        ? (forcedIsDark ? "dark" : "light")
+        : (window.__mahiroResolveThemeType?.(currentTheme) || document.documentElement.getAttribute("data-theme-type") || "light");
+    const isDark = resolvedThemeType === "dark";
+
+    document.querySelectorAll("[data-theme-toggle]").forEach((toggleButton) => {
+      updateThemeIcons(toggleButton, isDark);
+    });
+  };
+
+  if (!window.__mahiroThemeToggleSyncBound) {
+    window.__mahiroThemeToggleSyncBound = true;
+    window.addEventListener("mahiro:theme-change", (event) => {
+      refreshAllThemeToggles(Boolean(event.detail?.isDark));
+    });
+    document.addEventListener("astro:after-swap", () => {
+      window.setTimeout(() => refreshAllThemeToggles(), 0);
+    });
+  }
   
-  // Apply correct icons on page load and navigation  
   document.addEventListener("astro:page-load", () => {  
-    // Use the unique ID to get this specific toggle button  
     const themeToggle = document.getElementById(uniqueId);  
-    if (!themeToggle) return;  
+    if (!themeToggle) {
+      refreshAllThemeToggles();
+      return;
+    }
+
+    if (themeToggle.dataset.bound !== "true") {
+      themeToggle.dataset.bound = "true";
+      themeToggle.addEventListener("click", () => {  
+        window.__mahiroSetThemeTrigger?.(themeToggle);
+        window.__mahiroAnimateThemeControl?.(themeToggle);
+        themeToggle.classList.add("animate-spin-once");  
+        window.__mahiroToggleTheme?.({ animate: true });
   
-    const currentTheme = document.documentElement.getAttribute("data-theme");  
-  
-    // Initialize icon state based on current theme  
-    updateThemeIcons(themeToggle, currentTheme === SITE_THEME.dark);  
-  
-    // Toggle theme on click  
-    themeToggle.addEventListener("click", () => {  
-      const currentTheme = document.documentElement.getAttribute("data-theme");  
-      const newTheme = currentTheme === SITE_THEME.light ? SITE_THEME.dark : SITE_THEME.light;  
-  
-      // Add animation class  
-      themeToggle.classList.add("animate-spin-once");  
-  
-      // Set new theme  
-      document.documentElement.setAttribute("data-theme", newTheme);  
-  
-      // Set theme type based on which theme is active  
-      const themeType = newTheme === SITE_THEME.dark ? "dark" : "light";  
-      document.documentElement.setAttribute("data-theme-type", themeType);  
-  
-      localStorage.setItem("theme", newTheme);  
-  
-      // Update icons for all theme toggles on the page  
-      const allToggles = document.querySelectorAll("[data-theme-toggle]");  
-      allToggles.forEach((toggle) => {  
-        updateThemeIcons(toggle, newTheme === SITE_THEME.dark);  
-      });  
-  
-      // Remove animation class after animation completes  
-      setTimeout(() => {  
-        themeToggle.classList.remove("animate-spin-once");  
-      }, 300);  
-    });  
+        setTimeout(() => {  
+          themeToggle.classList.remove("animate-spin-once");  
+        }, 220);  
+      });
+    }
+
+    refreshAllThemeToggles();
   });  
 </script>  
   
 <style>  
-  @keyframes spin-once {  
+  @keyframes theme-toggle-bump {  
     0% {  
-      transform: rotate(0deg);  
+      transform: scale(0.96);  
     }  
     100% {  
-      transform: rotate(360deg);  
+      transform: scale(1);  
     }  
   }  
   
   .animate-spin-once {  
-    animation: spin-once 0.3s ease-in-out;  
+    animation: theme-toggle-bump 0.18s ease-out;  
   }  
   
   .theme-toggle-icon {  
