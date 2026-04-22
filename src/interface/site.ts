@@ -99,6 +99,13 @@ export interface FooterConfig {
   showCraftedBy?: boolean;
 }
 
+export interface SiteTranslationConfig {
+  enable?: boolean;
+  defaultProvider?: 'ai' | 'google' | 'bing';
+  defaultTargetLanguage?: string;
+  defaultModel?: string;
+}
+
 export interface BlogConfig {
   pageSize: number;
   ellipsisThreshold?: number;
@@ -149,6 +156,7 @@ export interface SiteConfig {
   pages?: {
     [key: string]: PageConfig;
   };
+  translation?: SiteTranslationConfig;
   footer?: FooterConfig;
   icp?: string;
   icp_link?: string;

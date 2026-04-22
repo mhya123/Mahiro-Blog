@@ -10,6 +10,11 @@ site:
     dark: dracula
     code: github-dark
   date_format: ddd MMM DD YYYY
+  translation:
+    enable: true
+    defaultProvider: google
+    defaultTargetLanguage: en
+    defaultModel: gpt-5.4-mini
   blog:
     pageSize: 7 # 首页每页显示文章数量
     ellipsisThreshold: 7 # 当总页数超过该值时，分页使用省略号（...）模式

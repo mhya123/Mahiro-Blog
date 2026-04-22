@@ -1,0 +1,1360 @@
+---
+import { Icon } from "astro-icon/components";
+import { SITE_LANGUAGE, SITE_TRANSLATION } from "@config";
+import { getTranslationModels } from "@/lib/translation-models";
+
+interface Props {
+  variant?: "dropdown" | "inline";
+}
+
+const { variant = "dropdown" } = Astro.props as Props;
+const isEnabled = SITE_TRANSLATION.enable !== false;
+const models = (await getTranslationModels()).filter(
+  (model) => !model.capabilities || model.capabilities.includes("text"),
+);
+const resolvedDefaultModel = models[0]?.id || SITE_TRANSLATION.defaultModel;
+
+const providers = [
+  {
+    id: "google",
+    labelZh: "谷歌翻译",
+    labelEn: "Google Translate",
+    icon: "logos:google-icon",
+  },
+  {
+    id: "ai",
+    labelZh: "AI 翻译",
+    labelEn: "AI Translation",
+    icon: "material-symbols:auto-awesome-rounded",
+  },
+  {
+    id: "bing",
+    labelZh: "微软翻译",
+    labelEn: "Microsoft Translator",
+    icon: "logos:microsoft-icon",
+  },
+];
+
+const languages = [
+  { code: "en", labelZh: "英语", labelEn: "English" },
+  { code: "ja", labelZh: "日语", labelEn: "Japanese" },
+  { code: "ko", labelZh: "韩语", labelEn: "Korean" },
+  { code: "fr", labelZh: "法语", labelEn: "French" },
+  { code: "de", labelZh: "德语", labelEn: "German" },
+  { code: "es", labelZh: "西班牙语", labelEn: "Spanish" },
+  { code: "ru", labelZh: "俄语", labelEn: "Russian" },
+  { code: "zh-CN", labelZh: "简体中文", labelEn: "Chinese Simplified" },
+  { code: "zh-TW", labelZh: "繁体中文", labelEn: "Chinese Traditional" },
+];
+---
+
+{
+  isEnabled && (
+    variant === "dropdown" ? (
+      <div
+        class="dropdown dropdown-end notranslate"
+        data-no-translate
+        data-translate-widget
+        data-widget-variant="dropdown"
+        data-default-provider={SITE_TRANSLATION.defaultProvider}
+        data-default-language={SITE_TRANSLATION.defaultTargetLanguage}
+        data-default-model={resolvedDefaultModel}
+        data-page-language={SITE_LANGUAGE}
+      >
+        <div
+          tabindex="0"
+          role="button"
+          class="btn btn-ghost btn-circle btn-sm hover:bg-primary/10 text-base-content/60 hover:text-primary transition-colors duration-200"
+          title="翻译 / Translate"
+          aria-label="翻译 / Translate"
+          data-translate-trigger
+        >
+          <Icon name="material-symbols:translate-rounded" class="w-4 h-4 xl:w-5 xl:h-5" />
+        </div>
+
+        <div class="dropdown-content z-[120] mt-4 w-[23rem] rounded-[1.6rem] border border-base-200/70 bg-base-100/95 p-4 shadow-2xl backdrop-blur-xl">
+          <div class="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <div class="text-sm font-bold text-base-content">全站翻译</div>
+              <div class="text-xs text-base-content/60">Translate This Site</div>
+              <p class="mt-2 text-xs leading-5 text-base-content/65">
+                只有点击“应用翻译”后才会开始翻译，开启后会尽量在站内保持当前目标语言。
+                <br />
+                Translation starts only after you click Apply Translation, and stays active across pages when possible.
+              </p>
+            </div>
+            <div class="rounded-full bg-primary/10 p-2 text-primary">
+              <Icon name="material-symbols:translate-rounded" class="h-5 w-5" />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50">
+              翻译方式
+            </div>
+            <div class="mb-2 text-[0.68rem] text-base-content/45">Provider</div>
+            <div class="grid grid-cols-3 gap-2">
+              {
+                providers.map((provider) => (
+                  <button
+                    type="button"
+                    class="translate-option flex flex-col items-center justify-center gap-1 rounded-2xl border border-base-200 bg-base-200/50 px-2 py-2 text-center text-xs font-semibold transition-all duration-200 hover:border-primary/30 hover:bg-primary/10"
+                    data-translate-provider={provider.id}
+                  >
+                    <Icon name={provider.icon} class="h-4 w-4" />
+                    <span>{provider.labelZh}</span>
+                    <span class="text-[0.65rem] font-normal opacity-70">{provider.labelEn}</span>
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50">
+              目标语言
+            </div>
+            <div class="mb-2 text-[0.68rem] text-base-content/45">Target Language</div>
+            <div class="flex flex-wrap gap-2">
+              {
+                languages.map((language) => (
+                  <button
+                    type="button"
+                    class="translate-option rounded-2xl border border-base-200 bg-base-200/50 px-3 py-1.5 text-left text-xs font-semibold transition-all duration-200 hover:border-primary/30 hover:bg-primary/10"
+                    data-translate-language={language.code}
+                  >
+                    <span class="block">{language.labelZh}</span>
+                    <span class="block text-[0.65rem] font-normal opacity-70">{language.labelEn}</span>
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label
+              class="mb-1 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50"
+              for="translate-model-desktop"
+            >
+              AI 模型
+            </label>
+            <div class="mb-2 text-[0.68rem] text-base-content/45">AI Model</div>
+            <select
+              id="translate-model-desktop"
+              class="select select-bordered w-full rounded-2xl border-base-200 bg-base-100"
+              data-translate-model
+            >
+              {
+                models.map((model) => (
+                  <option value={model.id}>{model.name} | {model.brand}</option>
+                ))
+              }
+            </select>
+          </div>
+
+          <p
+            class="mb-4 min-h-[3.2rem] rounded-2xl border border-base-200/70 bg-base-200/35 px-3 py-2 text-xs leading-5 text-base-content/70"
+            data-translate-status
+          >
+            当前默认使用谷歌站内翻译；AI 翻译会逐块显示结果，微软翻译会打开外部页面。
+            <br />
+            Google is the default in-page translator; AI translates chunk by chunk, and Microsoft opens an external page.
+          </p>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm flex-1 rounded-full"
+              data-translate-apply
+            >
+              应用翻译
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm rounded-full"
+              data-translate-reset
+            >
+              恢复原文
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <li
+        class="notranslate"
+        data-no-translate
+        data-translate-widget
+        data-widget-variant="inline"
+        data-default-provider={SITE_TRANSLATION.defaultProvider}
+        data-default-language={SITE_TRANSLATION.defaultTargetLanguage}
+        data-default-model={resolvedDefaultModel}
+        data-page-language={SITE_LANGUAGE}
+      >
+        <details data-translate-details>
+          <summary class="font-medium flex justify-between items-center p-2 hover:bg-base-300 rounded-lg w-full">
+            <div class="flex items-center gap-2">
+              <Icon name="material-symbols:translate-rounded" class="w-5 h-5" />
+              <div class="flex flex-col items-start leading-tight">
+                <span>全站翻译</span>
+                <span class="text-[0.68rem] opacity-70">Translate This Site</span>
+              </div>
+            </div>
+          </summary>
+
+          <div class="mt-2 rounded-2xl bg-base-100 p-3">
+            <p class="mb-3 text-xs leading-5 text-base-content/65">
+              只有点击“应用翻译”后才会开始翻译，开启后会尽量在站内保持当前目标语言。
+              <br />
+              Translation starts only after you click Apply Translation, and stays active across pages when possible.
+            </p>
+
+            <div class="mb-3">
+              <div class="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50">
+                翻译方式
+              </div>
+              <div class="mb-2 text-[0.68rem] text-base-content/45">Provider</div>
+              <div class="grid grid-cols-1 gap-2">
+                {
+                  providers.map((provider) => (
+                    <button
+                      type="button"
+                      class="translate-option flex items-center gap-3 rounded-2xl border border-base-200 bg-base-200/50 px-3 py-2 text-left text-sm font-semibold transition-all duration-200 hover:border-primary/30 hover:bg-primary/10"
+                      data-translate-provider={provider.id}
+                    >
+                      <Icon name={provider.icon} class="h-4 w-4" />
+                      <div class="flex flex-col">
+                        <span>{provider.labelZh}</span>
+                        <span class="text-[0.68rem] font-normal opacity-70">{provider.labelEn}</span>
+                      </div>
+                    </button>
+                  ))
+                }
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50">
+                目标语言
+              </div>
+              <div class="mb-2 text-[0.68rem] text-base-content/45">Target Language</div>
+              <div class="flex flex-wrap gap-2">
+                {
+                  languages.map((language) => (
+                    <button
+                      type="button"
+                      class="translate-option rounded-2xl border border-base-200 bg-base-200/50 px-3 py-1.5 text-left text-xs font-semibold transition-all duration-200 hover:border-primary/30 hover:bg-primary/10"
+                      data-translate-language={language.code}
+                    >
+                      <span class="block">{language.labelZh}</span>
+                      <span class="block text-[0.65rem] font-normal opacity-70">{language.labelEn}</span>
+                    </button>
+                  ))
+                }
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label
+                class="mb-1 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50"
+                for="translate-model-mobile"
+              >
+                AI 模型
+              </label>
+              <div class="mb-2 text-[0.68rem] text-base-content/45">AI Model</div>
+              <select
+                id="translate-model-mobile"
+                class="select select-bordered w-full rounded-2xl border-base-200 bg-base-100"
+                data-translate-model
+              >
+                {
+                  models.map((model) => (
+                    <option value={model.id}>{model.name} | {model.brand}</option>
+                  ))
+                }
+              </select>
+            </div>
+
+            <p
+              class="mb-3 min-h-[3.2rem] rounded-2xl border border-base-200/70 bg-base-200/35 px-3 py-2 text-xs leading-5 text-base-content/70"
+              data-translate-status
+            >
+              当前默认使用谷歌站内翻译；AI 翻译会逐块显示结果，微软翻译会打开外部页面。
+              <br />
+              Google is the default in-page translator; AI translates chunk by chunk, and Microsoft opens an external page.
+            </p>
+
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm flex-1 rounded-full"
+                data-translate-apply
+              >
+                应用翻译
+              </button>
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm rounded-full"
+                data-translate-reset
+              >
+                恢复原文
+              </button>
+            </div>
+          </div>
+        </details>
+      </li>
+    )
+  )
+}
+
+<script is:inline>
+  (() => {
+    if (window.__mahiroTranslateWidgetScriptLoaded) return;
+    window.__mahiroTranslateWidgetScriptLoaded = true;
+
+    const PROVIDER_STORAGE_KEY = "mahiro-translate-provider";
+    const LANGUAGE_STORAGE_KEY = "mahiro-translate-language";
+    const MODEL_STORAGE_KEY = "mahiro-translate-model";
+    const ACTIVE_STORAGE_KEY = "mahiro-translate-active";
+    const GOOGLE_PENDING_RELOAD_KEY = "mahiro-translate-google-pending";
+    const STATE_VERSION = "v5";
+    const GOOGLE_HOST_ID = "mahiro-google-translate-host";
+    const GOOGLE_SCRIPT_ID = "mahiro-google-translate-script";
+    const GOOGLE_STYLE_ID = "mahiro-google-translate-style";
+    const SUGGESTION_ID = "mahiro-translate-suggestion";
+    const MAX_CHUNK_ITEMS = 32;
+    const MAX_CHUNK_CHARS = 5000;
+    const SUPPORTED_LANGUAGES = ["en", "ja", "ko", "fr", "de", "es", "ru", "zh-CN", "zh-TW"];
+    const originalTextMap = new WeakMap();
+
+    function normalizeProvider(provider, fallback) {
+      const value = provider ? String(provider) : fallback;
+      return ["google", "ai", "bing"].includes(value) ? value : fallback;
+    }
+
+    function normalizeLanguage(language) {
+      const value = language ? String(language).trim() : "";
+      if (!value) return "en";
+
+      const lowerValue = value.toLowerCase();
+      if (lowerValue === "zh" || lowerValue === "zh-cn" || lowerValue === "zh-sg") {
+        return "zh-CN";
+      }
+
+      if (lowerValue === "zh-tw" || lowerValue === "zh-hk" || lowerValue === "zh-mo") {
+        return "zh-TW";
+      }
+
+      const exactMatch = SUPPORTED_LANGUAGES.find(
+        (item) => item.toLowerCase() === lowerValue,
+      );
+      if (exactMatch) return exactMatch;
+
+      const baseLanguage = lowerValue.split("-")[0];
+      const baseMatch = SUPPORTED_LANGUAGES.find(
+        (item) => item.toLowerCase() === baseLanguage,
+      );
+      return baseMatch || value;
+    }
+
+    function normalizeModel(model, fallback) {
+      return model ? String(model) : fallback;
+    }
+
+    function normalizeSourceLanguage(language) {
+      const value = language ? String(language) : "";
+      if (!value || value === "auto" || value === "zh") return "zh-CN";
+      return value;
+    }
+
+    function isActiveTranslationEnabled() {
+      return localStorage.getItem(ACTIVE_STORAGE_KEY) === "true";
+    }
+
+    function setActiveTranslation(enabled) {
+      if (enabled) {
+        localStorage.setItem(ACTIVE_STORAGE_KEY, "true");
+      } else {
+        localStorage.removeItem(ACTIVE_STORAGE_KEY);
+      }
+    }
+
+    function getCurrentState(widget) {
+      const defaultProvider = widget.dataset.defaultProvider || "google";
+      const defaultLanguage = widget.dataset.defaultLanguage || "en";
+      const defaultModel = widget.dataset.defaultModel || "";
+
+      return {
+        defaultProvider,
+        defaultLanguage,
+        defaultModel,
+        provider: normalizeProvider(
+          localStorage.getItem(PROVIDER_STORAGE_KEY) || defaultProvider,
+          defaultProvider,
+        ),
+        language: normalizeLanguage(
+          localStorage.getItem(LANGUAGE_STORAGE_KEY) || defaultLanguage,
+        ),
+        model: normalizeModel(localStorage.getItem(MODEL_STORAGE_KEY), defaultModel),
+      };
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function getMessageHtml(zh, en) {
+      return `${escapeHtml(zh)}<br />${escapeHtml(en)}`;
+    }
+
+    function isSuggestionHiddenForPage() {
+      return window.__mahiroTranslateSuggestionHidden === true;
+    }
+
+    function setSuggestionHiddenForPage(hidden) {
+      window.__mahiroTranslateSuggestionHidden = hidden === true;
+    }
+
+    function setPendingGoogleReload(language, sourceLanguage) {
+      try {
+        sessionStorage.setItem(
+          GOOGLE_PENDING_RELOAD_KEY,
+          JSON.stringify({
+            language,
+            sourceLanguage,
+            pathname: window.location.pathname,
+            timestamp: Date.now(),
+          }),
+        );
+      } catch {}
+    }
+
+    function getPendingGoogleReload() {
+      try {
+        const raw = sessionStorage.getItem(GOOGLE_PENDING_RELOAD_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return null;
+        if (parsed.pathname !== window.location.pathname) return null;
+        if (Date.now() - Number(parsed.timestamp || 0) > 30000) return null;
+        return parsed;
+      } catch {
+        return null;
+      }
+    }
+
+    function clearPendingGoogleReload() {
+      try {
+        sessionStorage.removeItem(GOOGLE_PENDING_RELOAD_KEY);
+      } catch {}
+    }
+
+    function getLanguageDisplayName(language) {
+      try {
+        const displayNames = new Intl.DisplayNames(
+          [language, document.documentElement.lang || "en"],
+          { type: "language" },
+        );
+        return displayNames.of(language) || language;
+      } catch {
+        return language;
+      }
+    }
+
+    function getPreferredBrowserLanguage() {
+      const languages = Array.from(
+        new Set([...(navigator.languages || []), navigator.language].filter(Boolean)),
+      );
+
+      for (const language of languages) {
+        const normalized = normalizeLanguage(language);
+        if (!normalized || normalized.toLowerCase().startsWith("zh")) continue;
+        if (SUPPORTED_LANGUAGES.includes(normalized)) {
+          return normalized;
+        }
+      }
+
+      return "";
+    }
+
+    function removeTranslateSuggestion() {
+      document.getElementById(SUGGESTION_ID)?.remove();
+    }
+
+    function openTranslatePanel() {
+      const dropdownTrigger = document.querySelector(
+        "[data-translate-widget][data-widget-variant='dropdown'] [data-translate-trigger]",
+      );
+      if (dropdownTrigger) {
+        dropdownTrigger.focus();
+        dropdownTrigger.click();
+        return;
+      }
+
+      const inlineDetails = document.querySelector(
+        "[data-translate-widget][data-widget-variant='inline'] [data-translate-details]",
+      );
+      if (inlineDetails) {
+        inlineDetails.open = true;
+        inlineDetails.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+
+    function buildQuickTranslateLabel(language) {
+      return `翻译为 ${getLanguageDisplayName(language)}`;
+    }
+
+    function shouldShowTranslateSuggestion() {
+      const widget = document.querySelector("[data-translate-widget]");
+      if (!widget) return false;
+      if (isActiveTranslationEnabled()) return false;
+      if (isSuggestionHiddenForPage()) return false;
+
+      const sourceLanguage = normalizeSourceLanguage(widget.dataset.pageLanguage || "zh-CN");
+      if (!sourceLanguage.toLowerCase().startsWith("zh")) return false;
+
+      return !!getPreferredBrowserLanguage();
+    }
+
+    function renderTranslateSuggestion() {
+      removeTranslateSuggestion();
+      if (!shouldShowTranslateSuggestion()) return;
+
+      const preferredLanguage = getPreferredBrowserLanguage();
+      if (!preferredLanguage) return;
+
+      const label = getLanguageDisplayName(preferredLanguage);
+      const panel = document.createElement("aside");
+      panel.id = SUGGESTION_ID;
+      panel.className =
+        "notranslate fixed bottom-24 right-4 z-[140] w-[min(22rem,calc(100vw-2rem))] rounded-[1.4rem] border border-base-200/80 bg-base-100/95 p-4 shadow-2xl backdrop-blur-xl md:top-1/2 md:bottom-auto md:-translate-y-1/2";
+      panel.setAttribute("data-no-translate", "true");
+      panel.innerHTML = `
+        <div class="flex items-start gap-3">
+          <div class="rounded-full bg-primary/10 p-2 text-primary">
+            <span class="flex h-5 w-5 items-center justify-center text-sm font-bold">T</span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-bold text-base-content">需要翻译这个网站吗？</div>
+            <div class="mt-1 text-xs leading-5 text-base-content/65">
+              检测到你的浏览器语言是 ${escapeHtml(label)}，你可以快速翻译当前站点，或者打开导航栏中的全站翻译面板来选择指定语言。
+              <br />
+              Your browser prefers ${escapeHtml(label)}. You can translate this site now or open the navbar translator to choose a specific language.
+            </div>
+            <div class="mt-3 flex flex-col gap-2">
+              <button type="button" class="btn btn-primary btn-sm rounded-full w-full" data-translate-suggest-apply>
+                ${escapeHtml(buildQuickTranslateLabel(preferredLanguage))}
+              </button>
+              <button type="button" class="btn btn-outline btn-sm rounded-full w-full" data-translate-suggest-open>
+                全站翻译
+                <span class="ml-1 opacity-70">Translate This Site</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm rounded-full w-full" data-translate-suggest-dismiss>
+                稍后再说 / Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(panel);
+
+      panel
+        .querySelector("[data-translate-suggest-apply]")
+        ?.addEventListener("click", () => {
+          handleSuggestionApply(preferredLanguage);
+        });
+
+      panel
+        .querySelector("[data-translate-suggest-open]")
+        ?.addEventListener("click", () => {
+          setSuggestionHiddenForPage(true);
+          removeTranslateSuggestion();
+          openTranslatePanel();
+        });
+
+      panel
+        .querySelector("[data-translate-suggest-dismiss]")
+        ?.addEventListener("click", () => {
+          setSuggestionHiddenForPage(true);
+          removeTranslateSuggestion();
+        });
+    }
+
+    function setStatus(widget, message, tone) {
+      const status = widget.querySelector("[data-translate-status]");
+      if (!status) return;
+
+      status.innerHTML = message;
+      status.classList.remove("text-base-content/70", "text-warning", "text-primary");
+
+      if (tone === "warning") {
+        status.classList.add("text-warning");
+      } else if (tone === "success") {
+        status.classList.add("text-primary");
+      } else {
+        status.classList.add("text-base-content/70");
+      }
+    }
+
+    function setAllStatuses(message, tone) {
+      document.querySelectorAll("[data-translate-widget]").forEach((widget) => {
+        setStatus(widget, message, tone);
+      });
+    }
+
+    function updateProviderButtons(widget, provider) {
+      widget.querySelectorAll("[data-translate-provider]").forEach((button) => {
+        const active = button.getAttribute("data-translate-provider") === provider;
+        button.classList.toggle("bg-primary/10", active);
+        button.classList.toggle("border-primary/30", active);
+        button.classList.toggle("text-primary", active);
+        button.classList.toggle("font-bold", active);
+      });
+    }
+
+    function updateLanguageButtons(widget, language) {
+      widget.querySelectorAll("[data-translate-language]").forEach((button) => {
+        const active = button.getAttribute("data-translate-language") === language;
+        button.classList.toggle("bg-primary/10", active);
+        button.classList.toggle("border-primary/30", active);
+        button.classList.toggle("text-primary", active);
+        button.classList.toggle("font-bold", active);
+      });
+    }
+
+    function describeProvider(provider) {
+      if (provider === "google") {
+        return getMessageHtml(
+          "谷歌翻译会在当前站点内尽量原地翻译，并在切换页面后继续保持目标语言。",
+          "Google Translate will try to translate this site in place and keep the chosen language across pages.",
+        );
+      }
+
+      if (provider === "bing") {
+        return getMessageHtml(
+          "微软翻译会打开外部翻译页面，不会在站内直接改写当前页面。",
+          "Microsoft Translator opens an external translation page instead of rewriting this page in place.",
+        );
+      }
+
+      return getMessageHtml(
+        "AI 翻译会逐块替换当前页面文本，并边翻译边显示结果。",
+        "AI Translation replaces page text chunk by chunk and shows results as they arrive.",
+      );
+    }
+
+    function hashText(text) {
+      let hash = 0;
+      for (let index = 0; index < text.length; index += 1) {
+        hash = (hash * 31 + text.charCodeAt(index)) >>> 0;
+      }
+      return String(hash);
+    }
+
+    function shouldSkipTextNode(node, parent) {
+      if (!parent) return true;
+
+      if (
+        parent.closest(
+          [
+            "[data-no-translate]",
+            "[data-translate-widget]",
+            ".notranslate",
+            ".skiptranslate",
+            "script",
+            "style",
+            "noscript",
+            "iframe",
+            "svg",
+            "canvas",
+            "textarea",
+            "input",
+            "select",
+            "option",
+            "pre",
+            "code",
+            "kbd",
+            "samp",
+            ".katex",
+            ".astro-code",
+            "#nprogress",
+            "[contenteditable='true']",
+          ].join(", "),
+        )
+      ) {
+        return true;
+      }
+
+      const raw = node.nodeValue || "";
+      const core = raw.trim();
+      if (!core) return true;
+      if (!/[\p{Letter}\p{Number}\u4e00-\u9fff]/u.test(core)) return true;
+
+      return false;
+    }
+
+    function getTranslateRoots() {
+      return [
+        ...document.querySelectorAll("nav"),
+        document.getElementById("banner"),
+        document.querySelector("main"),
+        ...document.querySelectorAll("aside"),
+        document.querySelector("footer"),
+      ].filter(Boolean);
+    }
+
+    function collectTranslatableEntries() {
+      const entries = [];
+      const seenNodes = new Set();
+
+      getTranslateRoots().forEach((root) => {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        let node;
+
+        while ((node = walker.nextNode())) {
+          if (seenNodes.has(node)) continue;
+          seenNodes.add(node);
+
+          const parent = node.parentElement;
+          if (shouldSkipTextNode(node, parent)) continue;
+
+          const raw = node.nodeValue || "";
+          const core = raw.trim();
+          const leading = raw.match(/^\s*/)?.[0] || "";
+          const trailing = raw.match(/\s*$/)?.[0] || "";
+
+          if (!originalTextMap.has(node)) {
+            originalTextMap.set(node, core);
+          }
+
+          entries.push({
+            node,
+            leading,
+            trailing,
+            original: originalTextMap.get(node),
+          });
+        }
+      });
+
+      return entries;
+    }
+
+    function buildFingerprint(entries) {
+      return hashText(entries.map((entry) => entry.original).join("\u0001"));
+    }
+
+    function buildCacheKey(language, model) {
+      return `mahiro-translate-cache:${STATE_VERSION}:${window.location.pathname}:${language}:${model}`;
+    }
+
+    function readCache(language, model, fingerprint) {
+      try {
+        const raw = localStorage.getItem(buildCacheKey(language, model));
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed?.fingerprint !== fingerprint) return null;
+        if (!Array.isArray(parsed?.translations)) return null;
+        return parsed.translations;
+      } catch {
+        return null;
+      }
+    }
+
+    function writeCache(language, model, fingerprint, translations) {
+      try {
+        localStorage.setItem(
+          buildCacheKey(language, model),
+          JSON.stringify({ fingerprint, translations }),
+        );
+      } catch {}
+    }
+
+    function applyTranslations(entries, translations) {
+      entries.forEach((entry, index) => {
+        const translated =
+          typeof translations[index] === "string" ? translations[index] : entry.original;
+        entry.node.nodeValue = `${entry.leading}${translated}${entry.trailing}`;
+      });
+    }
+
+    function splitIntoChunks(entries) {
+      const chunks = [];
+      let current = [];
+      let currentChars = 0;
+
+      entries.forEach((entry) => {
+        const nextChars = currentChars + entry.original.length;
+        if (current.length >= MAX_CHUNK_ITEMS || nextChars > MAX_CHUNK_CHARS) {
+          if (current.length > 0) chunks.push(current);
+          current = [];
+          currentChars = 0;
+        }
+
+        current.push(entry);
+        currentChars += entry.original.length;
+      });
+
+      if (current.length > 0) chunks.push(current);
+      return chunks;
+    }
+
+    async function translateChunk(chunk, language, model, sourceLanguage) {
+      const response = await fetch("/api/ai/translate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: chunk.map((entry) => entry.original),
+          sourceLanguage,
+          targetLanguage: language,
+          aiModel: model,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          payload?.error || getMessageHtml("翻译请求失败。", "Translation request failed."),
+        );
+      }
+
+      if (!Array.isArray(payload?.translations)) {
+        throw new Error(
+          getMessageHtml("翻译接口返回了无效结果。", "Invalid translation response."),
+        );
+      }
+
+      return payload.translations.map((item) => String(item ?? ""));
+    }
+
+    async function applyAiTranslation(language, model, sourceLanguage) {
+      const entries = collectTranslatableEntries();
+
+      if (entries.length === 0) {
+        setAllStatuses(
+          getMessageHtml(
+            "当前页面没有找到可翻译的文本。",
+            "No translatable text was found on this page.",
+          ),
+          "warning",
+        );
+        return;
+      }
+
+      const fingerprint = buildFingerprint(entries);
+      const cachedTranslations = readCache(language, model, fingerprint);
+      if (cachedTranslations && cachedTranslations.length === entries.length) {
+        applyTranslations(entries, cachedTranslations);
+        setAllStatuses(
+          getMessageHtml("已应用缓存翻译。", "Cached translation applied."),
+          "success",
+        );
+        return;
+      }
+
+      const chunks = splitIntoChunks(entries);
+      const allTranslations = [];
+      let translatedCount = 0;
+
+      for (let index = 0; index < chunks.length; index += 1) {
+        setAllStatuses(
+          getMessageHtml(
+            `正在翻译第 ${index + 1} / ${chunks.length} 段……`,
+            `Translating chunk ${index + 1} / ${chunks.length}...`,
+          ),
+          "success",
+        );
+
+        const translatedChunk = await translateChunk(
+          chunks[index],
+          language,
+          model,
+          sourceLanguage,
+        );
+
+        applyTranslations(chunks[index], translatedChunk);
+        allTranslations.push(...translatedChunk);
+        translatedCount += chunks[index].length;
+
+        setAllStatuses(
+          getMessageHtml(
+            `已翻译 ${translatedCount} / ${entries.length} 条文本。`,
+            `Translated ${translatedCount} / ${entries.length} text nodes.`,
+          ),
+          "success",
+        );
+      }
+
+      writeCache(language, model, fingerprint, allTranslations);
+      setAllStatuses(
+        getMessageHtml("当前页面翻译完成。", "Current page translation complete."),
+        "success",
+      );
+    }
+
+    function ensureGoogleHost() {
+      let host = document.getElementById(GOOGLE_HOST_ID);
+      if (!host) {
+        host = document.createElement("div");
+        host.id = GOOGLE_HOST_ID;
+        host.className = "notranslate";
+        host.setAttribute("data-no-translate", "true");
+        host.setAttribute("aria-hidden", "true");
+        document.body.appendChild(host);
+      }
+      return host;
+    }
+
+    function ensureGoogleStyles() {
+      if (document.getElementById(GOOGLE_STYLE_ID)) return;
+
+      const style = document.createElement("style");
+      style.id = GOOGLE_STYLE_ID;
+      style.textContent = `
+        body {
+          top: 0 !important;
+        }
+
+        #${GOOGLE_HOST_ID} {
+          position: fixed;
+          left: -9999px;
+          bottom: 0;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          pointer-events: none;
+          opacity: 0;
+        }
+
+        .goog-te-banner-frame.skiptranslate,
+        iframe.goog-te-banner-frame.skiptranslate {
+          display: none !important;
+          visibility: hidden !important;
+        }
+
+        .skiptranslate iframe {
+          max-width: 0 !important;
+          max-height: 0 !important;
+          border: 0 !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    function getCookieDomainCandidates() {
+      const hostname = window.location.hostname;
+      if (!hostname || hostname === "localhost" || /^[\d.]+$/.test(hostname)) {
+        return [""];
+      }
+
+      return ["", `.${hostname}`];
+    }
+
+    function setGoogTransCookie(sourceLanguage, targetLanguage) {
+      const value = encodeURIComponent(`/${sourceLanguage}/${targetLanguage}`);
+      const expires = "max-age=31536000";
+
+      getCookieDomainCandidates().forEach((domain) => {
+        const domainPart = domain ? `;domain=${domain}` : "";
+        document.cookie = `googtrans=${value};path=/${domainPart};${expires};SameSite=Lax`;
+      });
+    }
+
+    function clearGoogTransCookie() {
+      getCookieDomainCandidates().forEach((domain) => {
+        const domainPart = domain ? `;domain=${domain}` : "";
+        document.cookie = `googtrans=;path=/${domainPart};expires=Thu, 01 Jan 1970 00:00:00 GMT;SameSite=Lax`;
+      });
+    }
+
+    function clearGoogleRuntimeState() {
+      clearGoogTransCookie();
+      document.body.classList.remove("translated-ltr", "translated-rtl");
+      document.documentElement.classList.remove("translated-ltr", "translated-rtl");
+      document.querySelectorAll(".goog-te-banner-frame.skiptranslate").forEach((node) => {
+        node.remove();
+      });
+    }
+
+    function waitForGoogleSelect(timeoutMs = 10000) {
+      return new Promise((resolve, reject) => {
+        const startedAt = Date.now();
+
+        const tick = () => {
+          const select = document.querySelector(".goog-te-combo");
+          if (select) {
+            resolve(select);
+            return;
+          }
+
+          if (Date.now() - startedAt > timeoutMs) {
+            reject(new Error(getMessageHtml("谷歌翻译加载超时。", "Google Translate timed out.")));
+            return;
+          }
+
+          window.setTimeout(tick, 120);
+        };
+
+        tick();
+      });
+    }
+
+    function initGoogleTranslateElement(sourceLanguage) {
+      if (!window.google?.translate?.TranslateElement) {
+        throw new Error(
+          getMessageHtml(
+            "谷歌翻译脚本尚未就绪。",
+            "Google Translate script is not ready.",
+          ),
+        );
+      }
+
+      const host = ensureGoogleHost();
+      if (!document.querySelector(".goog-te-combo")) {
+        host.innerHTML = "";
+        new window.google.translate.TranslateElement(
+          {
+            pageLanguage: sourceLanguage || document.documentElement.lang || "zh-CN",
+            autoDisplay: false,
+            multilanguagePage: true,
+            includedLanguages: SUPPORTED_LANGUAGES.join(","),
+          },
+          GOOGLE_HOST_ID,
+        );
+      }
+    }
+
+    function ensureGoogleTranslateReady(sourceLanguage) {
+      ensureGoogleHost();
+      ensureGoogleStyles();
+
+      if (window.google?.translate?.TranslateElement) {
+        initGoogleTranslateElement(sourceLanguage);
+        return waitForGoogleSelect();
+      }
+
+      if (!window.__mahiroGoogleTranslateReadyPromise) {
+        window.__mahiroGoogleTranslateReadyPromise = new Promise((resolve, reject) => {
+          const onReady = async () => {
+            try {
+              initGoogleTranslateElement(sourceLanguage);
+              await waitForGoogleSelect();
+              resolve(true);
+            } catch (error) {
+              window.__mahiroGoogleTranslateReadyPromise = null;
+              reject(error);
+            }
+          };
+
+          window.googleTranslateElementInit = onReady;
+
+          let script = document.getElementById(GOOGLE_SCRIPT_ID);
+          if (!script) {
+            script = document.createElement("script");
+            script.id = GOOGLE_SCRIPT_ID;
+            script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+            script.async = true;
+            script.onerror = () => {
+              window.__mahiroGoogleTranslateReadyPromise = null;
+              reject(
+                new Error(
+                  getMessageHtml(
+                    "谷歌翻译脚本加载失败。",
+                    "Failed to load Google Translate script.",
+                  ),
+                ),
+              );
+            };
+            document.head.appendChild(script);
+          }
+        });
+      }
+
+      return window.__mahiroGoogleTranslateReadyPromise;
+    }
+
+    async function applyGoogleTranslation(language, sourceLanguage) {
+      await ensureGoogleTranslateReady(sourceLanguage);
+      setGoogTransCookie(sourceLanguage, language);
+
+      const select = await waitForGoogleSelect();
+      if (select.value !== language) {
+        select.value = language;
+      }
+
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      setAllStatuses(
+        getMessageHtml(
+          "正在应用谷歌站内翻译……",
+          "Applying embedded Google translation...",
+        ),
+        "success",
+      );
+
+      window.setTimeout(() => {
+        setAllStatuses(
+          getMessageHtml(
+            "谷歌站内翻译已启用，后续页面会继续保持当前语言。",
+            "Embedded Google translation is active and will continue across pages.",
+          ),
+          "success",
+        );
+      }, 800);
+    }
+
+    function startGoogleTranslationReload(language, sourceLanguage) {
+      setActiveTranslation(true);
+      setGoogTransCookie(sourceLanguage, language);
+      setPendingGoogleReload(language, sourceLanguage);
+      setAllStatuses(
+        getMessageHtml(
+          "正在准备站内翻译，页面将自动刷新一次……",
+          "Preparing embedded translation. This page will refresh once automatically...",
+        ),
+        "success",
+      );
+      window.location.reload();
+    }
+
+    function buildBingTranslateUrl(language, currentUrl) {
+      const target = encodeURIComponent(currentUrl);
+      return `https://www.bing.com/translator?from=auto&to=${encodeURIComponent(language)}&url=${target}`;
+    }
+
+    function syncWidgetState(widget) {
+      const state = getCurrentState(widget);
+
+      updateProviderButtons(widget, state.provider);
+      updateLanguageButtons(widget, state.language);
+
+      const select = widget.querySelector("[data-translate-model]");
+      if (select) {
+        const hasModel = Array.from(select.options).some(
+          (option) => option.value === state.model,
+        );
+        const resolvedModel = hasModel
+          ? state.model
+          : select.options[0]?.value || state.defaultModel;
+
+        if (resolvedModel) {
+          select.value = resolvedModel;
+          localStorage.setItem(MODEL_STORAGE_KEY, resolvedModel);
+        }
+
+        select.disabled = state.provider !== "ai";
+      }
+
+      setStatus(
+        widget,
+        describeProvider(state.provider),
+        state.provider === "ai" || isActiveTranslationEnabled() ? "success" : "default",
+      );
+    }
+
+    function syncAllWidgets() {
+      document.querySelectorAll("[data-translate-widget]").forEach((widget) => {
+        syncWidgetState(widget);
+      });
+      renderTranslateSuggestion();
+    }
+
+    async function applyCurrentTranslation(options = {}) {
+      const widget = document.querySelector("[data-translate-widget]");
+      if (!widget) return;
+
+      const { provider, language, model } = getCurrentState(widget);
+      const sourceLanguage = normalizeSourceLanguage(widget.dataset.pageLanguage || "zh-CN");
+
+      if (provider === "google") {
+        await applyGoogleTranslation(language, sourceLanguage);
+        return;
+      }
+
+      clearGoogleRuntimeState();
+
+      if (provider === "ai") {
+        await applyAiTranslation(language, model, sourceLanguage);
+        return;
+      }
+
+      if (!options.silent) {
+        window.location.href = buildBingTranslateUrl(language, window.location.href);
+      }
+    }
+
+    async function restoreActiveTranslationOnPageLoad() {
+      const widget = document.querySelector("[data-translate-widget]");
+      if (!widget) return;
+
+      const state = getCurrentState(widget);
+      const pageKey = `${window.location.pathname}:${state.provider}:${state.language}:${state.model}`;
+      if (window.__mahiroTranslateAutoAppliedPageKey === pageKey) return;
+
+      if (!isActiveTranslationEnabled()) {
+        clearGoogleRuntimeState();
+        clearPendingGoogleReload();
+        return;
+      }
+
+      window.__mahiroTranslateAutoAppliedPageKey = pageKey;
+      const pendingGoogleReload = getPendingGoogleReload();
+
+      try {
+        if (state.provider === "google" && pendingGoogleReload) {
+          setAllStatuses(
+            getMessageHtml(
+              "正在恢复谷歌站内翻译……",
+              "Restoring embedded Google translation...",
+            ),
+            "success",
+          );
+        }
+
+        await applyCurrentTranslation({ silent: true });
+        clearPendingGoogleReload();
+      } catch (error) {
+        clearPendingGoogleReload();
+        const message =
+          error instanceof Error
+            ? error.message
+            : getMessageHtml("翻译恢复失败。", "Failed to restore translation.");
+        setAllStatuses(message, "warning");
+      }
+    }
+
+    async function handleSuggestionApply(targetLanguage) {
+      const widget = document.querySelector("[data-translate-widget]");
+      if (!widget) return;
+
+      const sourceLanguage = normalizeSourceLanguage(widget.dataset.pageLanguage || "zh-CN");
+      localStorage.setItem(PROVIDER_STORAGE_KEY, "google");
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, targetLanguage);
+      setSuggestionHiddenForPage(true);
+      removeTranslateSuggestion();
+      syncAllWidgets();
+      startGoogleTranslationReload(targetLanguage, sourceLanguage);
+    }
+
+    function setupWidget(widget) {
+      if (widget.dataset.bound === "true") return;
+      widget.dataset.bound = "true";
+
+      const defaultProvider = widget.dataset.defaultProvider || "google";
+      const defaultLanguage = widget.dataset.defaultLanguage || "en";
+      const defaultModel = widget.dataset.defaultModel || "";
+
+      syncWidgetState(widget);
+
+      widget.querySelectorAll("[data-translate-provider]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const provider = normalizeProvider(
+            button.getAttribute("data-translate-provider"),
+            defaultProvider,
+          );
+          localStorage.setItem(PROVIDER_STORAGE_KEY, provider);
+          syncAllWidgets();
+        });
+      });
+
+      widget.querySelectorAll("[data-translate-language]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const language = normalizeLanguage(
+            button.getAttribute("data-translate-language") || defaultLanguage,
+          );
+          localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+          syncAllWidgets();
+        });
+      });
+
+      const select = widget.querySelector("[data-translate-model]");
+      select?.addEventListener("change", () => {
+        localStorage.setItem(MODEL_STORAGE_KEY, normalizeModel(select.value, defaultModel));
+        syncAllWidgets();
+      });
+
+      const applyButton = widget.querySelector("[data-translate-apply]");
+      applyButton?.addEventListener("click", async () => {
+        const state = getCurrentState(widget);
+        const sourceLanguage = normalizeSourceLanguage(widget.dataset.pageLanguage || "zh-CN");
+
+        localStorage.setItem(PROVIDER_STORAGE_KEY, state.provider);
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, state.language);
+        localStorage.setItem(MODEL_STORAGE_KEY, state.model);
+
+        if (state.provider === "bing") {
+          setActiveTranslation(false);
+          setAllStatuses(
+            getMessageHtml(
+              "即将打开微软翻译页面……",
+              "Opening Microsoft Translator page...",
+            ),
+            "success",
+          );
+          window.location.href = buildBingTranslateUrl(state.language, window.location.href);
+          return;
+        }
+
+        if (state.provider === "google") {
+          startGoogleTranslationReload(state.language, sourceLanguage);
+          return;
+        }
+
+        setActiveTranslation(true);
+        try {
+          await applyCurrentTranslation();
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : getMessageHtml("翻译失败。", "Translation failed.");
+          setAllStatuses(message, "warning");
+        }
+      });
+
+      const resetButton = widget.querySelector("[data-translate-reset]");
+      resetButton?.addEventListener("click", () => {
+        setActiveTranslation(false);
+        setSuggestionHiddenForPage(false);
+        clearPendingGoogleReload();
+        clearGoogleRuntimeState();
+        setAllStatuses(
+          getMessageHtml("正在恢复原文……", "Restoring original page..."),
+          "success",
+        );
+        window.location.reload();
+      });
+    }
+
+    function initTranslateWidgets() {
+      setSuggestionHiddenForPage(false);
+
+      document.querySelectorAll("[data-translate-widget]").forEach((widget) => {
+        setupWidget(widget);
+      });
+
+      syncAllWidgets();
+      restoreActiveTranslationOnPageLoad();
+      window.setTimeout(renderTranslateSuggestion, 240);
+    }
+
+    document.addEventListener("astro:page-load", initTranslateWidgets);
+    window.addEventListener("pageshow", () => {
+      window.setTimeout(renderTranslateSuggestion, 160);
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        window.setTimeout(renderTranslateSuggestion, 160);
+      }
+    });
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initTranslateWidgets, { once: true });
+    } else {
+      initTranslateWidgets();
+    }
+  })();
+</script>

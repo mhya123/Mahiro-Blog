@@ -26,6 +26,12 @@ export const SITE_LANGUAGE = config.site.language;
 export const SITE_FAVICON = config.site.favicon;
 export const SITE_THEME = config.site.theme;
 export const DATE_FORMAT = config.site.date_format;
+export const SITE_TRANSLATION = {
+  enable: config.site.translation?.enable ?? true,
+  defaultProvider: config.site.translation?.defaultProvider || "google",
+  defaultTargetLanguage: config.site.translation?.defaultTargetLanguage || "en",
+  defaultModel: config.site.translation?.defaultModel || "gpt-5.4-mini",
+} as const;
 
 // Banner 配置 - 使用安全访问  
 export const BANNER_CONFIG = config.site.banner;

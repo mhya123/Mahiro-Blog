@@ -1,6 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import { SITE_THEME } from "@config";
+import TranslateWidget from "./TranslateWidget.astro";
 
 const themes = [
   { name: "light", color: "#ffffff" },
@@ -168,6 +169,8 @@ const themes = [
         </ul>
       </details>
     </li>
+
+    <TranslateWidget variant="inline" />
 
     <!-- Config Button -->
     <li>

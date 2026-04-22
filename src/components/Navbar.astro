@@ -4,6 +4,7 @@ import ThemeToggle from "./widgets/ThemeToggle.astro";
 import ThemeSelector from "./widgets/ThemeSelector.astro";
 import FontSelector from "./widgets/FontSelector.astro";
 import BannerSettings from "./widgets/BannerSettings.astro";
+import TranslateWidget from "./widgets/TranslateWidget.astro";
 import MobileSettings from "./widgets/MobileSettings.astro";
 import { SITE_TITLE, SITE_MENU, USER_AVATAR } from "../config";      
       
@@ -50,7 +51,7 @@ function isMenuActive(item: MenuItem): boolean {
 
         <!-- 左侧：品牌标识 -->        
         <div class="flex-none pr-2">
-          <a href="/" class="group flex items-center space-x-2 transition-transform duration-300">        
+          <a href="/" class="group flex items-center space-x-2 transition-transform duration-300 notranslate" data-no-translate>        
             <span class="text-2xl xl:text-3xl font-bold tracking-tight text-primary transition-all group-hover:tracking-wide">{SITE_TITLE}</span>        
           </a>      
         </div>
@@ -123,6 +124,7 @@ function isMenuActive(item: MenuItem): boolean {
             <Icon name="material-symbols:settings-outline" class="w-4 h-4 xl:w-5 xl:h-5" />
           </a>
           <div class="scale-90 xl:scale-100 transition-transform origin-right flex items-center space-x-0 xl:space-x-1">
+            <TranslateWidget />
             <ThemeSelector />
             <FontSelector />
             <BannerSettings />
