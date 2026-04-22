@@ -1,0 +1,18 @@
+{
+  "models": [
+    {
+      "id": "gpt-5.4-nano",
+      "name": "gpt-5.4-nano",
+      "brand": "OpenAI",
+      "capabilities": ["text"],
+      "supportsReasoning": true
+    },
+    {
+      "id": "gpt-5.4-mini",
+      "name": "gpt-5.4-mini",
+      "brand": "OpenAI",
+      "capabilities": ["text"],
+      "supportsReasoning": true
+    }
+  ]
+}

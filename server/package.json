@@ -1,0 +1,12 @@
+{
+  "name": "mahiro-blog-backend",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

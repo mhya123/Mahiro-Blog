@@ -1,12 +1,12 @@
+import { readFileSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { createServer } from 'node:http'
 import { fileURLToPath } from 'node:url'
-import { config as loadEnv } from 'dotenv'
-import aiRegistry from '../scripts/ai-models.json' with { type: 'json' }
-import translationRegistry from '../scripts/translation-models.json' with { type: 'json' }
+import aiRegistry from './ai-models.json' with { type: 'json' }
+import translationRegistry from './translation-models.json' with { type: 'json' }
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-loadEnv({ path: resolve(__dirname, '.env') })
+loadEnvFile(resolve(__dirname, '.env'))
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_TIMEOUT_MS = 60_000
@@ -15,6 +15,32 @@ const MAX_SOURCE_CHARS = 24_000
 const MAX_ITEMS = 80
 const MAX_TOTAL_CHARS = 16_000
 const PORT = Number(process.env.PORT || 3000)
+
+function loadEnvFile(filePath) {
+  if (!existsSync(filePath)) return
+
+  const raw = readFileSync(filePath, 'utf8')
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+
+    const separatorIndex = trimmed.indexOf('=')
+    if (separatorIndex <= 0) continue
+
+    const key = trimmed.slice(0, separatorIndex).trim()
+    if (!key || Object.prototype.hasOwnProperty.call(process.env, key)) continue
+
+    let value = trimmed.slice(separatorIndex + 1).trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"'))
+      || (value.startsWith('\'') && value.endsWith('\''))
+    ) {
+      value = value.slice(1, -1)
+    }
+
+    process.env[key] = value
+  }
+}
 
 const SUMMARY_SYSTEM_PROMPT = [
   'You only generate concise article summaries.',

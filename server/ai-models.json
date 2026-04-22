@@ -1,0 +1,28 @@
+{
+  "models": [
+    {
+      "id": "gpt-5.4-mini",
+      "name": "ChatGPT-5.4-Mini",
+      "brand": "OpenAI",
+      "capabilities": ["text", "reasoning", "vision"],
+      "supportsReasoning": true,
+      "supportsVision": true
+    },
+    {
+      "id": "gpt-5.4-nano",
+      "name": "ChatGPT-5.4-Nano",
+      "brand": "OpenAI",
+      "capabilities": ["text", "reasoning", "vision"],
+      "supportsReasoning": true,
+      "supportsVision": true
+    },
+    {
+      "id": "gpt-5.2",
+      "name": "ChatGPT-5.2",
+      "brand": "OpenAI",
+      "capabilities": ["text", "reasoning", "vision"],
+      "supportsReasoning": true,
+      "supportsVision": true
+    }
+  ]
+}

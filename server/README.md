@@ -1,6 +1,7 @@
 # Mahiro Blog Backend
 
 This directory contains the standalone backend extracted from the Astro site.
+It is self-contained and can be started independently.
 The static frontend calls this service for AI summary and AI translation.
 
 ## Endpoints
@@ -18,13 +19,13 @@ Requirements:
 Create the env file first:
 
 ```bash
-cp server/.env.example server/.env
+cp .env.example .env
 ```
 
-Then start the service:
+Then start the service from inside `server/`:
 
 ```bash
-npm run server:start
+npm start
 ```
 
 Default listen address:
@@ -33,6 +34,22 @@ Default listen address:
 http://0.0.0.0:3000
 ```
 
+You can also start it from the repo root:
+
+```bash
+npm run server:start
+```
+
+## Self-Contained Files
+
+Everything required by the backend is inside `server/`:
+
+- `index.mjs`
+- `.env` / `.env.example`
+- `ai-models.json`
+- `translation-models.json`
+- `package.json`
+
 ## Env File
 
 The server now reads `server/.env` automatically on startup.
@@ -40,7 +57,7 @@ The server now reads `server/.env` automatically on startup.
 Template file:
 
 ```text
-server/.env.example
+.env.example
 ```
 
 Main variables:
@@ -91,6 +108,6 @@ node scripts/generate-ai-summary.mjs --all --channel service --service-url https
 ## Deployment Notes
 
 - Frontend stays as static `dist`
-- Backend is deployed separately with entry `server/index.mjs`
+- Backend can be deployed separately with the `server/` directory only
 - Bind your reverse proxy or platform domain to this Node service
 - Make sure the backend accepts requests from your frontend domain
