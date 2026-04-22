@@ -2,7 +2,7 @@
 title: Mahiro-Blog 二开实战（二）：数据流与 JSON 管道设计
 description: 面向长期维护的二开实践，讲清页面数据来源、JSON 组织规范与增量演进方式。
 pubDate: 2026-04-07T17:35
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-secondary-dev-data-pipeline.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> 围绕二开可维护性，建议先将数据流拆为内容数据、配置数据、展示数据三类，便于定位问题；JSON 管理应做到命名语义化、字段稳定、可选字段有兜底。
+> 字段分为必填、可选、衍生三类以降低 schema 变更成本；改造时坚持兼容优先，新字段默认可选、组件判空、旧数据可正常渲染，并避免同名字段语义不一致、页面直连原始 JSON、缺少兜底值，同时将数据规范、字段校验和迁移说明纳入文档与流程。
 
 做二开最怕的不是“现在能不能显示”，而是“半年后还能不能改”。
 

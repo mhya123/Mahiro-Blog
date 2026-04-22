@@ -2,7 +2,7 @@
 title: Mahiro-Blog 二开实战（三）：自动化工作流与审核策略
 description: 结合 GitHub Actions 的实际维护思路，构建“可解释、可演进”的自动审核流程。
 pubDate: 2026-04-07T17:50
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-secondary-dev-workflow-automation.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> 自动化工作流的目标是稳定而非一味严格，应做到规则清晰、错误可解释、可快速回滚，并按触发、校验、反馈、收尾四层拆分，避免改规则时相互牵连。
+> 审核策略可采用通过、可修复失败、严重失败三段式结果；失败信息应包含错误分类、命中规则和可复制修复示例。规则调整先在测试分支灰度发布，观察误报漏报后再推广，并将 workflow 变更纳入评审、为关键规则写注释、公开申请模板与失败说明。
 
 二开做大之后，真正拖慢你的往往不是开发速度，而是人工审核和重复操作。
 

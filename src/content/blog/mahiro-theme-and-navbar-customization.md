@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手教程（三）：主题与导航栏定制
 description: 从主题切换到导航菜单，教你把默认站点改成自己的视觉风格与信息结构。
 pubDate: 2026-04-07T13:50
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-theme-and-navbar-customization.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> 围绕主题系统与导航菜单定制，建议先在 DaisyUI 配置默认主题，并重点检查正文字号行高、代码块对比、链接颜色可辨识度。导航应以信息架构优先，保留首页、博客、关于、项目等核心入口，高频前置、低频下拉、文本简短。
+> 菜单可按“发现内容—浏览内容—认识作者—深入互动”的内容流设计。改完后检查桌面导航溢出、移动端可点性、active 状态、暗色可读性及 Banner 与 Navbar 冲突。常见问题是颜色过多、hover 动画过重、导航层级过深，推荐按“先主题、再导航、最后动画”迭代。
 
 写完几篇文章后，下一步通常是：**我想把站点改得更像自己**。
 

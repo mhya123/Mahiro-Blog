@@ -2,7 +2,7 @@
 title: 从 README 到实战：Mahiro-Blog 的设计思路与上手指南
 description: 一篇基于 Mahiro-Blog README 的完整导读，包含核心特性、技术选型、目录结构、开发流程与部署建议。
 pubDate: 2026-04-07T10:30
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-blog-readme-guide.webp
 draft: false
 tags:
@@ -15,8 +15,9 @@ categories:
   - 教程
 ---
 
-> [!ai] 千问 3 Coder Plus  
-> 本文基于项目 README 内容整理与重构，目标是把“说明文档”转换为“可读、可落地、可执行”的实战导读，帮助你快速理解 Mahiro-Blog 的架构与开发路径。
+> [!ai] ChatGPT-5.4-Mini
+> Mahiro-Blog 是基于 Astro 的完整内容系统，结合 React/Preact、Tailwind、DaisyUI、GSAP，实现静态性能、多主题、Markdown/MDX 混编、无后端全文搜索及基于 GitHub Actions 的友链自动审核。
+> 建议先读 mahiro.config.yaml、src/config.ts、layouts/components、content 与 workflows。上手时不能跳过预处理脚本，否则关键缓存缺失会导致构建失败；部署上应优先打通绑定仓库主分支的 CI/CD，并同步执行预处理。
 
 很多开源项目都有一个很长、很全的 README，但真正上手时你还是会遇到几个问题：
 

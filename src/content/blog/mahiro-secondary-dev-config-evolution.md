@@ -2,7 +2,7 @@
 title: Mahiro-Blog 二开实战（四）：配置系统演进与版本兼容
 description: 从配置项新增到历史兼容，讲清二开项目如何让配置系统长期可升级、可回滚。
 pubDate: 2026-04-07T18:05
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-secondary-dev-config-evolution.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> 聚焦配置 schema 演进导致的兼容问题，如新增字段缺失、字段重命名和深层结构牵连。提出三项原则：新字段先可选、在 src/config.ts 统一兜底、每次变更提供迁移映射说明。
+> 推荐软迁移流程：新增字段并保留旧字段，在导出层双读兼容，页面逐步迁移，观察后再移除旧字段。并建议为关键配置设默认值、集中读取、记录 Changelog，定期清理冗余并在 PR 中要求配置变更说明。
 
 配置系统是二开项目最容易“越改越乱”的区域。短期可用不难，长期可演进才是难点。
 

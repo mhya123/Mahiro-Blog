@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手教程（九）：音乐播放器与歌单配置实战
 description: 从配置歌单到前端播放排查，手把手完成 Mahiro-Blog 音乐模块的可用配置。
 pubDate: 2026-04-07T16:20
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-music-player-config-practical.webp
 draft: false
 tags:
@@ -13,6 +13,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> Mahiro-Blog 音乐模块主要在 `mahiro.config.yaml` 的 `music` 段配置，包含 `api`、`autoplay` 和 `playlist`。建议先用一个歌单 ID 做最小可用配置，启动 `pnpm dev` 后检查音乐页或全局播放器是否能加载并播放。
+> 排查重点包括歌单为空时检查 `playlist` 是否为数组、ID 和接口返回是否正常；有歌但不能播时检查音源失效、浏览器自动播放限制、跨域或限流；样式错位时检查主题色彩对比和移动端溢出。最佳实践是关闭自动播放、先配 1~2 个稳定歌单，并在每次修改后执行 `pnpm check`。
 
 音乐模块是 Mahiro-Blog 的特色功能之一。新手最常见的诉求是：**先让它正常播，再考虑 UI 微调**。
 

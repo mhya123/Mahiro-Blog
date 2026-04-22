@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手教程（八）：图片与性能优化基础
 description: 聚焦新手最容易见效的性能优化：图片策略、构建流程、页面体验检查清单。
 pubDate: 2026-04-07T15:25
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-image-and-performance-basics.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> 性能优化优先做高收益项：控制首屏图尺寸、优先用 WebP、避免一次加载过多大图。改图后要跑构建并检查浏览器真实下载体积，而不是只看源码图片大小。
+> 常见问题可从超大 Banner、过多卡片、阻塞脚本、过量动画、重复滚动事件及高频重排入手排查；移动端应减少阴影模糊和炫技动效。优化顺序建议先图片，再脚本加载，最后动效细节。
 
 性能优化很容易被神化，其实新手只要做好几件事，体验就会明显提升。
 

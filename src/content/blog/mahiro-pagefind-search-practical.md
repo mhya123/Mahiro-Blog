@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手教程（七）：Pagefind 搜索与索引实操
 description: 从构建索引到搜索异常排查，系统讲清 Mahiro-Blog 的静态搜索工作方式。
 pubDate: 2026-04-07T15:05
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-pagefind-search-practical.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> Mahiro-Blog 的搜索基于 Pagefind，在构建时生成索引，无需额外后端。`pnpm build` 会依次执行 Astro 构建、`pagefind --site dist`，再拷贝索引到 `public/pagefind`，异常时可先 `pnpm search:clean` 再重建。
+> 搜索不到新文章时应检查 `draft: false`、frontmatter、Pagefind 步骤、`public/pagefind` 新索引和浏览器缓存；关键词效果差可优化标题、描述与正文前段表达。本地能搜线上不能搜，多查部署产物与 CDN 缓存。
 
 Mahiro-Blog 的搜索基于 Pagefind：构建时生成索引，线上无需额外搜索后端。
 

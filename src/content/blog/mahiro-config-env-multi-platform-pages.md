@@ -6,7 +6,7 @@ description: >-
   一篇讲清配置文件与环境变量分层的实操教程，覆盖本地、GitHub Pages、Cloudflare Pages、EdgeOne Pages
   的变量注入与排错。
 pubDate: 2026-04-07T19:10
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-config-env-multi-platform-pages.webp
 draft: false
 tags:
@@ -18,6 +18,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> 核心是分清职责：可公开、可版本化的站点配置放 mahiro.config.yaml；敏感信息或按环境变化的值放 .env 或平台变量。POST_PASSWORD、OPENAI_API_KEY 等走服务端变量，只有 PUBLIC_ 前缀会进入前端构建结果。
+> 本地用 .env 配置并用 pnpm check、pnpm dev 验证；GitHub Pages 通过 Actions 在构建时注入，纯静态托管下 /api 不会运行；Cloudflare Pages 用 Variables 与 Secrets 并区分 Preview/Production；EdgeOne Pages 可直接粘贴 env 内容。统一变量名、公私分层和环境区分可减少多平台迁移与线上故障。
 
 这篇是给“已经能跑起来，但部署时变量总出问题”的同学准备的。
 

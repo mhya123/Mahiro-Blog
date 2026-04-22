@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手教程（五）：评论系统接入（Giscus / Waline）
 description: 从配置项到页面验证，手把手接入 Giscus 或 Waline，并给出常见问题排查清单。
 pubDate: 2026-04-07T14:30
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-comments-giscus-waline-beginner.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> Mahiro-Blog 在 `mahiro.config.yaml` 中预留了 Giscus 与 Waline 评论接入，主要通过 `comments.enable`、`comments.type` 及各自参数配置启用，渲染层会按 `type` 自动选择组件。
+> Giscus 适合依赖 GitHub、低运维场景，需在 giscus.app 获取 `repoId`、`categoryId` 等参数；Waline 适合自部署与更强可控性，重点配置 `serverURL`。切换系统只需修改 `comments.type`，排障时依次检查启用状态、类型拼写、参数完整性及对应平台服务状态。
 
 评论系统是博客互动的核心功能之一。Mahiro-Blog 已经预留了 `Giscus` 和 `Waline` 两套接入能力，你只需要改配置即可启用。
 

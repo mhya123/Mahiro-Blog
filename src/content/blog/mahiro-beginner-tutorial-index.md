@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手专栏目录：从 0 到可维护上线
 description: 新手教程总入口，覆盖配置、写作、主题、部署、评论、自动化、搜索、性能、音乐与 JSON 数据维护全链路。
 pubDate: 2026-04-07T16:00
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-beginner-tutorial-index.webp
 draft: false
 tags:
@@ -13,6 +13,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> Mahiro-Blog 新手专栏总目录，建议刚开始二开者按顺序阅读。内容涵盖设计思路、本地开发与排错、配置、Markdown/MDX 写作、主题导航定制、部署与 CI、评论、友链审核、搜索、性能、音乐播放器、JSON 数据维护、多平台部署与 PEM 证书获取。
+> 可按完整入门、按问题跳读或作为团队 onboarding 文档使用，后续新增教程会持续更新。完成基础篇后可进入“二开实战总览”，继续学习组件重构、数据管道、自动化与配置演进。
 
 这是一份 **Mahiro-Blog 新手专栏总目录**。如果你刚开始二开，建议按顺序阅读。
 

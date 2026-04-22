@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手教程（四）：部署与自动发布（CI）
 description: 从本地构建到线上部署，给新手一套可复用的发布路径，并附带自动化建议。
 pubDate: 2026-04-07T14:10
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.2
 image: /images/covers/mahiro-deploy-and-ci-beginner-guide.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.2
+> 围绕博客稳定上线与自动发布展开：发布前至少执行 pnpm check、build、preview；托管平台上手推荐 Vercel、Cloudflare Pages、Netlify，优先选择便于看日志、快速回滚、少折腾环境的平台。
+> 建议主分支接入自动构建部署，失败优先查首条红字、Node 版本、pnpm 一致性、环境变量与本地复现；发布策略可按风险区分直推主分支或走 PR，并准备 Git 回退和平台一键回滚两种方案。
 
 前面三篇解决了“能写、能改、能跑”。
 

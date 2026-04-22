@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手教程（十二）：PEM 证书怎么获取（GitHub App 实操）
 description: 只讲两件事：GitHub App 的 PEM 私钥怎么获取，以及导入失败时怎么快速排查。
 pubDate: 2026-04-07T23:20
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.2
 image: /images/covers/mahiro-github-app-pem-guide.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.2
+> GitHub App 的 PEM 私钥可在 GitHub 头像 Settings → Developer settings → GitHub Apps → 进入目标 App → Private keys → Generate a private key 获取，下载的 .pem 文件即所需私钥。Mahiro-Blog 中通过 /config 页点击“验证”，选择该 .pem 文件，出现“密钥导入成功”即可。
+> 导入失败主要排查 6 点：文件后缀是否为 .pem；内容是否保留 BEGIN/END PRIVATE KEY 头尾；mahiro.config.yaml 的 github.appId 是否与该 PEM 属于同一 App；私钥是否失效或被撤销；浏览器会话被清理后是否需重新导入；仍失败可在同一 App 下重新生成新 PEM 再测试。
 
 这篇只讲两部分：
 

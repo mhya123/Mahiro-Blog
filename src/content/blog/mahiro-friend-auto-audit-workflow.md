@@ -2,7 +2,7 @@
 title: Mahiro-Blog 新手教程（六）：友链自动审核工作流实战
 description: 读懂友链 PR/Issue 自动审核机制，学会配置、排错与维护这套无人值守流程。
 pubDate: 2026-04-07T14:45
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-friend-auto-audit-workflow.webp
 draft: false
 tags:
@@ -14,6 +14,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> Mahiro-Blog 友链自动审核由 auto-pr.yml、auto-issue.yml、deploy.yml 组成申请、审核、合并与部署链路，主要检查文件路径、JSON 格式、网站可访问性和反链。
+> 友链数据建议按一个站点一个 JSON 文件，统一使用 name、avatar、description、url、backlink、badge 字段。申请失败应优先查看 PR 日志、字段缺失、链接访问和反链地址；优化可通过清晰模板、可复制修复示例和失败标签分类实现，维护上应控制规则增量、减少误杀并先在测试分支演练。
 
 Mahiro-Blog 的一大亮点是友链自动审核：提交 PR 后，机器人自动检查并处理。对站长来说，这能大幅降低维护负担。
 

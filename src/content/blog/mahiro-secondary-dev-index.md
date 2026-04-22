@@ -2,7 +2,7 @@
 title: Mahiro-Blog 二开实战总览：从可运行到可演进
 description: 进阶二开入口，聚合组件重构、数据管道、工作流自动化与配置演进四大主题。
 pubDate: 2026-04-07T18:30
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/mahiro-secondary-dev-index.webp
 draft: false
 tags:
@@ -13,6 +13,10 @@ tags:
 categories:
   - 教程
 ---
+
+> [!ai] ChatGPT-5.4-Mini
+> 面向 Mahiro-Blog 从可用到可长期演进的二开总览，推荐按组件重构与目录拆分、数据流与 JSON 管道、自动化工作流与审核策略、配置系统演进与版本兼容四篇顺序学习。
+> 二开新功能适合从第1篇起顺读；已上线但维护吃力可优先看第2至4篇；团队协作可将四篇作为内部规范文档，并可在新手专栏目录与 README 总导读之间跳转。
 
 如果说“新手专栏”解决的是 **从 0 到可上线**，那这份总览解决的是 **从可用到可长期演进**。
 

@@ -2,7 +2,7 @@
 title: 快看快看!!!!
 description: 联系方式和博客相关说明.
 pubDate: 2026-02-28T13:02
-aiModel: qwen3-coder-plus
+aiModel: gpt-5.4-mini
 image: /images/covers/loookme.webp
 tags:
   - 联系方式
@@ -13,9 +13,9 @@ categories:
 badge: Pin
 ---
 
-> [!ai] 千问 3 Coder Plus
-> 这是个人网站和联系方式介绍，包含主站www.mahiro.work、备用站点blog.lovemh.tech，以及两个邮箱地址tuder1218@gmail.com和mhya520@icloud.com用于交流联系。
-> 目前没有公开交流群，如有建立会在此更新信息。
+> [!ai] ChatGPT-5.4-Mini
+> 提供主站 www.mahiro.work 与备用站 blog.lovemh.tech，用于查看最新动态和文章分享。联系邮箱为 tuder1218@gmail.com 和 mhya520@icloud.com。
+> 公开交流群当前暂无，若未来建立会在此处更新信息。
 
 ### 🌐 网站与博客
 
