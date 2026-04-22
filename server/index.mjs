@@ -15,6 +15,7 @@ const MAX_SOURCE_CHARS = 24_000
 const MAX_ITEMS = 80
 const MAX_TOTAL_CHARS = 16_000
 const PORT = Number(process.env.PORT || 3000)
+const LOG_PREFIX = '[server]'
 
 function loadEnvFile(filePath) {
   if (!existsSync(filePath)) return
@@ -40,6 +41,41 @@ function loadEnvFile(filePath) {
 
     process.env[key] = value
   }
+}
+
+function now() {
+  return new Date().toISOString()
+}
+
+function serializeMeta(meta = {}) {
+  const cleaned = Object.entries(meta).filter(([, value]) => value !== undefined)
+  if (cleaned.length === 0) return ''
+  return ` ${JSON.stringify(Object.fromEntries(cleaned))}`
+}
+
+function log(level, message, meta) {
+  const line = `${now()} ${LOG_PREFIX} [${level}] ${message}${serializeMeta(meta)}`
+  if (level === 'ERROR') {
+    console.error(line)
+    return
+  }
+  if (level === 'WARN') {
+    console.warn(line)
+    return
+  }
+  console.log(line)
+}
+
+function createRequestId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for']
+  if (typeof forwarded === 'string' && forwarded.trim()) {
+    return forwarded.split(',')[0].trim()
+  }
+  return req.socket?.remoteAddress || 'unknown'
 }
 
 const SUMMARY_SYSTEM_PROMPT = [
@@ -161,6 +197,8 @@ function findTranslationModelById(id) {
 }
 
 async function requestChatCompletion({
+  requestId,
+  route,
   baseUrl,
   apiKey,
   model,
@@ -178,6 +216,15 @@ async function requestChatCompletion({
     const timer = setTimeout(() => controller.abort(), timeoutMs)
 
     try {
+      log('INFO', 'Upstream request started', {
+        requestId,
+        route,
+        attempt,
+        retries,
+        model,
+        endpoint,
+      })
+
       const response = await fetch(endpoint, {
         method: 'POST',
         signal: controller.signal,
@@ -200,7 +247,10 @@ async function requestChatCompletion({
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) {
         const message = payload?.error?.message || payload?.message || `HTTP ${response.status}`
-        throw new Error(message)
+        const error = new Error(message)
+        error.status = response.status
+        error.payload = payload
+        throw error
       }
 
       const content = extractResponseText(payload)
@@ -208,8 +258,26 @@ async function requestChatCompletion({
         throw new Error('No model content returned')
       }
 
+      log('INFO', 'Upstream request completed', {
+        requestId,
+        route,
+        attempt,
+        model,
+        status: response.status,
+      })
+
       return content
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      log(attempt >= retries ? 'ERROR' : 'WARN', 'Upstream request failed', {
+        requestId,
+        route,
+        attempt,
+        retries,
+        model,
+        status: error?.status,
+        error: errorMessage,
+      })
       if (attempt >= retries) throw error
       await sleep(Math.min(1000 * attempt, 3000))
     } finally {
@@ -245,12 +313,14 @@ function readJsonBody(req) {
 }
 
 async function handleSummary(req, res, origin) {
+  const requestId = req.requestId
   const baseUrl = process.env.OPENAI_BASE_URL || DEFAULT_BASE_URL
   const apiKey = process.env.OPENAI_API_KEY
   const timeoutMs = Number(process.env.OPENAI_TIMEOUT_MS || DEFAULT_TIMEOUT_MS)
   const retries = Number(process.env.OPENAI_RETRIES || DEFAULT_RETRIES)
 
   if (!apiKey) {
+    log('ERROR', 'Summary request rejected: missing OPENAI_API_KEY', { requestId })
     return json(res, 500, { error: 'Missing OPENAI_API_KEY' }, origin)
   }
 
@@ -259,6 +329,10 @@ async function handleSummary(req, res, origin) {
   try {
     payload = await readJsonBody(req)
   } catch (error) {
+    log('WARN', 'Summary request rejected: invalid JSON body', {
+      requestId,
+      error: error instanceof Error ? error.message : String(error),
+    })
     return json(res, 400, { error: error instanceof Error ? error.message : 'Invalid JSON body' }, origin)
   }
 
@@ -266,21 +340,34 @@ async function handleSummary(req, res, origin) {
   const content = String(payload.content || '').trim()
   const aiModel = String(payload.aiModel || '').trim()
 
-  if (!title) return json(res, 400, { error: 'Missing title' }, origin)
-  if (!content) return json(res, 400, { error: 'Missing content' }, origin)
-  if (!aiModel) return json(res, 400, { error: 'Missing aiModel' }, origin)
+  if (!title) {
+    log('WARN', 'Summary request rejected: missing title', { requestId })
+    return json(res, 400, { error: 'Missing title' }, origin)
+  }
+  if (!content) {
+    log('WARN', 'Summary request rejected: missing content', { requestId })
+    return json(res, 400, { error: 'Missing content' }, origin)
+  }
+  if (!aiModel) {
+    log('WARN', 'Summary request rejected: missing aiModel', { requestId })
+    return json(res, 400, { error: 'Missing aiModel' }, origin)
+  }
 
   const model = findAiModelById(aiModel)
   if (!model) {
+    log('WARN', 'Summary request rejected: unsupported model', { requestId, aiModel })
     return json(res, 400, { error: `Unsupported aiModel: ${aiModel}` }, origin)
   }
 
   if (model.capabilities && !model.capabilities.includes('text')) {
+    log('WARN', 'Summary request rejected: model has no text capability', { requestId, aiModel })
     return json(res, 400, { error: `Model ${aiModel} does not support text generation` }, origin)
   }
 
   try {
     const rawSummary = await requestChatCompletion({
+      requestId,
+      route: '/api/ai/summary',
       baseUrl,
       apiKey,
       model: model.id,
@@ -292,13 +379,25 @@ async function handleSummary(req, res, origin) {
       maxTokens: 220,
     })
 
+    log('INFO', 'Summary generated', {
+      requestId,
+      aiModel: model.id,
+      titleLength: title.length,
+      contentLength: content.length,
+    })
+
     return json(res, 200, {
       summary: cleanSummaryOutput(rawSummary),
       model: model.id,
       modelName: model.name,
     }, origin)
   } catch (error) {
-    console.error('[server][ai-summary] request failed:', error)
+    log('ERROR', 'Summary generation failed', {
+      requestId,
+      aiModel: model.id,
+      error: error instanceof Error ? error.message : String(error),
+      status: error?.status,
+    })
     return json(res, 502, {
       error: error instanceof Error ? error.message : 'Failed to generate summary',
     }, origin)
@@ -306,12 +405,14 @@ async function handleSummary(req, res, origin) {
 }
 
 async function handleTranslate(req, res, origin) {
+  const requestId = req.requestId
   const baseUrl = process.env.AI_TRANSLATE_BASE_URL || DEFAULT_BASE_URL
   const apiKey = process.env.AI_TRANSLATE_API_KEY
   const timeoutMs = Number(process.env.AI_TRANSLATE_TIMEOUT_MS || DEFAULT_TIMEOUT_MS)
   const retries = Number(process.env.AI_TRANSLATE_RETRIES || DEFAULT_RETRIES)
 
   if (!apiKey) {
+    log('ERROR', 'Translate request rejected: missing AI_TRANSLATE_API_KEY', { requestId })
     return json(res, 500, { error: 'Missing AI_TRANSLATE_API_KEY' }, origin)
   }
 
@@ -320,6 +421,10 @@ async function handleTranslate(req, res, origin) {
   try {
     payload = await readJsonBody(req)
   } catch (error) {
+    log('WARN', 'Translate request rejected: invalid JSON body', {
+      requestId,
+      error: error instanceof Error ? error.message : String(error),
+    })
     return json(res, 400, { error: error instanceof Error ? error.message : 'Invalid JSON body' }, origin)
   }
 
@@ -328,29 +433,44 @@ async function handleTranslate(req, res, origin) {
   const targetLanguage = String(payload.targetLanguage || '').trim()
   const aiModel = String(payload.aiModel || '').trim()
 
-  if (!targetLanguage) return json(res, 400, { error: 'Missing targetLanguage' }, origin)
-  if (!aiModel) return json(res, 400, { error: 'Missing aiModel' }, origin)
-  if (items.length === 0) return json(res, 400, { error: 'Missing items' }, origin)
+  if (!targetLanguage) {
+    log('WARN', 'Translate request rejected: missing targetLanguage', { requestId })
+    return json(res, 400, { error: 'Missing targetLanguage' }, origin)
+  }
+  if (!aiModel) {
+    log('WARN', 'Translate request rejected: missing aiModel', { requestId })
+    return json(res, 400, { error: 'Missing aiModel' }, origin)
+  }
+  if (items.length === 0) {
+    log('WARN', 'Translate request rejected: missing items', { requestId })
+    return json(res, 400, { error: 'Missing items' }, origin)
+  }
   if (items.length > MAX_ITEMS) {
+    log('WARN', 'Translate request rejected: too many items', { requestId, items: items.length })
     return json(res, 400, { error: `Too many items. Maximum is ${MAX_ITEMS}` }, origin)
   }
 
   const totalChars = items.reduce((sum, item) => sum + item.length, 0)
   if (totalChars > MAX_TOTAL_CHARS) {
+    log('WARN', 'Translate request rejected: input too large', { requestId, totalChars })
     return json(res, 400, { error: `Input too large. Maximum is ${MAX_TOTAL_CHARS} characters` }, origin)
   }
 
   const model = findTranslationModelById(aiModel)
   if (!model) {
+    log('WARN', 'Translate request rejected: unsupported model', { requestId, aiModel })
     return json(res, 400, { error: `Unsupported aiModel: ${aiModel}` }, origin)
   }
 
   if (model.capabilities && !model.capabilities.includes('text')) {
+    log('WARN', 'Translate request rejected: model has no text capability', { requestId, aiModel })
     return json(res, 400, { error: `Model ${aiModel} does not support text generation` }, origin)
   }
 
   try {
     const rawTranslations = await requestChatCompletion({
+      requestId,
+      route: '/api/ai/translate',
       baseUrl,
       apiKey,
       model: model.id,
@@ -364,10 +484,24 @@ async function handleTranslate(req, res, origin) {
 
     const translations = parseTranslations(rawTranslations)
     if (translations.length !== items.length) {
+      log('ERROR', 'Translate request failed: item count mismatch', {
+        requestId,
+        aiModel: model.id,
+        expected: items.length,
+        actual: translations.length,
+      })
       return json(res, 502, {
         error: `Model returned ${translations.length} items, expected ${items.length}`,
       }, origin)
     }
+
+    log('INFO', 'Translation generated', {
+      requestId,
+      aiModel: model.id,
+      items: items.length,
+      totalChars,
+      targetLanguage,
+    })
 
     return json(res, 200, {
       translations,
@@ -375,7 +509,14 @@ async function handleTranslate(req, res, origin) {
       modelName: model.name,
     }, origin)
   } catch (error) {
-    console.error('[server][ai-translate] request failed:', error)
+    log('ERROR', 'Translation generation failed', {
+      requestId,
+      aiModel: model.id,
+      items: items.length,
+      targetLanguage,
+      error: error instanceof Error ? error.message : String(error),
+      status: error?.status,
+    })
     return json(res, 502, {
       error: error instanceof Error ? error.message : 'Failed to translate content',
     }, origin)
@@ -383,8 +524,18 @@ async function handleTranslate(req, res, origin) {
 }
 
 const server = createServer(async (req, res) => {
+  req.requestId = createRequestId()
+  const startedAt = Date.now()
   const origin = getOrigin(req)
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`)
+  const requestMeta = {
+    requestId: req.requestId,
+    method: req.method,
+    path: url.pathname,
+    ip: getClientIp(req),
+  }
+
+  log('INFO', 'Incoming request', requestMeta)
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
@@ -394,6 +545,11 @@ const server = createServer(async (req, res) => {
       Vary: 'Origin',
     })
     res.end()
+    log('INFO', 'Request completed', {
+      ...requestMeta,
+      status: 204,
+      durationMs: Date.now() - startedAt,
+    })
     return
   }
 
@@ -409,9 +565,38 @@ const server = createServer(async (req, res) => {
     return handleTranslate(req, res, origin)
   }
 
+  log('WARN', 'Request rejected: route not found', requestMeta)
   return json(res, 404, { error: 'Not found' }, origin)
 })
 
+server.on('request', (req, res) => {
+  const startedAt = Date.now()
+  const requestId = req.requestId || createRequestId()
+
+  res.on('finish', () => {
+    const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`)
+    log('INFO', 'Request completed', {
+      requestId,
+      method: req.method,
+      path: url.pathname,
+      status: res.statusCode,
+      durationMs: Date.now() - startedAt,
+    })
+  })
+})
+
 server.listen(PORT, () => {
-  console.log(`[server] listening on http://0.0.0.0:${PORT}`)
+  log('INFO', 'Server started', { port: PORT, envFile: resolve(__dirname, '.env') })
+})
+
+process.on('unhandledRejection', (error) => {
+  log('ERROR', 'Unhandled promise rejection', {
+    error: error instanceof Error ? error.stack || error.message : String(error),
+  })
+})
+
+process.on('uncaughtException', (error) => {
+  log('ERROR', 'Uncaught exception', {
+    error: error instanceof Error ? error.stack || error.message : String(error),
+  })
 })
