@@ -1,10 +1,10 @@
 {
-  "commitSha": "34c3841c8b0d753bd9b0e5b4881d6bb904cc8cad",
-  "commitShort": "34c3841",
-  "commitMessage": "更新网站图标和头像链接，统一使用自有域名",
+  "commitSha": "7abcdc70a0a37915998b1de6a8a451a600dddb83",
+  "commitShort": "7abcdc7",
+  "commitMessage": "feat: 添加后端 API 代理配置，优化跨域请求处理 fix: 更新 Google 翻译加载逻辑，增加超时处理和错误提示 refactor: 重构 Twikoo 和 Waline 组件的初始化逻辑，使用 IntersectionObserver 优化加载性能 style: 优化字体加载方式，使用 preload 和 noscript 处理 chore: 更新环境变量配置，支持开发环境下的 API 路径",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-22T22:01:42+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/34c3841c8b0d753bd9b0e5b4881d6bb904cc8cad",
-  "buildTime": "2026/4/22 22:02:24",
-  "totalCommits": 363
+  "commitDate": "2026-04-22T23:18:30+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/7abcdc70a0a37915998b1de6a8a451a600dddb83",
+  "buildTime": "2026/4/22 23:19:03",
+  "totalCommits": 365
 }
