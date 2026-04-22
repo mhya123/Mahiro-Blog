@@ -34,6 +34,7 @@ const {
 <script define:vars={{ repo, repoId, category, categoryId, mapping, strict, reactionsEnabled, emitMetadata, inputPosition, lang, loading }} is:inline>    
   let giscusLoaded = false;    
   let themeChangeTimeout;    
+  let giscusObserver;    
     
   function loadGiscus() {    
     const container = document.getElementById('giscus-container');    
@@ -99,8 +100,31 @@ const {
   }    
   
   // 立即执行，不等待 DOM 加载完成  
-  loadGiscus();
-  // document.addEventListener('DOMContentLoaded', loadGiscus);    
+  function scheduleGiscusLoad() {
+    const container = document.getElementById('giscus-container');
+    if (!container || giscusLoaded) return;
+
+    if (giscusObserver) {
+      giscusObserver.disconnect();
+    }
+
+    if ('IntersectionObserver' in window) {
+      giscusObserver = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        giscusObserver.disconnect();
+        loadGiscus();
+      }, {
+        rootMargin: '320px 0px',
+      });
+
+      giscusObserver.observe(container);
+      return;
+    }
+
+    loadGiscus();
+  }
+
+  scheduleGiscusLoad();
     
   const observer = new MutationObserver((mutations) => {    
     mutations.forEach((mutation) => {    
@@ -129,7 +153,7 @@ const {
     giscusLoaded = false;  
     // 添加短暂延迟，等待主题属性同步  
     setTimeout(() => {  
-      loadGiscus();  
+      scheduleGiscusLoad();  
     }, 100);  
   });    
 </script>    

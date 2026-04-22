@@ -25,8 +25,6 @@ const {
 
 <div id="waline-container"></div>
 
-<link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
-
 <script
   type="module"
   is:inline
@@ -41,18 +39,60 @@ const {
     pageview,
   }}
 >
-  import { init } from "https://unpkg.com/@waline/client@v3/dist/waline.js";
-
   let walineInstance;
+  let mountedPath = "";
+
+  function ensureWalineStyles() {
+    const styleId = "waline-external-style";
+    if (document.getElementById(styleId)) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const link = document.createElement("link");
+      link.id = styleId;
+      link.rel = "preload";
+      link.as = "style";
+      link.href = "https://unpkg.com/@waline/client@v3/dist/waline.css";
+      link.onload = () => {
+        link.onload = null;
+        link.rel = "stylesheet";
+        resolve();
+      };
+      link.onerror = () => reject(new Error("Failed to load Waline stylesheet"));
+      document.head.appendChild(link);
+    });
+  }
+
+  function loadWalineClient() {
+    if (!window.__mahiroWalineClientPromise) {
+      window.__mahiroWalineClientPromise = import("https://unpkg.com/@waline/client@v3/dist/waline.js");
+    }
+
+    return window.__mahiroWalineClientPromise;
+  }
 
   async function mountWaline() {
+    const container = document.getElementById("waline-container");
+    if (!container) return;
+
+    const currentPath = location.pathname;
+    if (walineInstance && mountedPath === currentPath) {
+      return;
+    }
+
     if (walineInstance) {
       await walineInstance.destroy();
+      walineInstance = null;
     }
+
+    await ensureWalineStyles();
+    const { init } = await loadWalineClient();
+
     walineInstance = init({
       el: "#waline-container",
       serverURL,
-      path: location.pathname,
+      path: currentPath,
       lang,
       dark,
       emoji,
@@ -61,14 +101,39 @@ const {
       reaction,
       pageview,
     });
+    mountedPath = currentPath;
+  }
+
+  function scheduleWalineMount() {
+    const container = document.getElementById("waline-container");
+    if (!container) return;
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        mountWaline().catch((error) => {
+          console.error("[Waline] failed to mount:", error);
+        });
+      }, {
+        rootMargin: "240px 0px",
+      });
+
+      observer.observe(container);
+      return;
+    }
+
+    mountWaline().catch((error) => {
+      console.error("[Waline] failed to mount:", error);
+    });
   }
 
   document.addEventListener("astro:after-swap", () => {
-    mountWaline();
+    scheduleWalineMount();
   });
 
   document.addEventListener("DOMContentLoaded", () => {
-    mountWaline();
+    scheduleWalineMount();
   });
 </script>
 

@@ -1,6 +1,6 @@
 ---
 /**
- * Twikoo 评论系统
+ * Twikoo comment system
  * https://twikoo.js.org/
  */
 interface Props {
@@ -15,98 +15,228 @@ const { envId, region = "", lang = "" } = Astro.props;
 <div class="relative w-full">
   <div id="tcomment-error" class="hidden absolute top-0 left-0 w-full p-4 bg-error/10 border border-error/20 text-error rounded-xl text-center shadow-sm">
     <div class="font-bold mb-1">评论服务加载失败</div>
-    <div class="text-sm opacity-80" id="tcomment-error-text">无法连接到服务器，请检查网络或稍后再试。</div>
+    <div class="text-sm opacity-80" id="tcomment-error-text">无法连接到评论服务，请检查网络或稍后再试。</div>
   </div>
   <div id="tcomment" class="w-full min-h-[120px]"></div>
 </div>
-<link rel="stylesheet" href="https://cdn.jsdmirror.com/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
-<script is:inline defer src="https://cdn.jsdmirror.com/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
-<script is:inline defer src="https://cdn.jsdmirror.com/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"></script>
-<script is:inline src="https://s.mahiro.work/d/twikoo.min.js?sign=QiLndPJgjjFbsqK6BAwmmRiNDTv_Fc4Y0CeRTrkem2A=:0" onerror="document.getElementById('tcomment-error').classList.remove('hidden'); document.getElementById('tcomment-error-text').innerText='评论系统核心库加载失败';"></script>
+
 <script is:inline define:vars={{ envId, region, lang }}>
+  const twikooWindow = window;
+  let twikooObserver;
+  let twikooInitializedPath = "";
+
   document.addEventListener("astro:page-load", () => {
-    initTwikoo();
+    scheduleTwikooInit();
   });
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initTwikoo);
+    document.addEventListener("DOMContentLoaded", scheduleTwikooInit);
   } else {
+    scheduleTwikooInit();
+  }
+
+  function showTwikooError(message) {
+    document.getElementById("tcomment-error")?.classList.remove("hidden");
+    const text = document.getElementById("tcomment-error-text");
+    if (text) {
+      text.innerText = message;
+    }
+  }
+
+  function loadStyleOnce(id, href, integrity) {
+    const existing = document.getElementById(id);
+    if (existing) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "preload";
+      link.as = "style";
+      link.href = href;
+      link.crossOrigin = "anonymous";
+      if (integrity) {
+        link.integrity = integrity;
+      }
+      link.onload = () => {
+        link.onload = null;
+        link.rel = "stylesheet";
+        resolve();
+      };
+      link.onerror = () => reject(new Error(`Failed to load stylesheet: ${href}`));
+      document.head.appendChild(link);
+    });
+  }
+
+  function loadScriptOnce(id, src, options = {}) {
+    const existing = document.getElementById(id);
+    if (existing) {
+      return existing.dataset.loaded === "true"
+        ? Promise.resolve()
+        : new Promise((resolve, reject) => {
+            existing.addEventListener("load", () => resolve(), { once: true });
+            existing.addEventListener("error", () => reject(new Error(`Failed to load script: ${src}`)), { once: true });
+          });
+    }
+
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.id = id;
+      script.src = src;
+      script.async = true;
+      script.defer = true;
+      if (options.integrity) {
+        script.integrity = options.integrity;
+      }
+      if (options.crossorigin) {
+        script.crossOrigin = options.crossorigin;
+      }
+      script.addEventListener("load", () => {
+        script.dataset.loaded = "true";
+        resolve();
+      }, { once: true });
+      script.addEventListener("error", () => reject(new Error(`Failed to load script: ${src}`)), { once: true });
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ensureTwikooAssets() {
+    await loadStyleOnce(
+      "twikoo-katex-style",
+      "https://cdn.jsdmirror.com/npm/katex@0.12.0/dist/katex.min.css",
+      "sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X",
+    );
+    await loadScriptOnce(
+      "twikoo-katex-script",
+      "https://cdn.jsdmirror.com/npm/katex@0.12.0/dist/katex.min.js",
+      {
+        integrity: "sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4",
+        crossorigin: "anonymous",
+      },
+    );
+    await loadScriptOnce(
+      "twikoo-katex-render-script",
+      "https://cdn.jsdmirror.com/npm/katex@0.12.0/dist/contrib/auto-render.min.js",
+      {
+        integrity: "sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa",
+        crossorigin: "anonymous",
+      },
+    );
+    await loadScriptOnce(
+      "twikoo-core-script",
+      "https://s.mahiro.work/d/twikoo.min.js?sign=QiLndPJgjjFbsqK6BAwmmRiNDTv_Fc4Y0CeRTrkem2A=:0",
+    );
+  }
+
+  function scheduleTwikooInit() {
+    const container = document.getElementById("tcomment");
+    if (!container) return;
+
+    if (twikooObserver) {
+      twikooObserver.disconnect();
+    }
+
+    if ("IntersectionObserver" in window) {
+      twikooObserver = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        twikooObserver.disconnect();
+        initTwikoo();
+      }, {
+        rootMargin: "320px 0px",
+      });
+
+      twikooObserver.observe(container);
+      return;
+    }
+
     initTwikoo();
   }
 
-  function initTwikoo() {
-    if (window.twikoo) {
-      const config = {
-        envId: envId,
-        el: '#tcomment',
-        path: window.location.pathname,
-      };
-      if (region) config.region = region;
-      if (lang) config.lang = lang;
-      
-      try {
-        const initPromise = window.twikoo.init(config);
-        if (initPromise && initPromise.catch) {
-          initPromise.catch((err) => {
-            console.error("Twikoo 加载遭遇错误:", err);
-            document.getElementById('tcomment-error').classList.remove('hidden');
-            document.getElementById('tcomment-error-text').innerText = err.message || "环境 API 初始化或通信失败";
-          });
-        }
-      } catch (err) {
-        console.error("Twikoo 初始化系统异常:", err);
-        document.getElementById('tcomment-error').classList.remove('hidden');
-        document.getElementById('tcomment-error-text').innerText = "发生内部组件异常";
-      }
-    } else {
-      setTimeout(() => {
-        if (!window.twikoo) {
-           document.getElementById('tcomment-error').classList.remove('hidden');
-           document.getElementById('tcomment-error-text').innerText = "评论系统核心处于未响应状态";
+  async function initTwikoo() {
+    const currentPath = window.location.pathname;
+    if (twikooInitializedPath === currentPath && twikooWindow.twikoo) {
+      return;
+    }
+
+    try {
+      await ensureTwikooAssets();
+    } catch (error) {
+      console.error("[Twikoo] asset load failed:", error);
+      showTwikooError("评论系统核心库加载失败");
+      return;
+    }
+
+    if (!twikooWindow.twikoo) {
+      window.setTimeout(() => {
+        if (!twikooWindow.twikoo) {
+          showTwikooError("评论系统核心库未正常响应");
         }
       }, 5000);
+      return;
+    }
+
+    const config = {
+      envId,
+      el: "#tcomment",
+      path: currentPath,
+    };
+
+    if (region) config.region = region;
+    if (lang) config.lang = lang;
+
+    try {
+      const initPromise = twikooWindow.twikoo.init(config);
+      twikooInitializedPath = currentPath;
+
+      if (initPromise && typeof initPromise.catch === "function") {
+        initPromise.catch((error) => {
+          console.error("[Twikoo] init failed:", error);
+          showTwikooError(error?.message || "环境 API 初始化或通信失败");
+        });
+      }
+    } catch (error) {
+      console.error("[Twikoo] init crashed:", error);
+      showTwikooError("发生内部组件异常");
     }
   }
 </script>
 
 <style is:global>
-  /* 将所有样式包裹在 tk-comments 下，坚决不干扰 tk-admin 管理界面的 Element UI 原生样式 */
-  
-  /* 彻底清理冲突背景 */
   .twikoo .tk-comments .tk-row,
   .twikoo .tk-comments .tk-col,
   .twikoo .tk-comments .el-input-group__append,
   .twikoo .tk-comments .el-input-group__prepend {
     background-color: transparent !important;
   }
-  
-  /* 基础文字颜色跟随外部文本色 */
+
   .twikoo .tk-comments {
     color: inherit;
     font-family: inherit;
     width: 100%;
   }
 
-  /* 输入框 3 等分比例优化 */
   .twikoo .tk-comments .tk-meta-input {
     display: flex;
     flex-wrap: nowrap;
     gap: 0.75rem;
   }
+
   .twikoo .tk-comments .tk-meta-input .el-input {
     flex: 1;
     width: 100% !important;
   }
+
   @media (max-width: 640px) {
     .twikoo .tk-comments .tk-meta-input {
       flex-wrap: wrap;
     }
+
     .twikoo .tk-comments .tk-meta-input .el-input {
       min-width: 100%;
     }
   }
 
-  /* 输入框 & 文本域 - 质感内嵌块 */
   .twikoo .tk-comments .el-input__inner,
   .twikoo .tk-comments .el-textarea__inner,
   .twikoo .tk-comments .tk-input textarea,
@@ -119,12 +249,12 @@ const { envId, region = "", lang = "" } = Astro.props;
     box-shadow: none !important;
     transition: all 0.3s ease;
   }
-  
+
   .twikoo .tk-comments .tk-input textarea {
     min-height: 120px !important;
     margin-top: 0.75rem;
   }
-  
+
   .twikoo .tk-comments .el-input__inner:focus,
   .twikoo .tk-comments .el-textarea__inner:focus,
   .twikoo .tk-comments .tk-input textarea:focus,
@@ -133,16 +263,15 @@ const { envId, region = "", lang = "" } = Astro.props;
     background-color: rgba(128, 128, 128, 0.25) !important;
     outline: none !important;
   }
-  
-  /* 图标 */
+
   .twikoo .tk-comments .tk-action-icon {
     fill: rgba(128, 128, 128, 0.8) !important;
   }
+
   .twikoo .tk-action-icon:hover {
     fill: currentColor !important;
   }
-  
-  /* 发送/预览按钮 - 质感风格 */
+
   .twikoo .tk-submit {
     background-color: rgba(128, 128, 128, 0.2) !important;
     color: inherit !important;
@@ -152,12 +281,11 @@ const { envId, region = "", lang = "" } = Astro.props;
     padding: 0 1.5rem !important;
     transition: all 0.2s ease;
   }
+
   .twikoo .tk-submit:hover {
     background-color: rgba(128, 128, 128, 0.4) !important;
   }
-  
-  /* Twikoo 各种内嵌 SVG 的强制尺寸兜底 */
-  /* 移除全部外层与评论块的默认背景，防止鼠标悬浮时的背景闪烁 */
+
   .twikoo,
   .twikoo .tk-comments,
   .twikoo .tk-comment,
@@ -172,18 +300,18 @@ const { envId, region = "", lang = "" } = Astro.props;
   .twikoo .el-input-group__prepend {
     background-color: transparent !important;
   }
-  
-  /* 头像重置为圆形 */
+
   .twikoo .tk-avatar {
     margin-right: 1rem !important;
   }
+
   .twikoo .tk-avatar .tk-avatar-img,
   .twikoo .tk-avatar svg {
     width: 2.5rem !important;
     height: 2.5rem !important;
     border-radius: 50% !important;
   }
-  /* 控制部分功能区的小图标限制，避免影响文字按钮的排列 */
+
   .twikoo .tk-icon,
   .twikoo .tk-action-icon svg,
   .twikoo .tk-action-icon,
@@ -192,9 +320,8 @@ const { envId, region = "", lang = "" } = Astro.props;
     height: 1.25em;
     display: inline-block;
   }
-  
-  /* 评论区底部动作（包括回复、置顶、隐藏）的原生排版恢复，避免 flex 吞噬空格 */
+
   .twikoo .tk-action {
-    opacity: 1 !important; /* 强制所有管理员按钮始终显示，避免移入移出的闪烁（如果不想要始终显示可移除） */
+    opacity: 1 !important;
   }
 </style>

@@ -16,6 +16,10 @@ const MAX_ITEMS = 80
 const MAX_TOTAL_CHARS = 16_000
 const PORT = Number(process.env.PORT || 3000)
 const LOG_PREFIX = '[server]'
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
+  .split(',')
+  .map((item) => item.trim())
+  .filter(Boolean)
 
 function loadEnvFile(filePath) {
   if (!existsSync(filePath)) return
@@ -95,13 +99,32 @@ const TRANSLATE_SYSTEM_PROMPT = [
   'The translations array must have exactly the same number of items and the same order as the input array.',
 ].join('\n')
 
+function resolveCorsOrigin(origin) {
+  if (ALLOWED_ORIGINS.includes('*')) {
+    return '*'
+  }
+
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    return origin
+  }
+
+  return ALLOWED_ORIGINS[0] || '*'
+}
+
+function buildCorsHeaders(origin) {
+  return {
+    'Access-Control-Allow-Origin': resolveCorsOrigin(origin),
+    'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+  }
+}
+
 function json(res, status, body, origin = '*') {
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    Vary: 'Origin',
+    ...buildCorsHeaders(origin),
   })
   res.end(JSON.stringify(body))
 }
@@ -538,12 +561,7 @@ const server = createServer(async (req, res) => {
   log('INFO', 'Incoming request', requestMeta)
 
   if (req.method === 'OPTIONS') {
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      Vary: 'Origin',
-    })
+    res.writeHead(204, buildCorsHeaders(origin))
     res.end()
     log('INFO', 'Request completed', {
       ...requestMeta,

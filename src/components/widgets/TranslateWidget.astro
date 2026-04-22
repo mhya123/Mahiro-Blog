@@ -469,6 +469,25 @@ const languages = [
       } catch {}
     }
 
+    function removeGoogleScriptTag() {
+      document.getElementById(GOOGLE_SCRIPT_ID)?.remove();
+    }
+
+    function runWhenPageSettled(task) {
+      const invoke = () => {
+        window.setTimeout(() => {
+          task();
+        }, 0);
+      };
+
+      if (document.readyState === "complete") {
+        invoke();
+        return;
+      }
+
+      window.addEventListener("load", invoke, { once: true });
+    }
+
     function getLanguageDisplayName(language) {
       try {
         const displayNames = new Intl.DisplayNames(
@@ -1086,12 +1105,27 @@ const languages = [
 
       if (!window.__mahiroGoogleTranslateReadyPromise) {
         window.__mahiroGoogleTranslateReadyPromise = new Promise((resolve, reject) => {
+          const timeoutId = window.setTimeout(() => {
+            window.__mahiroGoogleTranslateReadyPromise = null;
+            removeGoogleScriptTag();
+            reject(
+              new Error(
+                getMessageHtml(
+                  "谷歌翻译加载超时。",
+                  "Google Translate timed out.",
+                ),
+              ),
+            );
+          }, 12000);
+
           const onReady = async () => {
             try {
               initGoogleTranslateElement(sourceLanguage);
               await waitForGoogleSelect();
+              window.clearTimeout(timeoutId);
               resolve(true);
             } catch (error) {
+              window.clearTimeout(timeoutId);
               window.__mahiroGoogleTranslateReadyPromise = null;
               reject(error);
             }
@@ -1100,24 +1134,31 @@ const languages = [
           window.googleTranslateElementInit = onReady;
 
           let script = document.getElementById(GOOGLE_SCRIPT_ID);
-          if (!script) {
-            script = document.createElement("script");
-            script.id = GOOGLE_SCRIPT_ID;
-            script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-            script.async = true;
-            script.onerror = () => {
-              window.__mahiroGoogleTranslateReadyPromise = null;
-              reject(
-                new Error(
-                  getMessageHtml(
-                    "谷歌翻译脚本加载失败。",
-                    "Failed to load Google Translate script.",
-                  ),
-                ),
-              );
-            };
-            document.head.appendChild(script);
+          if (script && !window.google?.translate?.TranslateElement) {
+            script.remove();
+            script = null;
           }
+
+          script = document.createElement("script");
+          script.id = GOOGLE_SCRIPT_ID;
+          script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+          script.async = true;
+          script.defer = true;
+          script.fetchPriority = "low";
+          script.onerror = () => {
+            window.clearTimeout(timeoutId);
+            window.__mahiroGoogleTranslateReadyPromise = null;
+            removeGoogleScriptTag();
+            reject(
+              new Error(
+                getMessageHtml(
+                  "谷歌翻译脚本加载失败。",
+                  "Failed to load Google Translate script.",
+                ),
+              ),
+            );
+          };
+          document.head.appendChild(script);
         });
       }
 
@@ -1172,6 +1213,70 @@ const languages = [
       return `https://www.bing.com/translator?from=auto&to=${encodeURIComponent(language)}&url=${target}`;
     }
 
+    function resolveGoogleFallback(widget, preferredModel) {
+      const modelSelect = widget.querySelector("[data-translate-model]");
+      const fallbackModel = modelSelect?.options[0]?.value || preferredModel || "";
+
+      if (fallbackModel) {
+        return {
+          provider: "ai",
+          model: fallbackModel,
+          message: getMessageHtml(
+            "当前网络无法连接谷歌翻译，已自动切换到 AI 翻译。",
+            "Google Translate is unavailable on this network. Switched to AI Translation automatically.",
+          ),
+          restoreMessage: getMessageHtml(
+            "当前网络无法连接谷歌翻译，已切换为 AI 翻译，请重新点击“应用翻译”。",
+            "Google Translate is unavailable on this network. Switched to AI Translation. Click Apply Translation again.",
+          ),
+        };
+      }
+
+      return {
+        provider: "bing",
+        model: "",
+        message: getMessageHtml(
+          "当前网络无法连接谷歌翻译，已改用微软翻译。",
+          "Google Translate is unavailable on this network. Falling back to Microsoft Translator.",
+        ),
+        restoreMessage: getMessageHtml(
+          "当前网络无法连接谷歌翻译，已切换为微软翻译，请重新点击“应用翻译”。",
+          "Google Translate is unavailable on this network. Switched to Microsoft Translator. Click Apply Translation again.",
+        ),
+      };
+    }
+
+    async function handleGoogleTranslationFailure(widget, language, model, sourceLanguage, options = {}) {
+      const fallback = resolveGoogleFallback(widget, model);
+
+      clearPendingGoogleReload();
+      clearGoogleRuntimeState();
+      removeGoogleScriptTag();
+
+      localStorage.setItem(PROVIDER_STORAGE_KEY, fallback.provider);
+      if (fallback.model) {
+        localStorage.setItem(MODEL_STORAGE_KEY, fallback.model);
+      }
+      syncAllWidgets();
+
+      if (options.silent) {
+        setActiveTranslation(false);
+        setAllStatuses(fallback.restoreMessage, "warning");
+        return;
+      }
+
+      setAllStatuses(fallback.message, "warning");
+
+      if (fallback.provider === "ai") {
+        setActiveTranslation(true);
+        await applyAiTranslation(language, fallback.model, sourceLanguage);
+        return;
+      }
+
+      setActiveTranslation(false);
+      window.location.href = buildBingTranslateUrl(language, window.location.href);
+    }
+
     function syncWidgetState(widget) {
       const state = getCurrentState(widget);
 
@@ -1217,7 +1322,11 @@ const languages = [
       const sourceLanguage = normalizeSourceLanguage(widget.dataset.pageLanguage || "zh-CN");
 
       if (provider === "google") {
-        await applyGoogleTranslation(language, sourceLanguage);
+        try {
+          await applyGoogleTranslation(language, sourceLanguage);
+        } catch (error) {
+          await handleGoogleTranslationFailure(widget, language, model, sourceLanguage, options);
+        }
         return;
       }
 
@@ -1261,8 +1370,20 @@ const languages = [
           );
         }
 
-        await applyCurrentTranslation({ silent: true });
-        clearPendingGoogleReload();
+        runWhenPageSettled(() => {
+          applyCurrentTranslation({ silent: true })
+            .then(() => {
+              clearPendingGoogleReload();
+            })
+            .catch((error) => {
+              clearPendingGoogleReload();
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : getMessageHtml("翻译恢复失败。", "Failed to restore translation.");
+              setAllStatuses(message, "warning");
+            });
+        });
       } catch (error) {
         clearPendingGoogleReload();
         const message =
@@ -1283,7 +1404,20 @@ const languages = [
       setSuggestionHiddenForPage(true);
       await removeTranslateSuggestion();
       syncAllWidgets();
-      startGoogleTranslationReload(targetLanguage, sourceLanguage);
+
+      try {
+        await ensureGoogleTranslateReady(sourceLanguage);
+        startGoogleTranslationReload(targetLanguage, sourceLanguage);
+      } catch (error) {
+        const state = getCurrentState(widget);
+        await handleGoogleTranslationFailure(
+          widget,
+          targetLanguage,
+          state.model,
+          sourceLanguage,
+          { silent: false },
+        );
+      }
     }
 
     function setupWidget(widget) {
@@ -1346,7 +1480,18 @@ const languages = [
         }
 
         if (state.provider === "google") {
-          startGoogleTranslationReload(state.language, sourceLanguage);
+          try {
+            await ensureGoogleTranslateReady(sourceLanguage);
+            startGoogleTranslationReload(state.language, sourceLanguage);
+          } catch (error) {
+            await handleGoogleTranslationFailure(
+              widget,
+              state.language,
+              state.model,
+              sourceLanguage,
+              { silent: false },
+            );
+          }
           return;
         }
 

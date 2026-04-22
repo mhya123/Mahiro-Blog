@@ -79,7 +79,18 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- 中文字体：异步加载，不阻塞渲染 -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&family=LXGW+WenKai:wght@400;700&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Long+Cang&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Liu+Jian+Mao+Cao&family=Zhi+Mang+Xing&display=swap" />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&family=LXGW+WenKai:wght@400;700&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Long+Cang&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Liu+Jian+Mao+Cao&family=Zhi+Mang+Xing&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&family=LXGW+WenKai:wght@400;700&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Long+Cang&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Liu+Jian+Mao+Cao&family=Zhi+Mang+Xing&display=swap"
+      />
+    </noscript>
 
     <!-- 字体初始化（防闪烁 FOUC）-->
     <script is:inline>
@@ -128,7 +139,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       umamiConfig.enable && umamiConfig.websiteId && (
         <script
           is:inline
-          defer
+          async
           src={`${umamiConfig.baseUrl}/script.js`}
           data-website-id={umamiConfig.websiteId}
         />

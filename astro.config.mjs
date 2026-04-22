@@ -16,6 +16,7 @@ import updateConfig from "./src/integration/updateConfig.ts";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
 const enableHeavyBuild = process.env.MAHIRO_ENABLE_HEAVY_BUILD === "true";
+const backendApiTarget = (process.env.PUBLIC_SITE_API_BASE_URL || "https://back.mahiro.work").replace(/\/+$/, "");
 
 // https://astro.build/config
 export default defineConfig({
@@ -31,6 +32,26 @@ export default defineConfig({
       preprocessorOptions: {
         scss: {
           api: "modern-compiler",
+        },
+      },
+    },
+    server: {
+      proxy: {
+        "/__mahiro_api": {
+          target: backendApiTarget,
+          changeOrigin: true,
+          secure: true,
+          rewrite: (path) => path.replace(/^\/__mahiro_api/, ""),
+        },
+      },
+    },
+    preview: {
+      proxy: {
+        "/__mahiro_api": {
+          target: backendApiTarget,
+          changeOrigin: true,
+          secure: true,
+          rewrite: (path) => path.replace(/^\/__mahiro_api/, ""),
         },
       },
     },
