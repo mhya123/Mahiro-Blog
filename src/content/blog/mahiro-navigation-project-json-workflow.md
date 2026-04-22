@@ -16,8 +16,8 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> 导航数据位于 src/data/navigation/*.json，项目数据位于 src/data/projects/*.json，建议统一字段。导航项至少含名称、描述、链接，可选标签；项目建议含 name、avatar、description、url，以及 badge、tags、author、github 等可选字段，新增字段前需确认 schema 或页面支持。
-> 更新 JSON 建议按新建分支、单文件小步编辑、本地 pnpm check、页面预览、提交 PR 的流程进行。常见问题包括语法或目录错误、字段名不匹配、内容过长导致样式错位，以及 CI 因路径、字段格式、外链可访问性失败；长期维护应保持命名稳定、按功能拆分文件、清晰记录变更类型。
+> 导航页和项目页的数据分别存放在 `src/data/navigation/*.json`、`src/data/projects/*.json`，建议统一字段；导航项至少包含名称、描述、链接、标签，项目项可包含 `name`、`avatar`、`description`、`url`、`badge`、`tags`、`author`、`github`。
+> 更新 JSON 建议新建分支、小步修改、执行 `pnpm check`、预览页面并提交 PR；常见问题包括 JSON 语法错误、路径或字段名不匹配、内容过长导致样式错位，以及 CI 审核失败。
 
 当你把站点搭起来后，下一步常见需求是：持续维护导航资源和项目展示。
 

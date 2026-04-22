@@ -16,8 +16,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> 围绕 Mahiro-Blog 配置链路展开：`mahiro.config.yaml` 写数据，`src/config.ts` 导出，页面组件消费；新增配置必须走完整链路。优先修改站点标题、描述、菜单、Banner、个人信息和社交链接，并按“备份、单次只改一组、`pnpm check`、`pnpm dev`、`pnpm build`”流程操作。
-> 以新增 `site.noticeText` 为例，先在 YAML 加字段，再在 `src/config.ts` 导出并提供默认值，组件消费前判断空值。常见错误包括缩进不一致、把布尔值写成字符串、把数组写成逗号字符串；配置不生效时按 YAML 解析、字段名、导出是否被使用、检查报错、重启 dev 的顺序排查。
+> mahiro.config.yaml 负责写入、src/config.ts 负责导出、页面组件负责消费，新增配置必须走完整链路。新手优先修改站点标题、描述、菜单、Banner、个人信息和社交链接；改配置建议按分支备份、单项修改、pnpm check、pnpm dev、pnpm build 的流程排查。
 
 如果你是第一次二开 Mahiro-Blog，最容易卡住的不是写组件，而是“配置改了但页面没变化”。
 

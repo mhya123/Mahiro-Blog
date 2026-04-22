@@ -20,8 +20,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> 核心是分清职责：可公开、可版本化的站点配置放 mahiro.config.yaml；敏感信息或按环境变化的值放 .env 或平台变量。POST_PASSWORD、OPENAI_API_KEY 等走服务端变量，只有 PUBLIC_ 前缀会进入前端构建结果。
-> 本地用 .env 配置并用 pnpm check、pnpm dev 验证；GitHub Pages 通过 Actions 在构建时注入，纯静态托管下 /api 不会运行；Cloudflare Pages 用 Variables 与 Secrets 并区分 Preview/Production；EdgeOne Pages 可直接粘贴 env 内容。统一变量名、公私分层和环境区分可减少多平台迁移与线上故障。
+> 将 `mahiro.config.yaml` 用于可公开、可版本化配置，`.env`/平台变量用于敏感或按环境变化的值；`POST_PASSWORD`、`OPENAI_API_KEY` 等放私密变量，`PUBLIC_UMAMI_*` 可公开。GitHub Pages 需在构建时注入变量，Cloudflare Pages 区分 Variables 与 Secrets，EdgeOne Pages 可直接粘贴 env 内容。
 
 这篇是给“已经能跑起来，但部署时变量总出问题”的同学准备的。
 

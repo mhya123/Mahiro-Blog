@@ -15,8 +15,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> Mahiro-Blog 音乐模块主要在 `mahiro.config.yaml` 的 `music` 段配置，包含 `api`、`autoplay` 和 `playlist`。建议先用一个歌单 ID 做最小可用配置，启动 `pnpm dev` 后检查音乐页或全局播放器是否能加载并播放。
-> 排查重点包括歌单为空时检查 `playlist` 是否为数组、ID 和接口返回是否正常；有歌但不能播时检查音源失效、浏览器自动播放限制、跨域或限流；样式错位时检查主题色彩对比和移动端溢出。最佳实践是关闭自动播放、先配 1~2 个稳定歌单，并在每次修改后执行 `pnpm check`。
+> 音乐模块在 `mahiro.config.yaml` 的 `music` 段配置 `api`、`autoplay` 和 `playlist`，最小可用示例为单个歌单 ID。配置后用 `pnpm dev` 验证加载与播放，若歌单为空、无法播放或样式错位，分别检查数组格式、ID有效性、接口可达性、音源失效、自动播放限制和移动端溢出。
 
 音乐模块是 Mahiro-Blog 的特色功能之一。新手最常见的诉求是：**先让它正常播，再考虑 UI 微调**。
 

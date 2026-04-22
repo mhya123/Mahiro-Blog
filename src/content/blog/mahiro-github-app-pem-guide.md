@@ -16,8 +16,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.2
-> GitHub App 的 PEM 私钥可在 GitHub 头像 Settings → Developer settings → GitHub Apps → 进入目标 App → Private keys → Generate a private key 获取，下载的 .pem 文件即所需私钥。Mahiro-Blog 中通过 /config 页点击“验证”，选择该 .pem 文件，出现“密钥导入成功”即可。
-> 导入失败主要排查 6 点：文件后缀是否为 .pem；内容是否保留 BEGIN/END PRIVATE KEY 头尾；mahiro.config.yaml 的 github.appId 是否与该 PEM 属于同一 App；私钥是否失效或被撤销；浏览器会话被清理后是否需重新导入；仍失败可在同一 App 下重新生成新 PEM 再测试。
+> 在 GitHub 网页通过 Settings→Developer settings→GitHub Apps→你的 App→Private keys→Generate a private key 下载 .pem（如 xxx.日期.private-key.pem）。在 Mahiro-Blog 的 /config 点“验证”选择 .pem，提示导入成功即可。导入失败排查：后缀非 .pem、PEM 头尾行缺失或格式损坏、appId 与 PEM 非同一 App、私钥失效/撤销需重生成、会话存储被清理需重导入，仍失败则生成新 PEM 保持同一 appId 重新测试。
 
 这篇只讲两部分：
 

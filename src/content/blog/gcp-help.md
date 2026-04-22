@@ -12,8 +12,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> GCP 默认禁用 SSH 密码登录且不提供初始 root 密码，可在 Termius 生成 ED25519 密钥对，关键是将用户名填为计划在服务器使用的小写英文名；复制公钥后，到 Compute Engine 实例编辑页的 SSH Keys 中添加并保存。
-> 随后在 Termius 新建主机，填外部 IP、对应用户名，密码留空并选择该密钥，首次连接确认主机指纹即可登录。登录后默认是普通用户，需要管理权限时可用 sudo 执行单条命令，或用 sudo -i 无密码切换到 root，exit 退出。
+> GCP 默认禁用密码 SSH 登录且无初始 root 密码。可在 Termius 生成并保存 ED25519 密钥对，用户名填全小写系统用户名、Passphrase 留空，将公钥加入 Compute Engine 虚拟机的 SSH Keys 后，用外部 IP 和该密钥连接。登录后可用 sudo 单条提权，或执行 sudo -i 进入 root，exit 退出。
 
 # 谷歌云 (GCP) 服务器 SSH 免密连接与提权指南
 

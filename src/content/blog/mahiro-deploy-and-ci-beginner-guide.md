@@ -16,8 +16,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.2
-> 围绕博客稳定上线与自动发布展开：发布前至少执行 pnpm check、build、preview；托管平台上手推荐 Vercel、Cloudflare Pages、Netlify，优先选择便于看日志、快速回滚、少折腾环境的平台。
-> 建议主分支接入自动构建部署，失败优先查首条红字、Node 版本、pnpm 一致性、环境变量与本地复现；发布策略可按风险区分直推主分支或走 PR，并准备 Git 回退和平台一键回滚两种方案。
+> 上线前最小命令集：pnpm check/build/preview，分别用于结构类型检查、生产构建验证与线上模拟。托管平台上手建议 Vercel、Cloudflare Pages、Netlify，优先能看日志、快回滚、少折腾环境。主分支接平台实现 push/merge 自动构建发布，失败在 PR 暴露。排查按日志首条红字、Node 版本、pnpm 一致性、环境变量、本地复现顺序。发布策略：小改动直推主分支，功能改动走 PR 并在合并前跑 check、build；回滚用 Git 回到稳定提交或平台一键回退。
 
 前面三篇解决了“能写、能改、能跑”。
 

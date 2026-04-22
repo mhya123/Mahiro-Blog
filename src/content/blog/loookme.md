@@ -14,8 +14,7 @@ badge: Pin
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> 提供主站 www.mahiro.work 与备用站 blog.lovemh.tech，用于查看最新动态和文章分享。联系邮箱为 tuder1218@gmail.com 和 mhya520@icloud.com。
-> 公开交流群当前暂无，若未来建立会在此处更新信息。
+> 提供了主站 www.mahiro.work 和备用站 blog.lovemh.tech，列出两个联系邮箱 tuder1218@gmail.com、mhya520@icloud.com，并说明目前暂无公开交流群，若建立会更新信息。
 
 ### 🌐 网站与博客
 

@@ -16,8 +16,8 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> Mahiro-Blog 是基于 Astro 的完整内容系统，结合 React/Preact、Tailwind、DaisyUI、GSAP，实现静态性能、多主题、Markdown/MDX 混编、无后端全文搜索及基于 GitHub Actions 的友链自动审核。
-> 建议先读 mahiro.config.yaml、src/config.ts、layouts/components、content 与 workflows。上手时不能跳过预处理脚本，否则关键缓存缺失会导致构建失败；部署上应优先打通绑定仓库主分支的 CI/CD，并同步执行预处理。
+> Mahiro-Blog 是基于 Astro 的现代化个人博客系统，兼顾静态站点性能与主题、切页动画、MDX 组件、Pagefind 搜索和 GitHub Actions 友链自动审核等能力，适合长期维护的内容系统。
+> 上手建议先看全局配置、布局组件和内容结构，构建前不能省预处理脚本；部署可直接托管 dist 并绑定 CI/CD，实现内容提交即上线。
 
 很多开源项目都有一个很长、很全的 README，但真正上手时你还是会遇到几个问题：
 

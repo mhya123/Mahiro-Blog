@@ -16,8 +16,8 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> Mahiro-Blog 的搜索基于 Pagefind，在构建时生成索引，无需额外后端。`pnpm build` 会依次执行 Astro 构建、`pagefind --site dist`，再拷贝索引到 `public/pagefind`，异常时可先 `pnpm search:clean` 再重建。
-> 搜索不到新文章时应检查 `draft: false`、frontmatter、Pagefind 步骤、`public/pagefind` 新索引和浏览器缓存；关键词效果差可优化标题、描述与正文前段表达。本地能搜线上不能搜，多查部署产物与 CDN 缓存。
+> Mahiro-Blog 搜索基于 Pagefind，构建时生成索引，线上无需额外后端；`pnpm build` 会执行 `astro build`、`pagefind --site dist` 并拷贝到 `public/pagefind`，搜索问题多发生在构建阶段。
+> 常用 `pnpm build` 和 `pnpm search:clean` 排错，搜索不到新文章先查 draft、frontmatter、构建是否完成、索引文件与浏览器缓存，内容上可通过更明确标题、描述和前段关键词优化搜索效果。
 
 Mahiro-Blog 的搜索基于 Pagefind：构建时生成索引，线上无需额外搜索后端。
 

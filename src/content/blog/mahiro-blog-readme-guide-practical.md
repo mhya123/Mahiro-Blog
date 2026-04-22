@@ -16,8 +16,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> 固定本地开发 SOP：首次用 Node 20+ 与 pnpm 安装依赖；日常按 dev/start、check、build、preview 顺序执行。build 会串行完成图片水印、astro check、astro build、pagefind 索引与拷贝，提交前至少跑 check、build、preview。
-> 排错覆盖 install 失败、check 报 schema 或 frontmatter 问题、build 卡在搜索或静态资源、文章不更新、页面切换下事件重复绑定等；新增文章需合法 frontmatter。二开优先改 mahiro.config.yaml，新增配置再改 src/config.ts，并按备份、小步修改、check、dev、build 流程验证。
+> 建议固定安装依赖、启动开发、类型检查、生产构建、预览这五步。开发用 pnpm dev/start，提交前至少跑 pnpm check、pnpm build、pnpm preview；排错重点看 Node 版本、依赖安装、frontmatter/schema、pagefind 拷贝、内容目录与生命周期事件。配置优先改 mahiro.config.yaml，新增字段再同步 src/config.ts。
 
 上一篇讲的是“理解项目”，这一篇只做一件事：**把日常操作流程固定下来**。
 

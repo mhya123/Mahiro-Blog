@@ -16,8 +16,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> Mahiro-Blog 在 `mahiro.config.yaml` 中预留了 Giscus 与 Waline 评论接入，主要通过 `comments.enable`、`comments.type` 及各自参数配置启用，渲染层会按 `type` 自动选择组件。
-> Giscus 适合依赖 GitHub、低运维场景，需在 giscus.app 获取 `repoId`、`categoryId` 等参数；Waline 适合自部署与更强可控性，重点配置 `serverURL`。切换系统只需修改 `comments.type`，排障时依次检查启用状态、类型拼写、参数完整性及对应平台服务状态。
+> Mahiro-Blog 通过 `mahiro.config.yaml` 接入评论系统，`comments.enable` 控制开关，`comments.type` 在 `giscus` 和 `waline` 间切换，渲染层会自动选择组件。Giscus 需在 giscus.app 生成参数，Waline 适合自部署并可先用最小配置验证。
 
 评论系统是博客互动的核心功能之一。Mahiro-Blog 已经预留了 `Giscus` 和 `Waline` 两套接入能力，你只需要改配置即可启用。
 

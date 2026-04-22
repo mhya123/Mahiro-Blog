@@ -16,8 +16,7 @@ categories:
 ---
 
 > [!ai] ChatGPT-5.4-Mini
-> 围绕 30 分钟内发布第一篇文章，说明文章应放在 `src/content/blog/`，文件名建议全小写并用 `-` 连接，给出最小 frontmatter 模板，正文写在其后；只写文字、代码块、图片用 `.md`，需交互组件用 `.mdx`，建议新手先用 `.md`。
-> 图片推荐放在 `public/` 下并以绝对路径引用；标签用于关键词检索，可多一些，分类用于栏目结构，建议少且稳定。发布前检查标题、摘要、时间、图片路径、`draft=false`、标签分类为数组，再运行 `pnpm check` 与 `pnpm dev`；首页不显示多因 `draft` 为 `true`，日期异常看 `pubDate`，标签页缺文多因 `tags` 写成字符串。
+> 文章说明了第一篇 Markdown/MDX 文章的写作与发布流程：文章放在 src/content/blog/，建议小写加连字符命名；给出最小 frontmatter 模板，区分 .md 与 .mdx，推荐新手先用 .md。也说明图片放 public/ 并用绝对路径引用，tags 用于关键词、categories 用于栏目结构，并列出发布前自检项与常见问题。
 
 这一篇专门解决“我该怎么开始写第一篇文”。
 
