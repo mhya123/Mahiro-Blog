@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import type { AiModelDefinition } from '@/lib/ai-models'
+import { SITE_API_BASE_URL } from '@/consts'
 import { useWriteStore } from '../../stores/write-store'
 import { TagInput } from '../ui/tag-input'
 import { CustomSelect } from '../ui/custom-select'
@@ -49,7 +50,7 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 
 		try {
 			setIsGeneratingSummary(true)
-			const response = await fetch('/api/ai/summary', {
+			const response = await fetch(`${SITE_API_BASE_URL}/api/ai/summary`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({

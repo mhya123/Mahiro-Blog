@@ -32,6 +32,8 @@ Options:
   --all                 Process all Markdown/MDX files under a directory
   --dir <path>          Directory to scan, default: ${DEFAULT_DIR}
   --model <id>          Override frontmatter aiModel for this run
+  --channel <mode>      Summary channel: local or service
+  --service-url <url>   External summary service base URL
   --skip-same-model     Skip file when existing AI block already uses the same model
   --start-after <name>  Start after a given filename or relative path in sorted order
   --list-models         Print supported models from scripts/ai-models.json
@@ -45,6 +47,8 @@ function parseArgs(argv) {
     all: false,
     dir: DEFAULT_DIR,
     model: null,
+    channel: null,
+    serviceUrl: null,
     skipSameModel: false,
     startAfter: null,
     listModels: false,
@@ -65,6 +69,12 @@ function parseArgs(argv) {
         break
       case '--model':
         args.model = argv[++i] ?? null
+        break
+      case '--channel':
+        args.channel = argv[++i] ?? null
+        break
+      case '--service-url':
+        args.serviceUrl = argv[++i] ?? null
         break
       case '--skip-same-model':
         args.skipSameModel = true
@@ -107,15 +117,39 @@ function resolveModel(modelId, registry) {
   }
 }
 
-function ensureRuntime() {
+function normalizeChannel(value) {
+  const channel = String(value || 'local').trim().toLowerCase()
+  if (!['local', 'service'].includes(channel)) {
+    throw new Error(`Unsupported channel: ${value}`)
+  }
+  return channel
+}
+
+function ensureRuntime(args = {}) {
+  const channel = normalizeChannel(args.channel || process.env.AI_SUMMARY_CHANNEL || 'local')
+
+  if (channel === 'service') {
+    const serviceUrl = String(args.serviceUrl || process.env.AI_SUMMARY_SERVICE_URL || '').trim().replace(/\/+$/, '')
+    if (!serviceUrl) {
+      throw new Error('Missing AI_SUMMARY_SERVICE_URL')
+    }
+
+    return {
+      channel,
+      serviceUrl,
+      timeoutMs: Number(process.env.AI_SUMMARY_SERVICE_TIMEOUT_MS || process.env.OPENAI_TIMEOUT_MS || DEFAULT_TIMEOUT_MS),
+      retries: Number(process.env.AI_SUMMARY_SERVICE_RETRIES || process.env.OPENAI_RETRIES || DEFAULT_RETRIES),
+    }
+  }
+
   const baseUrl = (process.env.OPENAI_BASE_URL || DEFAULT_BASE_URL).replace(/\/+$/, '')
   const apiKey = process.env.OPENAI_API_KEY
-
   if (!apiKey) {
     throw new Error('Missing OPENAI_API_KEY')
   }
 
   return {
+    channel,
     baseUrl,
     apiKey,
     timeoutMs: Number(process.env.OPENAI_TIMEOUT_MS || DEFAULT_TIMEOUT_MS),
@@ -242,7 +276,7 @@ function buildUserPrompt(filePath, frontmatter, body) {
   ].join('\n\n')
 }
 
-async function requestSummary(runtime, modelId, prompt) {
+async function requestSummaryViaLocalModel(runtime, modelId, prompt) {
   const endpoint = `${runtime.baseUrl}/chat/completions`
 
   for (let attempt = 1; attempt <= runtime.retries; attempt += 1) {
@@ -290,6 +324,63 @@ async function requestSummary(runtime, modelId, prompt) {
   }
 
   throw new Error('Unreachable retry state')
+}
+
+async function requestSummaryViaService(runtime, modelId, title, body) {
+  const endpoint = `${runtime.serviceUrl}/api/ai/summary`
+
+  for (let attempt = 1; attempt <= runtime.retries; attempt += 1) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), runtime.timeoutMs)
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          content: body,
+          aiModel: modelId,
+        }),
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        const message = payload?.error || payload?.message || `HTTP ${response.status}`
+        throw new Error(message)
+      }
+
+      if (!payload?.summary || typeof payload.summary !== 'string') {
+        throw new Error('Service did not return a valid summary')
+      }
+
+      return cleanSummaryOutput(payload.summary)
+    } catch (error) {
+      const isLastAttempt = attempt === runtime.retries
+      const message = error instanceof Error ? error.message : String(error)
+      console.warn(`[warn] Service attempt ${attempt}/${runtime.retries} failed: ${message}`)
+      if (isLastAttempt) throw error
+      await sleep(Math.min(1000 * attempt, 3000))
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  throw new Error('Unreachable retry state')
+}
+
+async function requestSummary(runtime, modelId, filePath, frontmatter, body) {
+  const title = typeof frontmatter.title === 'string' ? frontmatter.title : path.basename(filePath)
+
+  if (runtime.channel === 'service') {
+    return requestSummaryViaService(runtime, modelId, title, body)
+  }
+
+  const prompt = buildUserPrompt(filePath, frontmatter, body)
+  return requestSummaryViaLocalModel(runtime, modelId, prompt)
 }
 
 function extractResponseText(payload) {
@@ -379,8 +470,7 @@ async function processFile(filePath, runtime, registry, options) {
     console.log(`[info] ${path.relative(process.cwd(), absolutePath)} uses reasoning-capable model ${modelMeta.id}; provider-specific reasoning flags remain disabled`)
   }
 
-  const prompt = buildUserPrompt(absolutePath, data, sourceBody)
-  const summary = await requestSummary(runtime, modelMeta.id, prompt)
+  const summary = await requestSummary(runtime, modelMeta.id, absolutePath, data, sourceBody)
   const aiBlock = formatAiBlock(modelMeta.displayName, summary)
 
   const nextFrontmatter = { ...data }
@@ -421,7 +511,7 @@ async function main() {
     throw new Error('Specify either --file <path> or --all')
   }
 
-  const runtime = ensureRuntime()
+  const runtime = ensureRuntime(args)
   const rootDir = path.resolve(args.dir)
 
   let targets = []
@@ -437,7 +527,12 @@ async function main() {
     return
   }
 
-  console.log(`[info] Base URL: ${runtime.baseUrl}`)
+  console.log(`[info] Channel: ${runtime.channel}`)
+  if (runtime.channel === 'service') {
+    console.log(`[info] Service URL: ${runtime.serviceUrl}`)
+  } else {
+    console.log(`[info] Base URL: ${runtime.baseUrl}`)
+  }
   console.log(`[info] Files: ${targets.length}`)
   if (args.model) {
     console.log(`[info] CLI model override: ${args.model}`)

@@ -4,6 +4,9 @@ export const ANIMATION_DELAY = 0.1
 export const CARD_SPACING = 36
 export const CARD_SPACING_SM = 24
 export const BLOG_SLUG_KEY = import.meta.env.BLOG_SLUG_KEY || ''
+export const SITE_API_BASE_URL = (
+	import.meta.env.PUBLIC_SITE_API_BASE_URL || 'https://back.mahiro.work'
+).replace(/\/+$/, '')
 
 /**
  * GitHub 仓库配置

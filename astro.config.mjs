@@ -1,5 +1,4 @@
 import mdx from "@astrojs/mdx";
-import node from "@astrojs/node";
 import sitemap from "@astrojs/sitemap";
 import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
@@ -38,9 +37,6 @@ export default defineConfig({
   },
   site: USER_SITE,
   output: "static",
-  adapter: node({
-    mode: "standalone",
-  }),
   style: {
     scss: {
       includePaths: ["./src/styles"],

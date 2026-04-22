@@ -12,8 +12,9 @@
     "ai:summary": "node scripts/generate-ai-summary.mjs",
     "webp": "node scripts/convert-to-webp.mjs",
     "build": "astro build",
-    "build:search": "pagefind --site dist/client && cpy 'dist/client/pagefind/**' public/pagefind",
+    "build:search": "pagefind --site dist && cpy 'dist/pagefind/**' public/pagefind",
     "build:full": "npm run check && npm run build && npm run build:search",
+    "server:start": "node server/index.mjs",
     "search:clean": "rimraf public/pagefind",
     "search:index": "npm run build && npm run build:search",
     "preview": "astro preview",
@@ -74,7 +75,6 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.16.0",
-    "@astrojs/node": "^9.5.5",
     "@iconify-json/line-md": "^1.2.11",
     "@iconify-json/logos": "^1.2.4",
     "@iconify-json/lucide": "^1.2.44",

@@ -1,6 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import { SITE_LANGUAGE, SITE_TRANSLATION } from "@config";
+import { SITE_API_BASE_URL } from "@/consts";
 import { getTranslationModels } from "@/lib/translation-models";
 
 interface Props {
@@ -306,7 +307,7 @@ const languages = [
   )
 }
 
-<script is:inline>
+<script is:inline define:vars={{ SITE_API_BASE_URL }}>
   (() => {
     if (window.__mahiroTranslateWidgetScriptLoaded) return;
     window.__mahiroTranslateWidgetScriptLoaded = true;
@@ -848,7 +849,7 @@ const languages = [
     }
 
     async function translateChunk(chunk, language, model, sourceLanguage) {
-      const response = await fetch("/api/ai/translate", {
+      const response = await fetch(`${SITE_API_BASE_URL}/api/ai/translate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

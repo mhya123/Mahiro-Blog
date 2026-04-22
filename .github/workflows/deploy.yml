@@ -23,6 +23,10 @@ jobs:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     env:
+      AI_SUMMARY_CHANNEL: ${{ vars.AI_SUMMARY_CHANNEL }}
+      AI_SUMMARY_SERVICE_URL: ${{ vars.AI_SUMMARY_SERVICE_URL }}
+      AI_SUMMARY_SERVICE_TIMEOUT_MS: ${{ vars.AI_SUMMARY_SERVICE_TIMEOUT_MS }}
+      AI_SUMMARY_SERVICE_RETRIES: ${{ vars.AI_SUMMARY_SERVICE_RETRIES }}
       OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
@@ -50,7 +54,7 @@ jobs:
         run: pnpm run git
 
       - name: Generate AI summaries
-        if: env.OPENAI_API_KEY != ''
+        if: env.OPENAI_API_KEY != '' || env.AI_SUMMARY_SERVICE_URL != ''
         run: pnpm run ai:summary -- --all --dir src/content/blog --skip-same-model
 
       - name: Cache random covers for posts
@@ -63,6 +67,7 @@ jobs:
           PUBLIC_GITHUB_REPO: ${{ secrets.PUBLIC_GITHUB_REPO }}
           PUBLIC_GITHUB_BRANCH: ${{ secrets.PUBLIC_GITHUB_BRANCH }}
           PUBLIC_GITHUB_APP_ID: ${{ secrets.PUBLIC_GITHUB_APP_ID }}
+          PUBLIC_SITE_API_BASE_URL: https://back.mahiro.work
           PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.PUBLIC_UMAMI_WEBSITE_ID }}
           PUBLIC_UMAMI_SHARE_ID: ${{ secrets.PUBLIC_UMAMI_SHARE_ID }}
           POST_PASSWORD: ${{ secrets.POST_PASSWORD }}
