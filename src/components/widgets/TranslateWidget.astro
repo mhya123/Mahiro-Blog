@@ -1,4 +1,4 @@
----
+﻿---
 import { Icon } from "astro-icon/components";
 import { SITE_LANGUAGE, SITE_TRANSLATION } from "@config";
 import { SITE_API_BASE_URL } from "@/consts";
@@ -130,6 +130,10 @@ const languages = [
                 ))
               }
             </div>
+            <div
+              class="mt-2 text-[0.72rem] text-base-content/55"
+              data-translate-current-language
+            ></div>
           </div>
 
           <div class="mb-3">
@@ -252,6 +256,10 @@ const languages = [
                   ))
                 }
               </div>
+              <div
+                class="mt-2 text-[0.72rem] text-base-content/55"
+                data-translate-current-language
+              ></div>
             </div>
 
             <div class="mb-3">
@@ -500,6 +508,27 @@ const languages = [
       }
     }
 
+    function getLanguageMeta(language) {
+      return (
+        [
+          { code: "en", labelZh: "英语", labelEn: "English" },
+          { code: "ja", labelZh: "日语", labelEn: "Japanese" },
+          { code: "ko", labelZh: "韩语", labelEn: "Korean" },
+          { code: "fr", labelZh: "法语", labelEn: "French" },
+          { code: "de", labelZh: "德语", labelEn: "German" },
+          { code: "es", labelZh: "西班牙语", labelEn: "Spanish" },
+          { code: "ru", labelZh: "俄语", labelEn: "Russian" },
+          { code: "zh-CN", labelZh: "简体中文", labelEn: "Chinese Simplified" },
+          { code: "zh-TW", labelZh: "繁体中文", labelEn: "Chinese Traditional" },
+        ].find((item) => item.code === language)
+        || {
+          code: language,
+          labelZh: getLanguageDisplayName(language),
+          labelEn: getLanguageDisplayName(language),
+        }
+      );
+    }
+
     function getPreferredBrowserLanguage() {
       const languages = Array.from(
         new Set([...(navigator.languages || []), navigator.language].filter(Boolean)),
@@ -688,7 +717,16 @@ const languages = [
         button.classList.toggle("border-primary/30", active);
         button.classList.toggle("text-primary", active);
         button.classList.toggle("font-bold", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
       });
+    }
+
+    function updateCurrentLanguageLabel(widget, language) {
+      const label = widget.querySelector("[data-translate-current-language]");
+      if (!label) return;
+
+      const meta = getLanguageMeta(language);
+      label.textContent = `当前目标语言: ${meta.labelZh} | Current: ${meta.labelEn} (${meta.code})`;
     }
 
     function describeProvider(provider) {
@@ -1021,7 +1059,7 @@ const languages = [
     }
 
     function setGoogTransCookie(sourceLanguage, targetLanguage) {
-      const value = encodeURIComponent(`/${sourceLanguage}/${targetLanguage}`);
+      const value = `/${sourceLanguage}/${targetLanguage}`;
       const expires = "max-age=31536000";
 
       getCookieDomainCandidates().forEach((domain) => {
@@ -1046,13 +1084,17 @@ const languages = [
       });
     }
 
-    function waitForGoogleSelect(timeoutMs = 10000) {
+    function waitForGoogleSelect(language, timeoutMs = 10000) {
       return new Promise((resolve, reject) => {
         const startedAt = Date.now();
 
         const tick = () => {
           const select = document.querySelector(".goog-te-combo");
-          if (select) {
+          const hasExpectedOption = !language || Array.from(select?.options || []).some(
+            (option) => option.value === language,
+          );
+
+          if (select && hasExpectedOption) {
             resolve(select);
             return;
           }
@@ -1100,7 +1142,7 @@ const languages = [
 
       if (window.google?.translate?.TranslateElement) {
         initGoogleTranslateElement(sourceLanguage);
-        return waitForGoogleSelect();
+        return waitForGoogleSelect(undefined);
       }
 
       if (!window.__mahiroGoogleTranslateReadyPromise) {
@@ -1121,7 +1163,7 @@ const languages = [
           const onReady = async () => {
             try {
               initGoogleTranslateElement(sourceLanguage);
-              await waitForGoogleSelect();
+              await waitForGoogleSelect(undefined);
               window.clearTimeout(timeoutId);
               resolve(true);
             } catch (error) {
@@ -1166,12 +1208,25 @@ const languages = [
     }
 
     async function applyGoogleTranslation(language, sourceLanguage) {
-      await ensureGoogleTranslateReady(sourceLanguage);
       setGoogTransCookie(sourceLanguage, language);
+      await ensureGoogleTranslateReady(sourceLanguage);
 
-      const select = await waitForGoogleSelect();
+      const select = await waitForGoogleSelect(language);
       if (select.value !== language) {
-        select.value = language;
+        const targetOption = Array.from(select.options).find(
+          (option) => option.value === language,
+        );
+
+        if (!targetOption) {
+          throw new Error(
+            getMessageHtml(
+              `谷歌翻译暂不支持目标语言：${language}`,
+              `Google Translate does not expose the target language: ${language}`,
+            ),
+          );
+        }
+
+        select.value = targetOption.value;
       }
 
       select.dispatchEvent(new Event("change", { bubbles: true }));
@@ -1194,18 +1249,22 @@ const languages = [
       }, 800);
     }
 
-    function startGoogleTranslationReload(language, sourceLanguage) {
+    async function activateGoogleTranslation(widget, language, model, sourceLanguage, options = {}) {
       setActiveTranslation(true);
       setGoogTransCookie(sourceLanguage, language);
-      setPendingGoogleReload(language, sourceLanguage);
-      setAllStatuses(
-        getMessageHtml(
-          "正在准备站内翻译，页面将自动刷新一次……",
-          "Preparing embedded translation. This page will refresh once automatically...",
-        ),
-        "success",
-      );
-      window.location.reload();
+
+      try {
+        await applyGoogleTranslation(language, sourceLanguage);
+        clearPendingGoogleReload();
+      } catch (error) {
+        await handleGoogleTranslationFailure(
+          widget,
+          language,
+          model,
+          sourceLanguage,
+          options,
+        );
+      }
     }
 
     function buildBingTranslateUrl(language, currentUrl) {
@@ -1282,6 +1341,7 @@ const languages = [
 
       updateProviderButtons(widget, state.provider);
       updateLanguageButtons(widget, state.language);
+      updateCurrentLanguageLabel(widget, state.language);
 
       const select = widget.querySelector("[data-translate-model]");
       if (select) {
@@ -1404,20 +1464,14 @@ const languages = [
       setSuggestionHiddenForPage(true);
       await removeTranslateSuggestion();
       syncAllWidgets();
-
-      try {
-        await ensureGoogleTranslateReady(sourceLanguage);
-        startGoogleTranslationReload(targetLanguage, sourceLanguage);
-      } catch (error) {
-        const state = getCurrentState(widget);
-        await handleGoogleTranslationFailure(
-          widget,
-          targetLanguage,
-          state.model,
-          sourceLanguage,
-          { silent: false },
-        );
-      }
+      const state = getCurrentState(widget);
+      await activateGoogleTranslation(
+        widget,
+        targetLanguage,
+        state.model,
+        sourceLanguage,
+        { silent: false },
+      );
     }
 
     function setupWidget(widget) {
@@ -1428,10 +1482,20 @@ const languages = [
       const defaultLanguage = widget.dataset.defaultLanguage || "en";
       const defaultModel = widget.dataset.defaultModel || "";
 
+      function bindAction(button, handler) {
+        button.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+        });
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          handler();
+        });
+      }
+
       syncWidgetState(widget);
 
       widget.querySelectorAll("[data-translate-provider]").forEach((button) => {
-        button.addEventListener("click", () => {
+        bindAction(button, () => {
           const provider = normalizeProvider(
             button.getAttribute("data-translate-provider"),
             defaultProvider,
@@ -1442,7 +1506,7 @@ const languages = [
       });
 
       widget.querySelectorAll("[data-translate-language]").forEach((button) => {
-        button.addEventListener("click", () => {
+        bindAction(button, () => {
           const language = normalizeLanguage(
             button.getAttribute("data-translate-language") || defaultLanguage,
           );
@@ -1458,7 +1522,7 @@ const languages = [
       });
 
       const applyButton = widget.querySelector("[data-translate-apply]");
-      applyButton?.addEventListener("click", async () => {
+      applyButton && bindAction(applyButton, async () => {
         const state = getCurrentState(widget);
         const sourceLanguage = normalizeSourceLanguage(widget.dataset.pageLanguage || "zh-CN");
 
@@ -1480,18 +1544,13 @@ const languages = [
         }
 
         if (state.provider === "google") {
-          try {
-            await ensureGoogleTranslateReady(sourceLanguage);
-            startGoogleTranslationReload(state.language, sourceLanguage);
-          } catch (error) {
-            await handleGoogleTranslationFailure(
-              widget,
-              state.language,
-              state.model,
-              sourceLanguage,
-              { silent: false },
-            );
-          }
+          await activateGoogleTranslation(
+            widget,
+            state.language,
+            state.model,
+            sourceLanguage,
+            { silent: false },
+          );
           return;
         }
 
@@ -1508,7 +1567,7 @@ const languages = [
       });
 
       const resetButton = widget.querySelector("[data-translate-reset]");
-      resetButton?.addEventListener("click", () => {
+      resetButton && bindAction(resetButton, () => {
         setActiveTranslation(false);
         setSuggestionHiddenForPage(false);
         clearPendingGoogleReload();

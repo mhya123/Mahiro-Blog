@@ -99,6 +99,14 @@ const TRANSLATE_SYSTEM_PROMPT = [
   'The translations array must have exactly the same number of items and the same order as the input array.',
 ].join('\n')
 
+const ENGLISH_STOPWORDS = new Set([
+  'the', 'and', 'this', 'that', 'these', 'those', 'is', 'are', 'was', 'were',
+  'be', 'been', 'being', 'to', 'of', 'in', 'on', 'for', 'with', 'from', 'by',
+  'you', 'your', 'we', 'our', 'they', 'their', 'it', 'its', 'as', 'at', 'or',
+  'not', 'but', 'can', 'will', 'would', 'should', 'could', 'page', 'site',
+  'translation', 'translate', 'hello', 'world', 'test',
+])
+
 function resolveCorsOrigin(origin) {
   if (ALLOWED_ORIGINS.includes('*')) {
     return '*'
@@ -177,16 +185,65 @@ function buildSummaryPrompt(title, content) {
   ].join('\n\n')
 }
 
+function getLanguageLabel(language) {
+  const normalized = String(language || '').trim().toLowerCase()
+  const labels = {
+    auto: 'Auto Detect',
+    en: 'English',
+    ja: 'Japanese',
+    ko: 'Korean',
+    fr: 'French',
+    de: 'German',
+    es: 'Spanish',
+    ru: 'Russian',
+    'zh': 'Chinese',
+    'zh-cn': 'Chinese (Simplified)',
+    'zh-tw': 'Chinese (Traditional)',
+  }
+
+  return labels[normalized] || language
+}
+
 function buildTranslatePrompt(sourceLanguage, targetLanguage, items) {
   return JSON.stringify({
-    sourceLanguage,
-    targetLanguage,
+    sourceLanguage: {
+      code: sourceLanguage,
+      name: getLanguageLabel(sourceLanguage),
+    },
+    targetLanguage: {
+      code: targetLanguage,
+      name: getLanguageLabel(targetLanguage),
+    },
     instructions: [
-      'Translate every string.',
-      'Keep the same item order.',
+      `Translate every string into ${getLanguageLabel(targetLanguage)}.`,
+      `The target language code is ${targetLanguage}. Do not translate into English unless the target language is English.`,
+      'Keep the same item order and preserve meaning, tone, and formatting.',
       'Return JSON only.',
     ],
     items,
+  })
+}
+
+function buildTranslateRetryPrompt(sourceLanguage, targetLanguage, items, previousTranslations) {
+  return JSON.stringify({
+    sourceLanguage: {
+      code: sourceLanguage,
+      name: getLanguageLabel(sourceLanguage),
+    },
+    targetLanguage: {
+      code: targetLanguage,
+      name: getLanguageLabel(targetLanguage),
+    },
+    instructions: [
+      `The previous translation attempt did not reliably produce ${getLanguageLabel(targetLanguage)}.`,
+      `Translate every original string into ${getLanguageLabel(targetLanguage)}.`,
+      `The target language code is ${targetLanguage}. Do not translate into English unless the target language is English.`,
+      'Use the original source items as the truth. Ignore wrong-language output from the previous attempt.',
+      'Keep the same item order and preserve meaning, tone, and formatting.',
+      'Return JSON only.',
+    ],
+    originalItems: items,
+    previousAttempt: previousTranslations,
   })
 }
 
@@ -207,6 +264,50 @@ function parseTranslations(raw) {
   }
 
   return parsed.translations.map((item) => String(item ?? ''))
+}
+
+function containsExpectedScript(language, text) {
+  const normalized = String(language || '').trim().toLowerCase()
+
+  if (normalized === 'ja') return /[\u3040-\u30ff\u31f0-\u31ff\u4e00-\u9fff]/u.test(text)
+  if (normalized === 'ko') return /[\u1100-\u11ff\u3130-\u318f\uac00-\ud7af]/u.test(text)
+  if (normalized === 'ru') return /[\u0400-\u04ff]/u.test(text)
+  if (normalized === 'zh' || normalized === 'zh-cn' || normalized === 'zh-tw') {
+    return /[\u4e00-\u9fff]/u.test(text)
+  }
+
+  return false
+}
+
+function isLikelyEnglishText(text) {
+  const normalized = String(text || '').trim().toLowerCase()
+  if (!normalized) return false
+
+  const latinWords = normalized.match(/[a-z']+/g) || []
+  if (latinWords.length < 2) return false
+
+  const stopwordHits = latinWords.filter((word) => ENGLISH_STOPWORDS.has(word)).length
+  const nonLatinChars = (normalized.match(/[^\x00-\x7f]/g) || []).length
+
+  return stopwordHits >= 2 && nonLatinChars <= Math.max(2, normalized.length * 0.15)
+}
+
+function shouldRetryTranslations(targetLanguage, translations) {
+  const normalized = String(targetLanguage || '').trim().toLowerCase()
+  if (!normalized || normalized === 'en') return false
+
+  const nonEmptyTranslations = translations
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+
+  if (nonEmptyTranslations.length === 0) return false
+
+  const suspiciousCount = nonEmptyTranslations.filter((text) => {
+    if (containsExpectedScript(normalized, text)) return false
+    return isLikelyEnglishText(text)
+  }).length
+
+  return suspiciousCount / nonEmptyTranslations.length >= 0.6
 }
 
 function findAiModelById(id) {
@@ -505,7 +606,37 @@ async function handleTranslate(req, res, origin) {
       maxTokens: 4000,
     })
 
-    const translations = parseTranslations(rawTranslations)
+    let translations = parseTranslations(rawTranslations)
+
+    if (shouldRetryTranslations(targetLanguage, translations)) {
+      log('WARN', 'Translation looked like the wrong language, retrying with stronger prompt', {
+        requestId,
+        aiModel: model.id,
+        targetLanguage,
+      })
+
+      const retryTranslations = await requestChatCompletion({
+        requestId,
+        route: '/api/ai/translate',
+        baseUrl,
+        apiKey,
+        model: model.id,
+        systemPrompt: TRANSLATE_SYSTEM_PROMPT,
+        userPrompt: buildTranslateRetryPrompt(
+          sourceLanguage,
+          targetLanguage,
+          items,
+          translations,
+        ),
+        timeoutMs,
+        retries,
+        temperature: 0,
+        maxTokens: 4000,
+      })
+
+      translations = parseTranslations(retryTranslations)
+    }
+
     if (translations.length !== items.length) {
       log('ERROR', 'Translate request failed: item count mismatch', {
         requestId,
