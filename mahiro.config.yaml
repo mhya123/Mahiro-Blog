@@ -70,6 +70,9 @@ site:
       - href: /navigation
         icon: lucide:compass
         label: 导航
+      - href: /drive
+        icon: lucide:hard-drive
+        label: "\u7f51\u76d8"
       - href: /rss.xml
         icon: ri:rss-line
         label: RSS
@@ -124,6 +127,18 @@ site:
     project:
       title: Projects
       subtitle: 收录优质开源项目，欢迎提交你的作品！
+    drive:
+      title: "\u7f51\u76d8"
+      subtitle: "\u7ad9\u5185\u76f4\u63a5\u7ba1\u7406 AList \u6587\u4ef6\uff0c\u652f\u6301\u67e5\u770b\u3001\u641c\u7d22\u3001\u4e0a\u4f20\u4e0e\u6587\u4ef6\u64cd\u4f5c"
+      permissions:
+        upload: false
+        mkdir: false
+        view: true
+        download: true
+        rename: false
+        copy: false
+        move: false
+        remove: false
     music:
       title: Cloud Music
       subtitle: 沉浸式享受音乐时光
@@ -147,6 +162,11 @@ site:
       text: 音乐
       href: /music
       svg: material-symbols:music-note-rounded
+      target: _self
+    - id: drive
+      text: "\u7f51\u76d8"
+      href: /drive
+      svg: lucide:hard-drive
       target: _self
     - id: project
       text: 实验室

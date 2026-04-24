@@ -2,12 +2,23 @@
 
 This directory contains the standalone backend extracted from the Astro site.
 It is self-contained and can be started independently.
-The static frontend calls this service for AI summary and AI translation.
+The static frontend calls this service for AI summary, AI translation, and the AList-powered drive page.
 
 ## Endpoints
 
 - `POST /api/ai/summary`
 - `POST /api/ai/translate`
+- `GET /api/drive/status`
+- `GET /api/drive/list`
+- `GET /api/drive/item`
+- `GET /api/drive/raw`
+- `POST /api/drive/search`
+- `POST /api/drive/mkdir`
+- `POST /api/drive/rename`
+- `POST /api/drive/remove`
+- `POST /api/drive/move`
+- `POST /api/drive/copy`
+- `POST /api/drive/upload`
 - `GET /health`
 
 ## Start
@@ -64,6 +75,10 @@ Main variables:
 
 ```env
 PORT=3000
+ALIST_BASE_URL=https://s.mahiro.work
+ALIST_USERNAME=mahiro
+ALIST_PASSWORD=mahiro
+ALIST_PERMISSIONS=view,download
 OPENAI_API_KEY=your_summary_api_key
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_TIMEOUT_MS=60000
@@ -73,6 +88,27 @@ AI_TRANSLATE_BASE_URL=https://api.openai.com/v1
 AI_TRANSLATE_TIMEOUT_MS=60000
 AI_TRANSLATE_RETRIES=3
 ```
+
+The drive page uses the AList env block above. If you prefer token auth, you can set `ALIST_TOKEN` and omit `ALIST_USERNAME` / `ALIST_PASSWORD`.
+
+`ALIST_PERMISSIONS` is the backend enforcement switch for the drive page. Supported values:
+
+- `upload`
+- `mkdir`
+- `view`
+- `download`
+- `rename`
+- `copy`
+- `move`
+- `remove`
+
+Example:
+
+```env
+ALIST_PERMISSIONS=view,download
+```
+
+That example keeps the drive readable but disables all write operations.
 
 ## Frontend Integration
 

@@ -39,6 +39,16 @@ export const BANNER_IMAGES = config.site.banner?.images || [];
 export const BANNER_HEIGHT = config.site.banner?.height || "60vh";
 export const DEFAULT_BANNER_MODE = config.site.banner?.defaultMode || "normal";
 export const SITE_PAGES = config.site.pages || {};
+export const SITE_DRIVE_PERMISSIONS = {
+  upload: config.site.pages?.drive?.permissions?.upload ?? false,
+  mkdir: config.site.pages?.drive?.permissions?.mkdir ?? false,
+  view: config.site.pages?.drive?.permissions?.view ?? true,
+  download: config.site.pages?.drive?.permissions?.download ?? true,
+  rename: config.site.pages?.drive?.permissions?.rename ?? false,
+  copy: config.site.pages?.drive?.permissions?.copy ?? false,
+  move: config.site.pages?.drive?.permissions?.move ?? false,
+  remove: config.site.pages?.drive?.permissions?.remove ?? false,
+} as const;
 // 在现有导出后添加  
 export const TYPEWRITER_TEXTS = config.site.pages?.home?.typewriterTexts || [];
 
@@ -85,6 +95,7 @@ const DEFAULT_FOOTER_QUICK_LINKS = [
   { href: "/friend", icon: "lucide:users", label: "友链" },
   { href: "/project", icon: "lucide:folder-kanban", label: "项目" },
   { href: "/navigation", icon: "lucide:compass", label: "导航" },
+  { href: "/drive", icon: "lucide:hard-drive", label: "网盘" },
   { href: "/rss.xml", icon: "ri:rss-line", label: "RSS" },
 ];
 

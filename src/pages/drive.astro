@@ -1,0 +1,9 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import DrivePage from '@/components/drive/DrivePage'
+import { SITE_DRIVE_PERMISSIONS } from '@/config'
+---
+
+<BaseLayout title="网盘" showSidebar={false} isIndexed={false}>
+  <DrivePage client:only="react" permissions={SITE_DRIVE_PERMISSIONS} />
+</BaseLayout>

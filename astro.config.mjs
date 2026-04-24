@@ -28,6 +28,9 @@ export default defineConfig({
     build: {
       minify: "esbuild",
     },
+    worker: {
+      format: "es",
+    },
     css: {
       preprocessorOptions: {
         scss: {

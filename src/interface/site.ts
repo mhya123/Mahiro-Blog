@@ -56,6 +56,18 @@ export interface PageConfig {
   title: string;
   subtitle: string;
   typewriterTexts?: string[]; // 新增打字机文本配置  
+  permissions?: DrivePermissions;
+}
+
+export interface DrivePermissions {
+  upload?: boolean;
+  mkdir?: boolean;
+  view?: boolean;
+  download?: boolean;
+  rename?: boolean;
+  copy?: boolean;
+  move?: boolean;
+  remove?: boolean;
 }
 
 export interface SocialIcon {
