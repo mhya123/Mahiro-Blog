@@ -5,15 +5,10 @@ import {
     ArrowUpRight,
     Copy,
     Download,
-    File,
-    FileArchive,
     FileAudio2,
-    FileCode2,
-    FileImage,
     FileText,
-    FileVideo2,
-    Folder,
     FolderPlus,
+    Folder,
     HardDrive,
     LoaderCircle,
     Move,
@@ -30,6 +25,19 @@ import {
 import { marked } from 'marked'
 import { Toaster, toast } from 'sonner'
 import { SITE_API_BASE_URL } from '@/consts'
+import { buildDriveFileUrl, buildPotPlayerUrl, copyTextToClipboard, triggerExternalUrl } from './page-actions'
+import { requestJson } from './page-http'
+import {
+    DEFAULT_PERMISSIONS,
+    formatTime,
+    getFileIcon,
+    getParentPath,
+    getVisiblePages,
+    joinPath,
+    normalizePath,
+    parseCsv,
+    PER_PAGE_OPTIONS,
+} from './page-utils'
 import type { DriveEntry, DriveItemPayload, DriveListPayload, DrivePermissions, DriveStatus } from './types'
 import type { DrivePreviewState } from './preview/types'
 import { getPreviewKind } from './preview/file-types'
@@ -39,52 +47,6 @@ import { getDriveFileTypeLabel } from './file-meta'
 
 type DrivePageProps = {
     permissions?: Partial<DrivePermissions>
-}
-
-const DEFAULT_PERMISSIONS: DrivePermissions = {
-    upload: false,
-    mkdir: false,
-    view: true,
-    download: true,
-    rename: false,
-    copy: false,
-    move: false,
-    remove: false,
-}
-
-const PER_PAGE_OPTIONS = [20, 30, 50, 100, 200, 300]
-
-function joinPath(base: string, name: string) {
-    const cleanBase = base === '/' ? '/' : base.replace(/\/+$/, '')
-    const cleanName = name.trim().replace(/^\/+|\/+$/g, '')
-    if (!cleanName) {
-        return cleanBase || '/'
-    }
-
-    return cleanBase === '/' ? `/${cleanName}` : `${cleanBase}/${cleanName}`
-}
-
-function normalizePath(value: string) {
-    let next = String(value || '/').trim()
-    if (!next) return '/'
-    next = next.replace(/\\/g, '/')
-    if (!next.startsWith('/')) next = `/${next}`
-    next = next.replace(/\/{2,}/g, '/')
-    if (next.length > 1 && next.endsWith('/')) {
-        next = next.slice(0, -1)
-    }
-    return next || '/'
-}
-
-function getParentPath(path: string) {
-    const normalized = normalizePath(path)
-    if (normalized === '/') {
-        return null
-    }
-
-    const segments = normalized.split('/').filter(Boolean)
-    segments.pop()
-    return segments.length > 0 ? `/${segments.join('/')}` : '/'
 }
 
 function splitBreadcrumbs(path: string) {
@@ -101,43 +63,6 @@ function splitBreadcrumbs(path: string) {
             path: `/${segments.slice(0, index + 1).join('/')}`,
         })),
     ]
-}
-
-function formatTime(value: string) {
-    if (!value) return '--'
-    const date = new Date(value)
-    if (Number.isNaN(date.getTime())) {
-        return value
-    }
-    return date.toLocaleString('zh-CN', {
-        hour12: false,
-    })
-}
-
-function getFileIcon(entry: DriveEntry) {
-    if (entry.isDir) return Folder
-    if (entry.type === 'image') return FileImage
-    if (entry.type === 'video') return FileVideo2
-    if (entry.type === 'audio') return FileAudio2
-    if (entry.type === 'archive') return FileArchive
-    if (entry.type === 'pdf' || entry.type === 'text') return FileText
-    if (/\.(json|ya?ml|toml|ini|js|ts|tsx|jsx|astro|css|scss|html|md|mdx)$/i.test(entry.name)) return FileCode2
-    return File
-}
-
-async function requestJson<T>(input: string, init?: RequestInit): Promise<T> {
-    const response = await fetch(input, init)
-    const data = await response.json().catch(() => ({}))
-
-    if (!response.ok) {
-        const message = typeof data?.error === 'string' ? data.error : `Request failed with status ${response.status}`
-        const error = new Error(message) as Error & { status?: number; details?: unknown }
-        error.status = response.status
-        error.details = data?.details
-        throw error
-    }
-
-    return data as T
 }
 
 function describeDriveError(error: unknown, fallback: string) {
@@ -173,21 +98,6 @@ function getPermissionLabel(key: keyof DrivePermissions) {
     }
 
     return labels[key]
-}
-
-function getVisiblePages(currentPage: number, totalPages: number) {
-    const pages = new Set<number>([1, totalPages, currentPage, currentPage - 1, currentPage + 1])
-    return Array.from(pages)
-        .filter((page) => page >= 1 && page <= totalPages)
-        .sort((left, right) => left - right)
-}
-
-function parseCsv(text: string) {
-    return text
-        .replace(/\r\n/g, '\n')
-        .split('\n')
-        .filter((line) => line.trim().length > 0)
-        .map((line) => line.split(',').map((cell) => cell.trim()))
 }
 
 export default function DrivePage({ permissions }: DrivePageProps) {
@@ -587,54 +497,6 @@ export default function DrivePage({ permissions }: DrivePageProps) {
         }
     }
 
-    function triggerExternalUrl(url: string, options: { downloadName?: string; newTab?: boolean } = {}) {
-        const anchor = document.createElement('a')
-        anchor.href = url
-        anchor.rel = 'noopener noreferrer'
-        if (options.newTab) {
-            anchor.target = '_blank'
-        }
-        if (options.downloadName) {
-            anchor.download = options.downloadName
-        }
-        document.body.appendChild(anchor)
-        anchor.click()
-        anchor.remove()
-    }
-
-    async function copyTextToClipboard(text: string) {
-        const value = String(text || '').trim()
-        if (!value) {
-            throw new Error('empty clipboard text')
-        }
-
-        if (navigator.clipboard?.writeText && window.isSecureContext) {
-            await navigator.clipboard.writeText(value)
-            return
-        }
-
-        const textarea = document.createElement('textarea')
-        textarea.value = value
-        textarea.setAttribute('readonly', 'true')
-        textarea.style.position = 'fixed'
-        textarea.style.opacity = '0'
-        textarea.style.pointerEvents = 'none'
-        document.body.appendChild(textarea)
-        textarea.select()
-        textarea.setSelectionRange(0, value.length)
-
-        const succeeded = document.execCommand('copy')
-        textarea.remove()
-
-        if (!succeeded) {
-            throw new Error('copy command failed')
-        }
-    }
-
-    function buildPotPlayerUrl(url: string) {
-        return `potplayer://${String(url || '').trim()}`
-    }
-
     function openItemInPotPlayer(item: DriveItemPayload) {
         const streamUrl = item.rawUrl || item.resolvedUrl
         if (!streamUrl) {
@@ -661,10 +523,6 @@ export default function DrivePage({ permissions }: DrivePageProps) {
         } catch {
             showDriveError('复制下载链接失败，请检查浏览器剪贴板权限。')
         }
-    }
-
-    function buildDriveFileUrl(path: string, intent: 'view' | 'download') {
-        return `${SITE_API_BASE_URL}/api/drive/raw?path=${encodeURIComponent(path)}&intent=${intent}`
     }
 
     async function openPreviewModalLegacy(entry: DriveEntry, item: DriveItemPayload) {

@@ -1,5 +1,13 @@
 import { marked } from 'marked'
 import type { DriveEntry, DriveItemPayload } from '../types'
+import { extractArchiveEntriesInWorker } from './archive-preview-client'
+import { parseTarEntries } from './archive-preview-utils'
+import {
+    fetchPreviewBlobWithFallback,
+    fetchPreviewTextWithFallback,
+    getPreviewSourceUrls,
+    getRemoteOfficeEmbedSource,
+} from './fetch-utils'
 import {
     ARCHIVE_PREVIEW_LIMIT_BYTES,
     canPreviewArchive,
@@ -12,390 +20,23 @@ import {
     isJsonExtension,
     isMarkdownExtension,
 } from './file-types'
-import { extractArchiveEntriesInWorker } from './archive-preview-client'
+import { buildOfficeOnlinePreviews } from './office-online'
+import { buildPptSlideContent, sortSlideFiles } from './ppt-preview-utils'
+import {
+    bestEffortDecode,
+    buildSpreadsheetHtml,
+    cleanupDecodedText,
+    collectXmlText,
+    escapeHtml,
+    paragraphsToHtml,
+    parseCsv,
+    stripRtfToText,
+} from './text-preview-utils'
 import type {
     ArchivePreviewEntry,
     DrivePreviewState,
     OfficePreviewData,
-    OfficePreviewProvider,
 } from './types'
-
-type SupportedTextEncoding = 'utf-8' | 'utf-16le' | 'gb18030' | 'windows-1252'
-const PREVIEW_FETCH_TIMEOUT_MS = 30_000
-
-async function fetchPreviewResponse(previewUrl: string) {
-    const controller = new AbortController()
-    const timeoutId = window.setTimeout(() => controller.abort(), PREVIEW_FETCH_TIMEOUT_MS)
-
-    const response = await fetch(previewUrl, {
-        cache: 'no-store',
-        signal: controller.signal,
-    }).finally(() => {
-        window.clearTimeout(timeoutId)
-    })
-    if (!response.ok) {
-        throw new Error(`Preview request failed: ${response.status}`)
-    }
-    return response
-}
-
-async function fetchPreviewResponseWithFallback(urls: string[]) {
-    let lastError: unknown = null
-
-    for (const candidate of urls.filter(Boolean)) {
-        try {
-            return await fetchPreviewResponse(candidate)
-        } catch (error) {
-            lastError = error
-        }
-    }
-
-    throw lastError instanceof Error ? lastError : new Error('Preview request failed')
-}
-
-async function fetchPreviewBlobWithFallback(urls: string[]) {
-    const response = await fetchPreviewResponseWithFallback(urls)
-    return response.blob()
-}
-
-async function fetchPreviewTextWithFallback(urls: string[]) {
-    const response = await fetchPreviewResponseWithFallback(urls)
-    return response.text()
-}
-
-function getPreviewSourceUrls(item: DriveItemPayload, previewUrl: string) {
-    return [previewUrl, item.rawUrl, item.resolvedUrl].filter(Boolean)
-}
-
-function getRemoteOfficeEmbedSource(item: DriveItemPayload, previewUrl: string) {
-    const candidates = [item.resolvedUrl, item.rawUrl, previewUrl].filter(Boolean)
-
-    for (const candidate of candidates) {
-        try {
-            const url = new URL(candidate)
-            if (url.protocol === 'https:') {
-                return url.toString()
-            }
-        } catch {
-            continue
-        }
-    }
-
-    return ''
-}
-
-function buildMicrosoftOfficeEmbedUrl(sourceUrl: string) {
-    if (!sourceUrl) {
-        return ''
-    }
-
-    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(sourceUrl)}`
-}
-
-function buildGoogleOfficeEmbedUrl(sourceUrl: string) {
-    if (!sourceUrl) {
-        return ''
-    }
-
-    return `https://docs.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(sourceUrl)}`
-}
-
-
-function supportsMicrosoftOfficeEmbed(format: OfficePreviewData['format']) {
-    return format === 'doc' || format === 'docx' || format === 'xlsx' || format === 'pptx'
-}
-
-function buildOfficeOnlinePreviews(format: OfficePreviewData['format'], sourceUrl: string): OfficePreviewProvider[] {
-    if (!supportsMicrosoftOfficeEmbed(format) || !sourceUrl) {
-        return []
-    }
-
-    const providers: OfficePreviewProvider[] = [
-        {
-            id: 'microsoft',
-            label: 'Microsoft Preview',
-            mode: 'embed',
-            url: buildMicrosoftOfficeEmbedUrl(sourceUrl),
-        },
-        {
-            id: 'google',
-            label: 'Google Preview',
-            mode: 'embed',
-            url: buildGoogleOfficeEmbedUrl(sourceUrl),
-        },
-    ]
-
-    return providers.filter((provider) => Boolean(provider.url))
-}
-
-function parseCsv(text: string) {
-    return text
-        .replace(/\r\n/g, '\n')
-        .split('\n')
-        .filter((line) => line.trim().length > 0)
-        .map((line) => line.split(',').map((cell) => cell.trim()))
-}
-
-function escapeHtml(value: string) {
-    return value
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll('\'', '&#39;')
-}
-
-function paragraphsToHtml(text: string) {
-    return text
-        .split(/\n{2,}/)
-        .map((paragraph) => paragraph.trim())
-        .filter(Boolean)
-        .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br />')}</p>`)
-        .join('')
-}
-
-function buildSpreadsheetHtml(rows: unknown[][]) {
-    if (!rows.length) {
-        return '<div class="text-sm text-base-content/60">当前工作表没有可显示的数据。</div>'
-    }
-
-    const normalizedRows = rows.map((row) => Array.isArray(row) ? row : [])
-    const maxColumns = normalizedRows.reduce((max, row) => Math.max(max, row.length), 0)
-    if (maxColumns === 0) {
-        return '<div class="text-sm text-base-content/60">当前工作表没有可显示的数据。</div>'
-    }
-
-    const tableRows = normalizedRows
-        .map((row, rowIndex) => {
-            const tag = rowIndex === 0 ? 'th' : 'td'
-            const cells = Array.from({ length: maxColumns }, (_, columnIndex) => {
-                const cell = row[columnIndex]
-                const value = cell == null ? '' : String(cell)
-                return `<${tag}>${escapeHtml(value)}</${tag}>`
-            }).join('')
-
-            return `<tr>${cells}</tr>`
-        })
-        .join('')
-
-    return `<table><tbody>${tableRows}</tbody></table>`
-}
-
-function stripRtfToText(input: string) {
-    return input
-        .replace(/\\par[d]?/g, '\n')
-        .replace(/\\tab/g, '\t')
-        .replace(/\\'[0-9a-fA-F]{2}/g, '')
-        .replace(/\\[a-z]+-?\d* ?/g, '')
-        .replace(/[{}]/g, '')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim()
-}
-
-function cleanupDecodedText(text: string) {
-    return text
-        .replace(/\u0000/g, '')
-        .replace(/[^\S\r\n]+\n/g, '\n')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim()
-}
-
-function scoreDecodedText(text: string) {
-    if (!text) return 0
-    const printable = (text.match(/[\p{L}\p{N}\p{P}\p{Zs}\r\n]/gu) || []).length
-    return printable / text.length
-}
-
-function bestEffortDecode(buffer: ArrayBuffer) {
-    const encodings: SupportedTextEncoding[] = ['utf-8', 'utf-16le', 'gb18030', 'windows-1252']
-    let best = ''
-    let bestScore = 0
-
-    for (const encoding of encodings) {
-        try {
-            const text = cleanupDecodedText(new TextDecoder(encoding).decode(buffer))
-            const score = scoreDecodedText(text)
-            if (score > bestScore) {
-                best = text
-                bestScore = score
-            }
-        } catch {
-            continue
-        }
-    }
-
-    return best
-}
-
-function collectXmlText(value: unknown, result: string[] = []) {
-    if (typeof value === 'string') {
-        const trimmed = value.trim()
-        if (trimmed) {
-            result.push(trimmed)
-        }
-        return result
-    }
-
-    if (Array.isArray(value)) {
-        for (const item of value) {
-            collectXmlText(item, result)
-        }
-        return result
-    }
-
-    if (value && typeof value === 'object') {
-        for (const [key, nested] of Object.entries(value)) {
-            if (key === '#text') {
-                collectXmlText(nested, result)
-                continue
-            }
-
-            if (key.startsWith('@_')) {
-                continue
-            }
-
-            collectXmlText(nested, result)
-        }
-    }
-
-    return result
-}
-
-function sortSlideFiles(files: string[]) {
-    return [...files].sort((left, right) => {
-        const leftMatch = left.match(/slide(\d+)\.xml$/)
-        const rightMatch = right.match(/slide(\d+)\.xml$/)
-        return Number(leftMatch?.[1] || 0) - Number(rightMatch?.[1] || 0)
-    })
-}
-
-function normalizeSlideText(text: string) {
-    return text
-        .replace(/\r\n/g, '\n')
-        .replace(/[ \t]+\n/g, '\n')
-        .replace(/\n[ \t]+/g, '\n')
-        .replace(/[ \t]{2,}/g, ' ')
-        .replace(/^[\u200B\uFEFF]+|[\u200B\uFEFF]+$/g, '')
-        .trim()
-}
-
-function decodeXmlText(value: string) {
-    return value
-        .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-        .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(Number.parseInt(code, 16)))
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&apos;/g, '\'')
-        .replace(/&amp;/g, '&')
-}
-
-function extractPptParagraphTexts(xmlFragment: string) {
-    const paragraphs = xmlFragment.match(/<a:p\b[\s\S]*?<\/a:p>/g) || []
-
-    return paragraphs
-        .map((paragraph) => {
-            const withLineBreaks = paragraph.replace(/<a:br\s*\/>/g, '\n')
-            const text = Array.from(withLineBreaks.matchAll(/<a:t[^>]*>([\s\S]*?)<\/a:t>/g))
-                .map((match) => decodeXmlText(match[1] || ''))
-                .join('')
-            return normalizeSlideText(text)
-        })
-        .filter(Boolean)
-}
-
-function extractPptTableRows(xmlFragment: string) {
-    const rows = xmlFragment.match(/<a:tr\b[\s\S]*?<\/a:tr>/g) || []
-
-    return rows
-        .map((row) => {
-            const cells = (row.match(/<a:tc\b[\s\S]*?<\/a:tc>/g) || [])
-                .map((cell) => extractPptParagraphTexts(cell).join(' ').trim())
-                .filter(Boolean)
-            return normalizeSlideText(cells.join(' | '))
-        })
-        .filter(Boolean)
-}
-
-function buildPptSlideContent(slideXml: string, index: number) {
-    const shapeBlocks = slideXml.match(/<p:sp\b[\s\S]*?<\/p:sp>/g) || []
-    const titleCandidates: string[] = []
-    const bodyCandidates: string[] = []
-
-    for (const shape of shapeBlocks) {
-        const lines = extractPptParagraphTexts(shape)
-        if (!lines.length) {
-            continue
-        }
-
-        const isTitle = /<p:ph\b[^>]*type="(?:title|ctrTitle)"/.test(shape)
-        const isSubtitle = /<p:ph\b[^>]*type="subTitle"/.test(shape)
-
-        if (isTitle) {
-            titleCandidates.push(...lines)
-            continue
-        }
-
-        if (isSubtitle) {
-            bodyCandidates.push(...lines)
-            continue
-        }
-
-        bodyCandidates.push(...lines)
-    }
-
-    const graphicFrames = slideXml.match(/<p:graphicFrame\b[\s\S]*?<\/p:graphicFrame>/g) || []
-    for (const frame of graphicFrames) {
-        bodyCandidates.push(...extractPptTableRows(frame))
-    }
-
-    const title = titleCandidates.find(Boolean) || bodyCandidates[0] || `Slide ${index + 1}`
-    const body = bodyCandidates
-        .map((line) => normalizeSlideText(line))
-        .filter(Boolean)
-        .filter((line) => line !== title)
-        .filter((line, lineIndex, lines) => lines.indexOf(line) === lineIndex)
-
-    return { title, body }
-}
-
-function parseTarEntries(bytes: Uint8Array) {
-    const entries: ArchivePreviewEntry[] = []
-    let offset = 0
-
-    while (offset + 512 <= bytes.length) {
-        const header = bytes.subarray(offset, offset + 512)
-        if (header.every((value) => value === 0)) {
-            break
-        }
-
-        const readString = (start: number, end: number) =>
-            new TextDecoder('utf-8')
-                .decode(header.subarray(start, end))
-                .replace(/\0.*$/, '')
-                .trim()
-
-        const name = readString(0, 100)
-        const prefix = readString(345, 500)
-        const sizeRaw = readString(124, 136).replace(/\0/g, '').trim()
-        const typeFlag = readString(156, 157)
-        const size = Number.parseInt(sizeRaw || '0', 8) || 0
-        const path = prefix ? `${prefix}/${name}` : name
-
-        if (path) {
-            entries.push({
-                path,
-                size,
-                sizeLabel: formatPreviewBytes(size),
-                isDir: typeFlag === '5' || path.endsWith('/'),
-            })
-        }
-
-        offset += 512 + Math.ceil(size / 512) * 512
-    }
-
-    return entries
-}
 
 function buildUnsupportedPreview(entry: DriveEntry, item: DriveItemPayload, message: string): DrivePreviewState {
     return {
@@ -800,7 +441,7 @@ async function loadArchivePreview(entry: DriveEntry, item: DriveItemPayload, pre
         kind: 'archive',
         url: '',
         archiveEntries,
-        archiveSummary: `共 ${archiveEntries.length} 个条目，已尝试递归展开嵌套压缩包`,
+        archiveSummary: `共 ${archiveEntries.length} 个条目，已尝试递归展开嵌套压缩包。`,
     }
 }
 
