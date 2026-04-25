@@ -421,6 +421,12 @@ const languages = [
       return `${escapeHtml(zh)}<br />${escapeHtml(en)}`;
     }
 
+    function errorToMessage(error) {
+      if (!error) return "";
+      const message = error instanceof Error ? error.message : String(error);
+      return message ? `(${message.replaceAll("<br />", " / ")})` : "";
+    }
+
     function isSuggestionHiddenForPage() {
       return window.__mahiroTranslateSuggestionHidden === true;
     }
@@ -777,8 +783,8 @@ const languages = [
 
       if (provider === "bing") {
         return getMessageHtml(
-          "微软翻译会打开外部翻译页面，不会在站内直接改写当前页面。",
-          "Microsoft Translator opens an external translation page instead of rewriting this page in place.",
+          "微软翻译会打开 Microsoft 网页翻译页面；如果外部服务不可用，不会自动切换到其它翻译方式。",
+          "Microsoft Translator opens an external web translation page; it will not switch providers automatically if that service is unavailable.",
         );
       }
 
@@ -1300,78 +1306,45 @@ const languages = [
           language,
           model,
           sourceLanguage,
-          options,
+          { ...options, error },
         );
       }
     }
 
-    function buildBingTranslateUrl(language, currentUrl) {
-      const target = encodeURIComponent(currentUrl);
-      return `https://www.bing.com/translator?from=auto&to=${encodeURIComponent(language)}&url=${target}`;
+    function toMicrosoftLanguageCode(language) {
+      const normalized = normalizeLanguage(language);
+      if (normalized === "zh-CN") return "zh-Hans";
+      if (normalized === "zh-TW") return "zh-Hant";
+      return normalized;
     }
 
-    function resolveGoogleFallback(widget, preferredModel) {
-      const modelSelect = widget.querySelector("[data-translate-model]");
-      const fallbackModel = modelSelect?.options[0]?.value || preferredModel || "";
-
-      if (fallbackModel) {
-        return {
-          provider: "ai",
-          model: fallbackModel,
-          message: getMessageHtml(
-            "当前网络无法连接谷歌翻译，已自动切换到 AI 翻译。",
-            "Google Translate is unavailable on this network. Switched to AI Translation automatically.",
-          ),
-          restoreMessage: getMessageHtml(
-            "当前网络无法连接谷歌翻译，已切换为 AI 翻译，请重新点击“应用翻译”。",
-            "Google Translate is unavailable on this network. Switched to AI Translation. Click Apply Translation again.",
-          ),
-        };
-      }
-
-      return {
-        provider: "bing",
-        model: "",
-        message: getMessageHtml(
-          "当前网络无法连接谷歌翻译，已改用微软翻译。",
-          "Google Translate is unavailable on this network. Falling back to Microsoft Translator.",
-        ),
-        restoreMessage: getMessageHtml(
-          "当前网络无法连接谷歌翻译，已切换为微软翻译，请重新点击“应用翻译”。",
-          "Google Translate is unavailable on this network. Switched to Microsoft Translator. Click Apply Translation again.",
-        ),
-      };
+    function buildMicrosoftTranslateUrl(language, currentUrl) {
+      const target = encodeURIComponent(currentUrl);
+      const microsoftLanguage = encodeURIComponent(toMicrosoftLanguageCode(language));
+      return `https://www.translatetheweb.com/?from=&to=${microsoftLanguage}&a=${target}`;
     }
 
     async function handleGoogleTranslationFailure(widget, language, model, sourceLanguage, options = {}) {
-      const fallback = resolveGoogleFallback(widget, model);
-
       clearPendingGoogleReload();
       clearGoogleRuntimeState();
       removeGoogleScriptTag();
-
-      localStorage.setItem(PROVIDER_STORAGE_KEY, fallback.provider);
-      if (fallback.model) {
-        localStorage.setItem(MODEL_STORAGE_KEY, fallback.model);
-      }
+      setActiveTranslation(false);
+      localStorage.setItem(PROVIDER_STORAGE_KEY, "google");
       syncAllWidgets();
 
+      const errorText = errorToMessage(options.error);
+      const errorDetail = !options.silent && errorText ? ` ${errorText}` : "";
+      const message = getMessageHtml(
+        `谷歌站内翻译不可用，已停止自动翻译，没有切换到其它翻译方式。请手动选择 AI 翻译或微软翻译后再点击“应用翻译”。${errorDetail}`,
+        `Google in-page translation is unavailable. Automatic translation was stopped and no fallback provider was selected. Please choose AI Translation or Microsoft Translator manually, then click Apply Translation again.${errorDetail}`,
+      );
+
       if (options.silent) {
-        setActiveTranslation(false);
-        setAllStatuses(fallback.restoreMessage, "warning");
+        setAllStatuses(message, "warning");
         return;
       }
 
-      setAllStatuses(fallback.message, "warning");
-
-      if (fallback.provider === "ai") {
-        setActiveTranslation(true);
-        await applyAiTranslation(language, fallback.model, sourceLanguage);
-        return;
-      }
-
-      setActiveTranslation(false);
-      window.location.href = buildBingTranslateUrl(language, window.location.href);
+      setAllStatuses(message, "warning");
     }
 
     function syncWidgetState(widget) {
@@ -1423,7 +1396,13 @@ const languages = [
         try {
           await applyGoogleTranslation(language, sourceLanguage);
         } catch (error) {
-          await handleGoogleTranslationFailure(widget, language, model, sourceLanguage, options);
+          await handleGoogleTranslationFailure(
+            widget,
+            language,
+            model,
+            sourceLanguage,
+            { ...options, error },
+          );
         }
         return;
       }
@@ -1436,7 +1415,7 @@ const languages = [
       }
 
       if (!options.silent) {
-        window.location.href = buildBingTranslateUrl(language, window.location.href);
+        window.location.href = buildMicrosoftTranslateUrl(language, window.location.href);
       }
     }
 
@@ -1577,7 +1556,7 @@ const languages = [
             ),
             "success",
           );
-          window.location.href = buildBingTranslateUrl(state.language, window.location.href);
+          window.location.href = buildMicrosoftTranslateUrl(state.language, window.location.href);
           return;
         }
 
