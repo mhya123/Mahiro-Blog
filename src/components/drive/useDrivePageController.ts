@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { SITE_API_BASE_URL } from '@/consts'
 import { buildDriveFileUrl, buildPotPlayerUrl, copyTextToClipboard, triggerExternalUrl } from './page-actions'
-import { describeDriveError, requestJson } from './page-http'
+import { describeDriveError, requestDriveJson } from './page-http'
 import {
     DEFAULT_PERMISSIONS,
     getParentPath,
@@ -90,9 +90,12 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
         }
 
         try {
-            const payload = await requestJson<DriveListPayload>(
-                `${SITE_API_BASE_URL}/api/drive/list?path=${encodeURIComponent(nextPath)}&refresh=${options.refresh ? 'true' : 'false'}&page=${nextPage}&perPage=${nextPerPage}`,
-            )
+            const payload = await requestDriveJson<DriveListPayload>('list', {
+                path: nextPath,
+                refresh: options.refresh === true,
+                page: nextPage,
+                perPage: nextPerPage,
+            })
             setPageError('')
             setCurrentPath(payload.path)
             setItems(payload.items || [])
@@ -130,21 +133,12 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
 
         setSearching(true)
         try {
-            const payload = await requestJson<{ items: DriveEntry[]; total: number }>(
-                `${SITE_API_BASE_URL}/api/drive/search`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        parent: currentPath,
-                        keywords: keyword,
-                        page: nextPage,
-                        perPage: nextPerPage,
-                    }),
-                },
-            )
+            const payload = await requestDriveJson<{ items: DriveEntry[]; total: number }>('search', {
+                parent: currentPath,
+                keywords: keyword,
+                page: nextPage,
+                perPage: nextPerPage,
+            })
             setPageError('')
             setItems(payload.items || [])
             setTotalCount(payload.total || 0)
@@ -188,14 +182,8 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
         if (!name) return
 
         await mutate(async () => {
-            await requestJson(`${SITE_API_BASE_URL}/api/drive/mkdir`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    path: joinPath(currentPath, name),
-                }),
+            await requestDriveJson('mkdir', {
+                path: joinPath(currentPath, name),
             })
         }, '文件夹已创建')
     }
@@ -210,15 +198,9 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
         if (!nextName || nextName === entry.name) return
 
         await mutate(async () => {
-            await requestJson(`${SITE_API_BASE_URL}/api/drive/rename`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    path: entry.path,
-                    name: nextName,
-                }),
+            await requestDriveJson('rename', {
+                path: entry.path,
+                name: nextName,
             })
         }, '名称已更新')
     }
@@ -236,15 +218,9 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
         }
 
         await mutate(async () => {
-            await requestJson(`${SITE_API_BASE_URL}/api/drive/remove`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    dir: currentPath,
-                    names: entries.map((entry) => entry.name),
-                }),
+            await requestDriveJson('remove', {
+                dir: currentPath,
+                names: entries.map((entry) => entry.name),
             })
         }, '删除完成')
     }
@@ -264,16 +240,10 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
         if (!destination) return
 
         await mutate(async () => {
-            await requestJson(`${SITE_API_BASE_URL}/api/drive/${mode}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    srcDir: currentPath,
-                    dstDir: normalizePath(destination),
-                    names: entries.map((entry) => entry.name),
-                }),
+            await requestDriveJson(mode, {
+                srcDir: currentPath,
+                dstDir: normalizePath(destination),
+                names: entries.map((entry) => entry.name),
             })
         }, mode === 'move' ? '移动完成' : '复制完成')
     }
@@ -324,9 +294,10 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
 
         setResolvingPath(entry.path)
         try {
-            const payload = await requestJson<DriveItemPayload>(
-                `${SITE_API_BASE_URL}/api/drive/item?path=${encodeURIComponent(entry.path)}&intent=${intent}`,
-            )
+            const payload = await requestDriveJson<DriveItemPayload>('item', {
+                path: entry.path,
+                intent,
+            })
             setPageError('')
             return payload
         } catch (error) {
@@ -368,7 +339,7 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
     }
 
     async function openPreviewModal(entry: DriveEntry, item: DriveItemPayload) {
-        const previewUrl = buildDriveFileUrl(entry.path, 'view')
+        const previewUrl = item.rawUrl || item.resolvedUrl || buildDriveFileUrl(entry.path, 'view')
         setPreviewLoading(true)
 
         try {
@@ -488,7 +459,7 @@ export function useDrivePageController({ permissions }: DrivePageProps) {
 
         async function bootstrap() {
             try {
-                const nextStatus = await requestJson<DriveStatus>(`${SITE_API_BASE_URL}/api/drive/status`)
+                const nextStatus = await requestDriveJson<DriveStatus>('status')
                 if (cancelled) return
 
                 setStatus(nextStatus)

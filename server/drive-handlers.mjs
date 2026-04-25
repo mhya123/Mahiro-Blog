@@ -9,6 +9,7 @@ function buildDriveErrorPayload(error, fallbackMessage = 'Drive request failed')
 
 export function createDriveHandlers({
   alistService,
+  driveCrypto,
   log,
   json,
   readJsonBody,
@@ -18,6 +19,10 @@ export function createDriveHandlers({
   getQueryNumber,
   encodeContentDispositionFilename,
 }) {
+  function secureJson(res, status, aesKey, body, origin) {
+    return json(res, status, driveCrypto.encryptResponse(aesKey, body), origin)
+  }
+
   async function withJsonBody(req, res, origin, task) {
     let payload = {}
 
@@ -43,6 +48,40 @@ export function createDriveHandlers({
         status: error?.status,
       })
       return json(res, error?.status || 500, buildDriveErrorPayload(error), origin)
+    }
+  }
+
+  async function withSecureBody(req, res, origin, task) {
+    let secureRequest
+
+    try {
+      const envelope = await readJsonBody(req)
+      secureRequest = driveCrypto.decryptEnvelope(envelope)
+    } catch (error) {
+      log('WARN', 'Drive encrypted request rejected', {
+        requestId: req.requestId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return json(res, 400, buildDriveErrorPayload(error, 'Invalid encrypted drive request'), origin)
+    }
+
+    try {
+      const data = await task(secureRequest.payload || {})
+      return secureJson(res, 200, secureRequest.aesKey, data, origin)
+    } catch (error) {
+      log('ERROR', 'Drive secure action failed', {
+        requestId: req.requestId,
+        action: secureRequest.payload?.action,
+        error: error instanceof Error ? error.message : String(error),
+        status: error?.status,
+      })
+      return secureJson(
+        res,
+        error?.status || 500,
+        secureRequest.aesKey,
+        buildDriveErrorPayload(error),
+        origin,
+      )
     }
   }
 
@@ -317,7 +356,99 @@ export function createDriveHandlers({
     }
   }
 
+  async function handleDriveCryptoPublicKey(_req, res, origin) {
+    return json(res, 200, driveCrypto.getPublicConfig(), origin)
+  }
+
+  async function handleDriveSecure(req, res, origin) {
+    const requestId = req.requestId
+
+    return withSecureBody(req, res, origin, async (securePayload) => {
+      const action = String(securePayload.action || '')
+      const payload = securePayload.payload && typeof securePayload.payload === 'object'
+        ? securePayload.payload
+        : {}
+
+      if (action === 'status') {
+        return alistService.getStatus(requestId)
+      }
+
+      if (action === 'list') {
+        return alistService.listDirectory(
+          requestId,
+          String(payload.path || '/'),
+          {
+            page: Number(payload.page || 1),
+            perPage: Number(payload.perPage || 200),
+            refresh: payload.refresh === true,
+          },
+        )
+      }
+
+      if (action === 'item') {
+        return alistService.getResolvedItem(
+          requestId,
+          String(payload.path || '/'),
+          { intent: String(payload.intent || 'view') },
+        )
+      }
+
+      if (action === 'search') {
+        return alistService.search(requestId, {
+          parent: String(payload.parent || '/'),
+          keywords: String(payload.keywords || ''),
+          page: Number(payload.page || 1),
+          perPage: Number(payload.perPage || 200),
+        })
+      }
+
+      if (action === 'mkdir') {
+        return alistService.makeDirectory(requestId, String(payload.path || ''))
+      }
+
+      if (action === 'rename') {
+        return alistService.rename(
+          requestId,
+          String(payload.path || ''),
+          String(payload.name || ''),
+        )
+      }
+
+      if (action === 'remove') {
+        return alistService.remove(
+          requestId,
+          String(payload.dir || '/'),
+          Array.isArray(payload.names) ? payload.names : [],
+        )
+      }
+
+      if (action === 'move') {
+        return alistService.move(
+          requestId,
+          String(payload.srcDir || '/'),
+          String(payload.dstDir || '/'),
+          Array.isArray(payload.names) ? payload.names : [],
+        )
+      }
+
+      if (action === 'copy') {
+        return alistService.copy(
+          requestId,
+          String(payload.srcDir || '/'),
+          String(payload.dstDir || '/'),
+          Array.isArray(payload.names) ? payload.names : [],
+        )
+      }
+
+      const error = new Error('Unknown secure drive action')
+      error.status = 404
+      throw error
+    })
+  }
+
   return {
+    handleDriveCryptoPublicKey,
+    handleDriveSecure,
     handleDriveStatus,
     handleDriveList,
     handleDriveItem,

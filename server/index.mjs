@@ -3,6 +3,7 @@ import { createServer } from 'node:http'
 import { fileURLToPath } from 'node:url'
 import { createAiHandlers } from './ai-handlers.mjs'
 import { createAListService } from './alist.mjs'
+import { createDriveCrypto } from './drive-crypto.mjs'
 import { createDriveHandlers } from './drive-handlers.mjs'
 import { loadEnvFile } from './env-utils.mjs'
 import { createHttpUtils } from './http-utils.mjs'
@@ -37,6 +38,10 @@ const alistService = createAListService({
   defaultTimeoutMs: DEFAULT_TIMEOUT_MS,
 })
 
+const driveCrypto = createDriveCrypto({
+  enabled: process.env.DRIVE_RSA_ENCRYPTION !== 'false',
+})
+
 const { handleSummary, handleTranslate } = createAiHandlers({
   log,
   json,
@@ -47,6 +52,8 @@ const { handleSummary, handleTranslate } = createAiHandlers({
 })
 
 const {
+  handleDriveCryptoPublicKey,
+  handleDriveSecure,
   handleDriveStatus,
   handleDriveList,
   handleDriveItem,
@@ -60,6 +67,7 @@ const {
   handleDriveRaw,
 } = createDriveHandlers({
   alistService,
+  driveCrypto,
   log,
   json,
   readJsonBody,
@@ -101,6 +109,14 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'GET' && url.pathname === '/api/drive/status') {
     return handleDriveStatus(req, res, origin)
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/drive/crypto/public-key') {
+    return handleDriveCryptoPublicKey(req, res, origin)
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/drive/secure') {
+    return handleDriveSecure(req, res, origin)
   }
 
   if (req.method === 'GET' && url.pathname === '/api/drive/list') {
