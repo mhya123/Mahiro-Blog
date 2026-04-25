@@ -1,10 +1,10 @@
 {
-  "commitSha": "dda150b6f842db529ad56c8769b5ca0d93289658",
-  "commitShort": "dda150b",
-  "commitMessage": "Merge branch 'main' of https://github.com/mhya123/Mahiro-Blog",
+  "commitSha": "25c00953a275f604731f79d8eeef7060373c8786",
+  "commitShort": "25c0095",
+  "commitMessage": "fix: retry write ai summary generation",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-25T23:48:12+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/dda150b6f842db529ad56c8769b5ca0d93289658",
-  "buildTime": "2026/4/25 23:48:50",
-  "totalCommits": 397
+  "commitDate": "2026-04-26T01:20:20+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/25c00953a275f604731f79d8eeef7060373c8786",
+  "buildTime": "2026/4/26 01:21:13",
+  "totalCommits": 404
 }
