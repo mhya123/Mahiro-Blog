@@ -43,7 +43,7 @@ function isMenuActive(item: MenuItem): boolean {
 ---      
       
 <!-- 桌面端透明导航栏 -->      
-<nav class="fixed top-0 left-0 right-0 z-50 hidden lg:block opacity-100 pointer-events-auto gpu-layer" id="navbar-desktop">      
+<nav class="notranslate fixed top-0 left-0 right-0 z-50 hidden lg:block opacity-100 pointer-events-auto gpu-layer" id="navbar-desktop" data-no-translate>
   <div class="max-w-blog mx-auto px-4">      
     <!-- 透明背景，添加毛玻璃效果 -->      
     <div id="navbar-bg" class="bg-base-100/80 backdrop-blur-xl border border-white/20 px-4 xl:px-6 py-2 xl:py-2.5 rounded-full shadow-2xl transition-all duration-300 w-full gpu-layer">      
@@ -138,7 +138,7 @@ function isMenuActive(item: MenuItem): boolean {
 </nav>      
       
 <!-- 移动端顶部悬浮导航栏 -->
-<nav id="navbar-mobile" class="fixed top-0 left-0 right-0 z-50 lg:hidden gpu-layer">
+<nav id="navbar-mobile" class="notranslate fixed top-0 left-0 right-0 z-50 lg:hidden gpu-layer" data-no-translate>
   <div class="max-w-blog mx-auto px-2 pt-2">
     <div class="relative flex items-center px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full gpu-layer">
       <!-- 导航菜单项（可滚动区域） -->
