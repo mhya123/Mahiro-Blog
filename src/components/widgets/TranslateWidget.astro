@@ -73,12 +73,12 @@ const languages = [
           <Icon name="material-symbols:translate-rounded" class="w-4 h-4 xl:w-5 xl:h-5" />
         </div>
 
-        <div class="dropdown-content z-[120] mt-4 w-[23rem] rounded-[1.6rem] border border-base-200/70 bg-base-100/95 p-4 shadow-2xl backdrop-blur-xl">
-          <div class="mb-3 flex items-start justify-between gap-3">
+        <div class="dropdown-content z-[120] mt-3 max-h-[min(42rem,calc(100vh-8rem))] w-[min(23rem,calc(100vw-1rem))] overflow-y-auto overscroll-contain rounded-[1.6rem] border border-base-200/70 bg-base-100/95 p-3 shadow-2xl backdrop-blur-xl [scrollbar-width:thin] xl:p-4">
+          <div class="mb-2 flex items-start justify-between gap-3">
             <div>
               <div class="text-sm font-bold text-base-content">全站翻译</div>
               <div class="text-xs text-base-content/60">Translate This Site</div>
-              <p class="mt-2 text-xs leading-5 text-base-content/65">
+              <p class="mt-1.5 text-xs leading-5 text-base-content/65">
                 只有点击“应用翻译”后才会开始翻译，开启后会尽量在站内保持当前目标语言。
                 <br />
                 Translation starts only after you click Apply Translation, and stays active across pages when possible.
@@ -89,17 +89,17 @@ const languages = [
             </div>
           </div>
 
-          <div class="mb-3">
-            <div class="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50">
+          <div class="mb-2.5">
+            <div class="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50">
               翻译方式
             </div>
-            <div class="mb-2 text-[0.68rem] text-base-content/45">Provider</div>
+            <div class="mb-1.5 text-[0.68rem] text-base-content/45">Provider</div>
             <div class="grid grid-cols-3 gap-2">
               {
                 providers.map((provider) => (
                   <button
                     type="button"
-                    class="translate-option flex flex-col items-center justify-center gap-1 rounded-2xl border border-base-200 bg-base-200/50 px-2 py-2 text-center text-xs font-semibold transition-all duration-200 hover:border-primary/30 hover:bg-primary/10"
+                    class="translate-option flex flex-col items-center justify-center gap-1 rounded-2xl border border-base-200 bg-base-200/50 px-2 py-1.5 text-center text-xs font-semibold transition-all duration-200 hover:border-primary/30 hover:bg-primary/10"
                     data-translate-provider={provider.id}
                   >
                     <Icon name={provider.icon} class="h-4 w-4" />
@@ -111,17 +111,17 @@ const languages = [
             </div>
           </div>
 
-          <div class="mb-3">
-            <div class="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50">
+          <div class="mb-2.5">
+            <div class="mb-1 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50">
               目标语言
             </div>
-            <div class="mb-2 text-[0.68rem] text-base-content/45">Target Language</div>
-            <div class="flex flex-wrap gap-2">
+            <div class="mb-1.5 text-[0.68rem] text-base-content/45">Target Language</div>
+            <div class="flex flex-wrap gap-1.5">
               {
                 languages.map((language) => (
                   <button
                     type="button"
-                    class="translate-option rounded-2xl border border-base-200 bg-base-200/50 px-3 py-1.5 text-left text-xs font-semibold transition-all duration-200 hover:border-primary/30 hover:bg-primary/10"
+                    class="translate-option rounded-2xl border border-base-200 bg-base-200/50 px-3 py-1 text-left text-xs font-semibold transition-all duration-200 hover:border-primary/30 hover:bg-primary/10"
                     data-translate-language={language.code}
                   >
                     <span class="block">{language.labelZh}</span>
@@ -131,22 +131,22 @@ const languages = [
               }
             </div>
             <div
-              class="mt-2 text-[0.72rem] text-base-content/55"
+              class="mt-1.5 text-[0.72rem] text-base-content/55"
               data-translate-current-language
             ></div>
           </div>
 
-          <div class="mb-3">
+          <div class="mb-2.5">
             <label
-              class="mb-1 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50"
+              class="mb-0.5 block text-[0.72rem] font-bold uppercase tracking-[0.18em] text-base-content/50"
               for="translate-model-desktop"
             >
               AI 模型
             </label>
-            <div class="mb-2 text-[0.68rem] text-base-content/45">AI Model</div>
+            <div class="mb-1.5 text-[0.68rem] text-base-content/45">AI Model</div>
             <select
               id="translate-model-desktop"
-              class="select select-bordered w-full rounded-2xl border-base-200 bg-base-100"
+              class="select select-bordered select-sm w-full rounded-2xl border-base-200 bg-base-100"
               data-translate-model
             >
               {
@@ -158,7 +158,7 @@ const languages = [
           </div>
 
           <p
-            class="mb-4 min-h-[3.2rem] rounded-2xl border border-base-200/70 bg-base-200/35 px-3 py-2 text-xs leading-5 text-base-content/70"
+            class="mb-3 max-h-32 min-h-[2.8rem] overflow-y-auto overscroll-contain rounded-2xl border border-base-200/70 bg-base-200/35 px-3 py-2 text-xs leading-5 text-base-content/70 [scrollbar-width:thin]"
             data-translate-status
           >
             当前默认使用谷歌站内翻译；AI 翻译会逐块显示结果，微软翻译会打开文本翻译页并预设目标语言。
