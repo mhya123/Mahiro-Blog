@@ -35,6 +35,7 @@ import type { DrivePreviewState } from './preview/types'
 import { getPreviewKind } from './preview/file-types'
 import { loadDrivePreview } from './preview/loaders'
 import { DrivePreviewModal } from './preview/DrivePreviewModal'
+import { getDriveFileTypeLabel } from './file-meta'
 
 type DrivePageProps = {
     permissions?: Partial<DrivePermissions>
@@ -601,6 +602,23 @@ export default function DrivePage({ permissions }: DrivePageProps) {
         anchor.remove()
     }
 
+    function buildPotPlayerUrl(url: string) {
+        return `potplayer://${String(url || '').trim()}`
+    }
+
+    function openItemInPotPlayer(item: DriveItemPayload) {
+        const streamUrl = item.rawUrl || item.resolvedUrl
+        if (!streamUrl) {
+            showDriveError('当前文件没有可用于 PotPlayer 的播放直链。')
+            return
+        }
+
+        window.location.href = buildPotPlayerUrl(streamUrl)
+        window.setTimeout(() => {
+            showDriveInfo('已尝试唤起 PotPlayer。若没有自动打开，请确认系统已注册 potplayer:// 协议。')
+        }, 250)
+    }
+
     function buildDriveFileUrl(path: string, intent: 'view' | 'download') {
         return `${SITE_API_BASE_URL}/api/drive/raw?path=${encodeURIComponent(path)}&intent=${intent}`
     }
@@ -823,6 +841,9 @@ export default function DrivePage({ permissions }: DrivePageProps) {
                     onDownload={() => {
                         void downloadFileEntry(previewState.entry)
                     }}
+                    onOpenInPotPlayer={() => {
+                        openItemInPotPlayer(previewState.item)
+                    }}
                 />
             )}
 
@@ -1038,12 +1059,18 @@ export default function DrivePage({ permissions }: DrivePageProps) {
                         {Object.entries(effectivePermissions).map(([key, allowed]) => (
                             <span
                                 key={key}
-                                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm ${
                                     allowed
-                                        ? 'bg-success/10 text-success'
-                                        : 'bg-base-200 text-base-content/45'
+                                        ? 'border-success/25 bg-success/15 text-base-content'
+                                        : 'border-base-300/70 bg-base-200/85 text-base-content/55'
                                 }`}
                             >
+                                <span
+                                    className={`h-2 w-2 rounded-full ${
+                                        allowed ? 'bg-success' : 'bg-base-content/25'
+                                    }`}
+                                    aria-hidden="true"
+                                />
                                 {getPermissionLabel(key as keyof DrivePermissions)}
                             </span>
                         ))}
@@ -1324,7 +1351,7 @@ export default function DrivePage({ permissions }: DrivePageProps) {
                         </div>
                     ) : items.length === 0 ? (
                         <div className="flex min-h-[18rem] flex-col items-center justify-center gap-3 text-center text-base-content/60">
-                            <Folder className="h-10 w-10 text-primary/60" />
+                            <Folder className="h-10 w-10 text-base-content/45" />
                             <div className="text-lg font-bold">{effectivePermissions.view ? '这个目录现在是空的' : '当前无可显示内容'}</div>
                             <div className="max-w-md text-sm leading-7">
                                 {effectivePermissions.view
@@ -1355,7 +1382,11 @@ export default function DrivePage({ permissions }: DrivePageProps) {
                                                 checked={active}
                                                 onChange={() => toggleSelected(entry.path)}
                                             />
-                                            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${entry.isDir ? 'bg-warning/15 text-warning' : 'bg-primary/10 text-primary'}`}>
+                                            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
+                                                entry.isDir
+                                                    ? 'border-base-300/80 bg-base-200/85 text-base-content/72'
+                                                    : 'border-primary/10 bg-primary/10 text-primary'
+                                            }`}>
                                                 <Icon className="h-6 w-6" />
                                             </div>
                                         </label>
@@ -1370,12 +1401,12 @@ export default function DrivePage({ permissions }: DrivePageProps) {
                                                     {entry.name}
                                                 </div>
                                                 {entry.isDir ? (
-                                                    <span className="rounded-full bg-warning/15 px-2 py-1 text-[11px] font-bold text-warning">
+                                                    <span className="rounded-full border border-base-300/80 bg-base-200/85 px-2 py-1 text-[11px] font-bold text-base-content/68">
                                                         文件夹
                                                     </span>
                                                 ) : (
                                                     <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-bold text-primary">
-                                                        {entry.type || 'file'}
+                                                        {getDriveFileTypeLabel(entry)}
                                                     </span>
                                                 )}
                                             </div>

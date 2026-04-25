@@ -17,6 +17,7 @@ import type {
     ArchivePreviewEntry,
     DrivePreviewState,
     OfficePreviewData,
+    OfficePreviewProvider,
 } from './types'
 
 type SupportedTextEncoding = 'utf-8' | 'utf-16le' | 'gb18030' | 'windows-1252'
@@ -57,6 +58,93 @@ function getPreviewSourceUrls(item: DriveItemPayload, previewUrl: string) {
     return [item.resolvedUrl, item.rawUrl, previewUrl].filter(Boolean)
 }
 
+function getRemoteOfficeEmbedSource(item: DriveItemPayload, previewUrl: string) {
+    const candidates = [item.resolvedUrl, item.rawUrl, previewUrl].filter(Boolean)
+
+    for (const candidate of candidates) {
+        try {
+            const url = new URL(candidate)
+            if (url.protocol === 'https:') {
+                return url.toString()
+            }
+        } catch {
+            continue
+        }
+    }
+
+    return ''
+}
+
+function buildMicrosoftOfficeEmbedUrl(sourceUrl: string) {
+    if (!sourceUrl) {
+        return ''
+    }
+
+    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(sourceUrl)}`
+}
+
+function buildGoogleOfficeEmbedUrl(sourceUrl: string) {
+    if (!sourceUrl) {
+        return ''
+    }
+
+    return `https://docs.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(sourceUrl)}`
+}
+
+function buildZohoOfficeEmbedUrl(_sourceUrl?: string) {
+    return ''
+}
+
+function supportsMicrosoftOfficeEmbed(format: OfficePreviewData['format']) {
+    return format === 'doc' || format === 'docx' || format === 'xlsx' || format === 'pptx'
+}
+
+function buildOfficeOnlinePreviews(format: OfficePreviewData['format'], sourceUrl: string): OfficePreviewProvider[] {
+    if (!supportsMicrosoftOfficeEmbed(format) || !sourceUrl) {
+        return []
+    }
+
+    const nextProviders: OfficePreviewProvider[] = [
+        {
+            id: 'microsoft',
+            label: 'Microsoft Preview',
+            mode: 'embed',
+            url: buildMicrosoftOfficeEmbedUrl(sourceUrl),
+        },
+        {
+            id: 'google',
+            label: 'Google Preview',
+            mode: 'embed',
+            url: buildGoogleOfficeEmbedUrl(sourceUrl),
+        },
+    ]
+
+    return nextProviders.filter((provider) => Boolean(provider.url))
+
+    const providers: OfficePreviewProvider[] = [
+        {
+            id: 'microsoft',
+            label: 'Microsoft 预览',
+            mode: 'embed',
+            url: buildMicrosoftOfficeEmbedUrl(sourceUrl),
+        },
+        {
+            id: 'google',
+            label: 'Google 预览',
+            mode: 'external',
+            url: buildGoogleOfficeEmbedUrl(sourceUrl),
+        },
+        {
+            id: 'zoho',
+            label: 'Zoho 预览',
+            mode: 'external',
+            url: buildZohoOfficeEmbedUrl(sourceUrl),
+        },
+    ]
+
+    return providers.filter((provider) => Boolean(provider.url))
+}
+
 function parseCsv(text: string) {
     return text
         .replace(/\r\n/g, '\n')
@@ -81,6 +169,33 @@ function paragraphsToHtml(text: string) {
         .filter(Boolean)
         .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br />')}</p>`)
         .join('')
+}
+
+function buildSpreadsheetHtml(rows: unknown[][]) {
+    if (!rows.length) {
+        return '<div class="text-sm text-base-content/60">当前工作表没有可显示的数据。</div>'
+    }
+
+    const normalizedRows = rows.map((row) => Array.isArray(row) ? row : [])
+    const maxColumns = normalizedRows.reduce((max, row) => Math.max(max, row.length), 0)
+    if (maxColumns === 0) {
+        return '<div class="text-sm text-base-content/60">当前工作表没有可显示的数据。</div>'
+    }
+
+    const tableRows = normalizedRows
+        .map((row, rowIndex) => {
+            const tag = rowIndex === 0 ? 'th' : 'td'
+            const cells = Array.from({ length: maxColumns }, (_, columnIndex) => {
+                const cell = row[columnIndex]
+                const value = cell == null ? '' : String(cell)
+                return `<${tag}>${escapeHtml(value)}</${tag}>`
+            }).join('')
+
+            return `<tr>${cells}</tr>`
+        })
+        .join('')
+
+    return `<table><tbody>${tableRows}</tbody></table>`
 }
 
 function stripRtfToText(input: string) {
@@ -169,6 +284,96 @@ function sortSlideFiles(files: string[]) {
         const rightMatch = right.match(/slide(\d+)\.xml$/)
         return Number(leftMatch?.[1] || 0) - Number(rightMatch?.[1] || 0)
     })
+}
+
+function normalizeSlideText(text: string) {
+    return text
+        .replace(/\r\n/g, '\n')
+        .replace(/[ \t]+\n/g, '\n')
+        .replace(/\n[ \t]+/g, '\n')
+        .replace(/[ \t]{2,}/g, ' ')
+        .replace(/^[\u200B\uFEFF]+|[\u200B\uFEFF]+$/g, '')
+        .trim()
+}
+
+function decodeXmlText(value: string) {
+    return value
+        .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+        .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(Number.parseInt(code, 16)))
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, '\'')
+        .replace(/&amp;/g, '&')
+}
+
+function extractPptParagraphTexts(xmlFragment: string) {
+    const paragraphs = xmlFragment.match(/<a:p\b[\s\S]*?<\/a:p>/g) || []
+
+    return paragraphs
+        .map((paragraph) => {
+            const withLineBreaks = paragraph.replace(/<a:br\s*\/>/g, '\n')
+            const text = Array.from(withLineBreaks.matchAll(/<a:t[^>]*>([\s\S]*?)<\/a:t>/g))
+                .map((match) => decodeXmlText(match[1] || ''))
+                .join('')
+            return normalizeSlideText(text)
+        })
+        .filter(Boolean)
+}
+
+function extractPptTableRows(xmlFragment: string) {
+    const rows = xmlFragment.match(/<a:tr\b[\s\S]*?<\/a:tr>/g) || []
+
+    return rows
+        .map((row) => {
+            const cells = (row.match(/<a:tc\b[\s\S]*?<\/a:tc>/g) || [])
+                .map((cell) => extractPptParagraphTexts(cell).join(' ').trim())
+                .filter(Boolean)
+            return normalizeSlideText(cells.join(' | '))
+        })
+        .filter(Boolean)
+}
+
+function buildPptSlideContent(slideXml: string, index: number) {
+    const shapeBlocks = slideXml.match(/<p:sp\b[\s\S]*?<\/p:sp>/g) || []
+    const titleCandidates: string[] = []
+    const bodyCandidates: string[] = []
+
+    for (const shape of shapeBlocks) {
+        const lines = extractPptParagraphTexts(shape)
+        if (!lines.length) {
+            continue
+        }
+
+        const isTitle = /<p:ph\b[^>]*type="(?:title|ctrTitle)"/.test(shape)
+        const isSubtitle = /<p:ph\b[^>]*type="subTitle"/.test(shape)
+
+        if (isTitle) {
+            titleCandidates.push(...lines)
+            continue
+        }
+
+        if (isSubtitle) {
+            bodyCandidates.push(...lines)
+            continue
+        }
+
+        bodyCandidates.push(...lines)
+    }
+
+    const graphicFrames = slideXml.match(/<p:graphicFrame\b[\s\S]*?<\/p:graphicFrame>/g) || []
+    for (const frame of graphicFrames) {
+        bodyCandidates.push(...extractPptTableRows(frame))
+    }
+
+    const title = titleCandidates.find(Boolean) || bodyCandidates[0] || `Slide ${index + 1}`
+    const body = bodyCandidates
+        .map((line) => normalizeSlideText(line))
+        .filter(Boolean)
+        .filter((line) => line !== title)
+        .filter((line, lineIndex, lines) => lines.indexOf(line) === lineIndex)
+
+    return { title, body }
 }
 
 function parseTarEntries(bytes: Uint8Array) {
@@ -311,10 +516,25 @@ async function loadDocxPreview(arrayBuffer: ArrayBuffer): Promise<OfficePreviewD
 async function loadXlsxPreview(arrayBuffer: ArrayBuffer): Promise<OfficePreviewData> {
     const xlsxModule = await import('xlsx')
     const XLSX = xlsxModule.default || xlsxModule
-    const workbook = XLSX.read(arrayBuffer, { type: 'array' })
+    const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
+        type: 'array',
+        dense: true,
+        cellHTML: false,
+        cellFormula: false,
+        cellStyles: false,
+        cellText: true,
+    })
+
     const sheets = workbook.SheetNames.map((name: string) => ({
         name,
-        html: XLSX.utils.sheet_to_html(workbook.Sheets[name]),
+        html: buildSpreadsheetHtml(
+            XLSX.utils.sheet_to_json(workbook.Sheets[name], {
+                header: 1,
+                raw: false,
+                defval: '',
+                blankrows: true,
+            }) as unknown[][],
+        ),
     }))
 
     return {
@@ -324,17 +544,9 @@ async function loadXlsxPreview(arrayBuffer: ArrayBuffer): Promise<OfficePreviewD
 }
 
 async function loadPptxPreview(arrayBuffer: ArrayBuffer): Promise<OfficePreviewData> {
-    const [zipModule, xmlModule] = await Promise.all([
-        import('jszip'),
-        import('fast-xml-parser'),
-    ])
+    const zipModule = await import('jszip')
     const JSZip = zipModule.default || zipModule
-    const { XMLParser } = xmlModule
     const zip = await JSZip.loadAsync(arrayBuffer)
-    const parser = new XMLParser({
-        ignoreAttributes: false,
-        trimValues: true,
-    })
 
     const slideFiles = sortSlideFiles(
         Object.keys(zip.files).filter((name) => /^ppt\/slides\/slide\d+\.xml$/i.test(name)),
@@ -343,13 +555,7 @@ async function loadPptxPreview(arrayBuffer: ArrayBuffer): Promise<OfficePreviewD
     const slides = await Promise.all(
         slideFiles.map(async (name, index) => {
             const xml = await zip.files[name].async('text')
-            const parsed = parser.parse(xml)
-            const texts = collectXmlText(parsed).filter(Boolean)
-
-            return {
-                title: texts[0] || `Slide ${index + 1}`,
-                body: texts.slice(1),
-            }
+            return buildPptSlideContent(xml, index)
         }),
     )
 
@@ -457,6 +663,38 @@ async function loadOfficePreview(entry: DriveEntry, item: DriveItemPayload, prev
         return buildUnsupportedPreview(entry, item, '当前 Office 文档类型暂不支持站内预览，请使用下载。')
     }
 
+    const embedSourceUrl = getRemoteOfficeEmbedSource(item, previewUrl)
+    const onlinePreviews = buildOfficeOnlinePreviews(format, embedSourceUrl)
+
+    if (format === 'pptx') {
+        let officeData: OfficePreviewData = {
+            format: 'pptx',
+            onlinePreviews,
+        }
+
+        try {
+            const blob = await fetchPreviewBlobWithFallback(getPreviewSourceUrls(item, previewUrl))
+            const parsedPptx = await loadPptxPreview(await blob.arrayBuffer())
+            officeData = {
+                ...parsedPptx,
+                onlinePreviews,
+            }
+        } catch (error) {
+            console.error('[drive] pptx text extraction failed', {
+                file: item.name,
+                error,
+            })
+        }
+
+        return {
+            entry,
+            item,
+            kind: 'office',
+            url: '',
+            officeData,
+        }
+    }
+
     if (format === 'rtf') {
         const officeData = await loadRtfPreview(getPreviewSourceUrls(item, previewUrl))
         return {
@@ -486,9 +724,6 @@ async function loadOfficePreview(entry: DriveEntry, item: DriveItemPayload, prev
         case 'odt':
             officeData = await loadOdtPreview(arrayBuffer)
             break
-        case 'pptx':
-            officeData = await loadPptxPreview(arrayBuffer)
-            break
         case 'xlsx':
             officeData = await loadXlsxPreview(arrayBuffer)
             break
@@ -498,6 +733,13 @@ async function loadOfficePreview(entry: DriveEntry, item: DriveItemPayload, prev
                 text: '当前文档暂不支持站内预览。',
             }
             break
+    }
+
+    if (onlinePreviews.length > 0) {
+        officeData = {
+            ...officeData,
+            onlinePreviews,
+        }
     }
 
     return {

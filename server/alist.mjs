@@ -102,6 +102,82 @@ function inferFileType(name) {
   return 'file'
 }
 
+function normalizeFileType(rawType, name, isDir = false) {
+  if (isDir) {
+    return 'folder'
+  }
+
+  const inferredType = inferFileType(name)
+  const normalizedType = String(rawType || '').trim().toLowerCase()
+
+  if (!normalizedType || /^\d+$/.test(normalizedType)) {
+    return inferredType
+  }
+
+  if (['image', 'video', 'audio', 'pdf', 'text', 'archive', 'folder', 'file'].includes(normalizedType)) {
+    return normalizedType
+  }
+
+  return inferredType
+}
+
+function normalizeSearchText(value) {
+  return String(value || '')
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s._-]+/g, '')
+}
+
+function isSubsequenceMatch(query, target) {
+  if (!query) {
+    return true
+  }
+
+  let index = 0
+  for (const char of target) {
+    if (char === query[index]) {
+      index += 1
+      if (index >= query.length) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+function getSearchScore(entry, query) {
+  const rawQuery = String(query || '').trim().toLowerCase()
+  if (!rawQuery) {
+    return Number.POSITIVE_INFINITY
+  }
+
+  const name = String(entry?.name || '').trim()
+  const path = String(entry?.path || '').trim()
+  const lowerName = name.toLowerCase()
+  const lowerPath = path.toLowerCase()
+
+  if (lowerName === rawQuery) return 0
+  if (lowerName.startsWith(rawQuery)) return 1
+  if (lowerName.includes(rawQuery)) return 2
+  if (lowerPath.includes(rawQuery)) return 3
+
+  const normalizedQuery = normalizeSearchText(rawQuery)
+  const normalizedName = normalizeSearchText(name)
+  const normalizedPath = normalizeSearchText(path)
+
+  if (!normalizedQuery) return Number.POSITIVE_INFINITY
+  if (normalizedName === normalizedQuery) return 4
+  if (normalizedName.startsWith(normalizedQuery)) return 5
+  if (normalizedName.includes(normalizedQuery)) return 6
+  if (normalizedPath.includes(normalizedQuery)) return 7
+  if (isSubsequenceMatch(normalizedQuery, normalizedName)) return 8
+  if (isSubsequenceMatch(normalizedQuery, normalizedPath)) return 9
+
+  return Number.POSITIVE_INFINITY
+}
+
 function buildDefaultPermissions() {
   return {
     upload: false,
@@ -161,7 +237,7 @@ function normalizeEntry(item, parentPath = '/') {
     provider: String(item?.provider || ''),
     sign: String(item?.sign || ''),
     thumb: String(item?.thumb || ''),
-    type: String(item?.type || (isDir ? 'folder' : inferFileType(name))),
+    type: normalizeFileType(item?.type, name, isDir),
     hashInfo: item?.hash_info || item?.hashinfo || null,
     raw: item,
   }
@@ -540,6 +616,40 @@ export function createAListService({ log, defaultTimeoutMs = DEFAULT_TIMEOUT_MS 
     }
   }
 
+  async function listDirectoryEntriesAllPages(requestId, inputPath = defaultRoot) {
+    const path = normalizePath(inputPath)
+    const pageSize = 200
+    let page = 1
+    const entries = []
+
+    while (true) {
+      const data = await requestUpstream({
+        requestId,
+        method: 'POST',
+        path: '/api/fs/list',
+        body: {
+          path,
+          password: '',
+          page,
+          per_page: pageSize,
+          refresh: false,
+        },
+      })
+
+      const content = Array.isArray(data?.content) ? data.content : []
+      entries.push(...content.map((item) => normalizeEntry(item, path)))
+
+      const total = Number(data?.total || entries.length)
+      if (content.length === 0 || page * pageSize >= total) {
+        break
+      }
+
+      page += 1
+    }
+
+    return entries
+  }
+
   async function getItem(requestId, inputPath, options = {}) {
     const intent = options.intent === 'download' ? 'download' : 'view'
     assertPermission(intent)
@@ -566,7 +676,7 @@ export function createAListService({ log, defaultTimeoutMs = DEFAULT_TIMEOUT_MS 
       provider: String(data?.provider || ''),
       sign,
       thumb: String(data?.thumb || ''),
-      type: String(data?.type || inferFileType(path)),
+      type: normalizeFileType(data?.type, path, Boolean(data?.is_dir)),
       size: Number(data?.size || 0),
       sizeLabel: formatBytes(data?.size || 0),
       modified: String(data?.modified || data?.updated_at || ''),
@@ -656,26 +766,36 @@ export function createAListService({ log, defaultTimeoutMs = DEFAULT_TIMEOUT_MS 
         items: [],
       }
     }
+    const currentPage = Math.max(1, Number(page || DEFAULT_PAGE))
+    const pageSize = Math.max(1, Number(perPage || DEFAULT_PER_PAGE))
+    const entries = await listDirectoryEntriesAllPages(requestId, normalizedParent)
+    const matchedEntries = entries
+      .map((entry) => ({
+        entry,
+        score: getSearchScore(entry, query),
+      }))
+      .filter((item) => Number.isFinite(item.score))
+      .sort((left, right) => {
+        if (left.score !== right.score) {
+          return left.score - right.score
+        }
 
-    const data = await requestUpstream({
-      requestId,
-      method: 'POST',
-      path: '/api/fs/search',
-      body: {
-        parent: normalizedParent,
-        keywords: query,
-        scope: 0,
-        page: Number(page || DEFAULT_PAGE),
-        per_page: Number(perPage || DEFAULT_PER_PAGE),
-        password: '',
-      },
-    })
+        if (left.entry.isDir !== right.entry.isDir) {
+          return left.entry.isDir ? -1 : 1
+        }
 
-    const content = Array.isArray(data?.content) ? data.content : []
+        return left.entry.name.localeCompare(right.entry.name, 'zh-CN', {
+          numeric: true,
+          sensitivity: 'base',
+        })
+      })
+
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
     return {
       parentPath: normalizedParent,
-      total: Number(data?.total || content.length),
-      items: sortEntries(content.map((item) => normalizeEntry(item, normalizedParent))),
+      total: matchedEntries.length,
+      items: matchedEntries.slice(startIndex, endIndex).map((item) => item.entry),
     }
   }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Download, FileAudio2, FileText, X } from 'lucide-react'
+import { Download, ExternalLink, FileAudio2, FileText, X } from 'lucide-react'
 import type { DrivePreviewState, VideoPreviewMode } from './types'
 import { ArchivePreviewPanel } from './ArchivePreviewPanel'
 import { OfficePreviewPanel } from './OfficePreviewPanel'
@@ -12,6 +12,7 @@ type DrivePreviewModalProps = {
     previewState: DrivePreviewState
     onClose: () => void
     onDownload: () => void
+    onOpenInPotPlayer?: () => void
 }
 
 function formatTime(value: string) {
@@ -23,8 +24,9 @@ function formatTime(value: string) {
     return date.toLocaleString('zh-CN', { hour12: false })
 }
 
-export function DrivePreviewModal({ previewState, onClose, onDownload }: DrivePreviewModalProps) {
+export function DrivePreviewModal({ previewState, onClose, onDownload, onOpenInPotPlayer }: DrivePreviewModalProps) {
     const [videoMode, setVideoMode] = useState<VideoPreviewMode>('video')
+    const canOpenInPotPlayer = Boolean(onOpenInPotPlayer) && (previewState.kind === 'video' || previewState.kind === 'audio')
 
     useEffect(() => {
         setVideoMode('video')
@@ -83,6 +85,17 @@ export function DrivePreviewModal({ previewState, onClose, onDownload }: DrivePr
                                     video360
                                 </button>
                             </>
+                        )}
+
+                        {canOpenInPotPlayer && (
+                            <button
+                                type="button"
+                                className="btn btn-ghost btn-sm rounded-full"
+                                onClick={onOpenInPotPlayer}
+                            >
+                                <ExternalLink className="h-4 w-4" />
+                                PotPlayer
+                            </button>
                         )}
 
                         <button type="button" className="btn btn-ghost btn-sm rounded-full" onClick={onDownload}>

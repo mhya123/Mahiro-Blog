@@ -31,6 +31,15 @@ export type SlidePreview = {
     body: string[]
 }
 
+export type OfficePreviewProviderId = 'microsoft' | 'google' | 'zoho'
+
+export type OfficePreviewProvider = {
+    id: OfficePreviewProviderId
+    label: string
+    mode: 'embed' | 'external'
+    url: string
+}
+
 export type ArchivePreviewEntry = {
     path: string
     size: number
@@ -40,6 +49,7 @@ export type ArchivePreviewEntry = {
 
 export type OfficePreviewData = {
     format: OfficePreviewFormat
+    onlinePreviews?: OfficePreviewProvider[]
     html?: string
     text?: string
     sheets?: SpreadsheetSheetPreview[]

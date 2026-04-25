@@ -1,11 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import type { DrivePreviewState, CsvPreviewMode, HtmlPreviewMode, MarkdownPreviewMode } from './types'
+import { useEffect, useMemo, useState } from 'react'
+import type { CsvPreviewMode, DrivePreviewState, HtmlPreviewMode, MarkdownPreviewMode } from './types'
 import { getFileExtension, isCsvExtension, isHtmlExtension, isMarkdownExtension } from './file-types'
 
 type TextPreviewPanelProps = {
     previewState: DrivePreviewState
+}
+
+function getRawPreviewUrl(previewState: DrivePreviewState) {
+    return previewState.item.resolvedUrl || previewState.item.rawUrl || ''
+}
+
+function getGooglePreviewUrl(sourceUrl: string) {
+    if (!sourceUrl) {
+        return ''
+    }
+    return `https://docs.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(sourceUrl)}`
+}
+
+function getZohoPreviewUrl(sourceUrl: string) {
+    if (!sourceUrl) {
+        return ''
+    }
+    return `https://viewer.zoho.com/api/urlview.do?url=${encodeURIComponent(sourceUrl)}`
 }
 
 function EditorView({ content, wrap }: { content: string; wrap: boolean }) {
@@ -19,9 +37,19 @@ function EditorView({ content, wrap }: { content: string; wrap: boolean }) {
                     wrap ? 'whitespace-pre-wrap break-words' : 'overflow-x-auto whitespace-pre'
                 }`}
             >
-                {content || '暂无可显示文本内容'}
+                {content || '暂无可显示文本内容。'}
             </pre>
         </div>
+    )
+}
+
+function BrowserRawPreview({ title, src }: { title: string; src: string }) {
+    return (
+        <iframe
+            src={src}
+            title={title}
+            className="h-full w-full rounded-2xl border border-base-300/70 bg-base-100"
+        />
     )
 }
 
@@ -30,18 +58,52 @@ export function TextPreviewPanel({ previewState }: TextPreviewPanelProps) {
     const isMarkdown = isMarkdownExtension(extension) || previewState.kind === 'markdown'
     const isHtml = isHtmlExtension(extension) || previewState.kind === 'html'
     const isCsv = isCsvExtension(extension) && Array.isArray(previewState.csvRows)
+    const rawPreviewUrl = getRawPreviewUrl(previewState)
+
+    const externalPreviewLinks = useMemo(() => {
+        if (!rawPreviewUrl) {
+            return []
+        }
+
+        return [{ label: 'Google Preview', url: getGooglePreviewUrl(rawPreviewUrl) }].filter((item) => Boolean(item.url))
+
+        return [
+            { label: 'Google 外部', url: getGooglePreviewUrl(rawPreviewUrl) },
+            { label: 'Zoho 外部', url: getZohoPreviewUrl(rawPreviewUrl) },
+        ].filter((item) => Boolean(item.url))
+    }, [rawPreviewUrl])
 
     const [markdownMode, setMarkdownMode] = useState<MarkdownPreviewMode>('markdown')
     const [htmlMode, setHtmlMode] = useState<HtmlPreviewMode>('preview')
     const [csvMode, setCsvMode] = useState<CsvPreviewMode>('table')
     const [wrapText, setWrapText] = useState(true)
+    const [rawMode, setRawMode] = useState(false)
 
     useEffect(() => {
         setMarkdownMode('markdown')
         setHtmlMode('preview')
         setCsvMode('table')
         setWrapText(true)
+        setRawMode(false)
     }, [previewState.item.path])
+
+    const renderExternalLinks = () => (
+        externalPreviewLinks.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+                {externalPreviewLinks.map((item) => (
+                    <a
+                        key={item.label}
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn btn-ghost btn-sm rounded-full"
+                    >
+                        {item.label}
+                    </a>
+                ))}
+            </div>
+        ) : null
+    )
 
     if (isMarkdown) {
         return (
@@ -49,22 +111,41 @@ export function TextPreviewPanel({ previewState }: TextPreviewPanelProps) {
                 <div className="flex flex-wrap items-center gap-2">
                     <button
                         type="button"
-                        className={`btn btn-sm rounded-full ${markdownMode === 'markdown' ? 'btn-primary' : 'btn-ghost'}`}
-                        onClick={() => setMarkdownMode('markdown')}
+                        className={`btn btn-sm rounded-full ${!rawMode && markdownMode === 'markdown' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => {
+                            setRawMode(false)
+                            setMarkdownMode('markdown')
+                        }}
                     >
                         Markdown
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-sm rounded-full ${markdownMode === 'markdown-wrap' ? 'btn-primary' : 'btn-ghost'}`}
-                        onClick={() => setMarkdownMode('markdown-wrap')}
+                        className={`btn btn-sm rounded-full ${!rawMode && markdownMode === 'markdown-wrap' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => {
+                            setRawMode(false)
+                            setMarkdownMode('markdown-wrap')
+                        }}
                     >
                         Markdown with word wrap
                     </button>
+                    {rawPreviewUrl && (
+                        <button
+                            type="button"
+                            className={`btn btn-sm rounded-full ${rawMode ? 'btn-primary' : 'btn-ghost'}`}
+                            onClick={() => setRawMode(true)}
+                        >
+                            浏览器原文
+                        </button>
+                    )}
                 </div>
 
+                {renderExternalLinks()}
+
                 <div className="min-h-0 flex-1">
-                    {markdownMode === 'markdown' ? (
+                    {rawMode && rawPreviewUrl ? (
+                        <BrowserRawPreview title={previewState.item.name} src={rawPreviewUrl} />
+                    ) : markdownMode === 'markdown' ? (
                         <div className="h-full overflow-auto rounded-2xl border border-base-300/70 bg-base-100 p-6 shadow-inner">
                             <article
                                 className="prose prose-sm sm:prose lg:prose-lg max-w-none"
@@ -85,22 +166,41 @@ export function TextPreviewPanel({ previewState }: TextPreviewPanelProps) {
                 <div className="flex flex-wrap items-center gap-2">
                     <button
                         type="button"
-                        className={`btn btn-sm rounded-full ${htmlMode === 'preview' ? 'btn-primary' : 'btn-ghost'}`}
-                        onClick={() => setHtmlMode('preview')}
+                        className={`btn btn-sm rounded-full ${!rawMode && htmlMode === 'preview' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => {
+                            setRawMode(false)
+                            setHtmlMode('preview')
+                        }}
                     >
                         HTML Preview
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-sm rounded-full ${htmlMode === 'editor' ? 'btn-primary' : 'btn-ghost'}`}
-                        onClick={() => setHtmlMode('editor')}
+                        className={`btn btn-sm rounded-full ${!rawMode && htmlMode === 'editor' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => {
+                            setRawMode(false)
+                            setHtmlMode('editor')
+                        }}
                     >
                         Text Editor
                     </button>
+                    {rawPreviewUrl && (
+                        <button
+                            type="button"
+                            className={`btn btn-sm rounded-full ${rawMode ? 'btn-primary' : 'btn-ghost'}`}
+                            onClick={() => setRawMode(true)}
+                        >
+                            浏览器原文
+                        </button>
+                    )}
                 </div>
 
+                {renderExternalLinks()}
+
                 <div className="min-h-0 flex-1">
-                    {htmlMode === 'preview' ? (
+                    {rawMode && rawPreviewUrl ? (
+                        <BrowserRawPreview title={previewState.item.name} src={rawPreviewUrl} />
+                    ) : htmlMode === 'preview' ? (
                         <iframe
                             srcDoc={previewState.htmlContent || ''}
                             sandbox="allow-same-origin"
@@ -121,22 +221,41 @@ export function TextPreviewPanel({ previewState }: TextPreviewPanelProps) {
                 <div className="flex flex-wrap items-center gap-2">
                     <button
                         type="button"
-                        className={`btn btn-sm rounded-full ${csvMode === 'table' ? 'btn-primary' : 'btn-ghost'}`}
-                        onClick={() => setCsvMode('table')}
+                        className={`btn btn-sm rounded-full ${!rawMode && csvMode === 'table' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => {
+                            setRawMode(false)
+                            setCsvMode('table')
+                        }}
                     >
                         CSV Table
                     </button>
                     <button
                         type="button"
-                        className={`btn btn-sm rounded-full ${csvMode === 'editor' ? 'btn-primary' : 'btn-ghost'}`}
-                        onClick={() => setCsvMode('editor')}
+                        className={`btn btn-sm rounded-full ${!rawMode && csvMode === 'editor' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => {
+                            setRawMode(false)
+                            setCsvMode('editor')
+                        }}
                     >
                         Text Editor
                     </button>
+                    {rawPreviewUrl && (
+                        <button
+                            type="button"
+                            className={`btn btn-sm rounded-full ${rawMode ? 'btn-primary' : 'btn-ghost'}`}
+                            onClick={() => setRawMode(true)}
+                        >
+                            浏览器原文
+                        </button>
+                    )}
                 </div>
 
+                {renderExternalLinks()}
+
                 <div className="min-h-0 flex-1">
-                    {csvMode === 'table' ? (
+                    {rawMode && rawPreviewUrl ? (
+                        <BrowserRawPreview title={previewState.item.name} src={rawPreviewUrl} />
+                    ) : csvMode === 'table' ? (
                         <div className="h-full overflow-auto rounded-2xl border border-base-300/70 bg-base-100 shadow-inner">
                             <table className="table table-zebra table-pin-rows">
                                 <tbody>
@@ -165,14 +284,37 @@ export function TextPreviewPanel({ previewState }: TextPreviewPanelProps) {
             <div className="flex flex-wrap items-center gap-2">
                 <button
                     type="button"
+                    className={`btn btn-sm rounded-full ${!rawMode ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => setRawMode(false)}
+                >
+                    Text Editor
+                </button>
+                {rawPreviewUrl && (
+                    <button
+                        type="button"
+                        className={`btn btn-sm rounded-full ${rawMode ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => setRawMode(true)}
+                    >
+                        浏览器原文
+                    </button>
+                )}
+                <button
+                    type="button"
                     className={`btn btn-sm rounded-full ${wrapText ? 'btn-primary' : 'btn-ghost'}`}
                     onClick={() => setWrapText((value) => !value)}
                 >
                     {wrapText ? 'Word Wrap On' : 'Word Wrap Off'}
                 </button>
             </div>
+
+            {renderExternalLinks()}
+
             <div className="min-h-0 flex-1">
-                <EditorView content={previewState.textContent || ''} wrap={wrapText} />
+                {rawMode && rawPreviewUrl ? (
+                    <BrowserRawPreview title={previewState.item.name} src={rawPreviewUrl} />
+                ) : (
+                    <EditorView content={previewState.textContent || ''} wrap={wrapText} />
+                )}
             </div>
         </div>
     )
