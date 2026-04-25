@@ -18,17 +18,70 @@
 
 .gpu-layer,
 .gpu-layer-soft {
-  transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
 .gpu-layer {
-  will-change: transform;
+  will-change: auto;
 }
 
 .gpu-layer-soft {
   will-change: auto;
+}
+
+html:not([data-rich-effects="true"]) [class*="backdrop-blur"],
+html:not([data-rich-effects="true"]) .backdrop-blur,
+html:not([data-rich-effects="true"]) .backdrop-blur-sm,
+html:not([data-rich-effects="true"]) .backdrop-blur-md,
+html:not([data-rich-effects="true"]) .backdrop-blur-lg,
+html:not([data-rich-effects="true"]) .backdrop-blur-xl,
+html:not([data-rich-effects="true"]) .modal-backdrop {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html:not([data-rich-effects="true"]) [class*="shadow-2xl"],
+html:not([data-rich-effects="true"]) .shadow-2xl {
+  box-shadow: 0 10px 28px -22px rgb(0 0 0 / 0.45) !important;
+}
+
+html:not([data-rich-effects="true"]) [class*="shadow-xl"],
+html:not([data-rich-effects="true"]) .shadow-xl {
+  box-shadow: 0 8px 22px -18px rgb(0 0 0 / 0.36) !important;
+}
+
+html:not([data-rich-effects="true"]) [class*="shadow-lg"],
+html:not([data-rich-effects="true"]) .shadow-lg {
+  box-shadow: 0 6px 18px -16px rgb(0 0 0 / 0.32) !important;
+}
+
+html:not([data-rich-effects="true"]) [class*="blur-"],
+html:not([data-rich-effects="true"]) [class*="drop-shadow"],
+html:not([data-rich-effects="true"]) .drop-shadow-lg,
+html:not([data-rich-effects="true"]) .drop-shadow-md {
+  filter: none !important;
+}
+
+html:not([data-rich-effects="true"]) .animate-pulse,
+html:not([data-rich-effects="true"]) .animate-pulsate,
+html:not([data-rich-effects="true"]) .animate-bounce-gentle,
+html:not([data-rich-effects="true"]) .animate-float,
+html:not([data-rich-effects="true"]) .animate-breathe,
+html:not([data-rich-effects="true"]) .shine-text,
+html:not([data-rich-effects="true"]) .rainbow-text,
+html:not([data-rich-effects="true"]) .rainbow-border,
+html:not([data-rich-effects="true"]) .skeleton-loading {
+  animation: none !important;
+}
+
+html:not([data-rich-effects="true"]) [class*="will-change"],
+html:not([data-rich-effects="true"]) [style*="will-change"] {
+  will-change: auto !important;
+}
+
+html:not([data-rich-effects="true"]) [class*="transition-all"] {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, transform !important;
 }
 
 html.mahiro-viewport-resizing *,

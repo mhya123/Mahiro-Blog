@@ -10,8 +10,6 @@ import {
   DEFAULT_BANNER_MODE,
 } from "@config";
 import { ClientRouter } from "astro:transitions";
-import ElementCrossing from "astro-vtbot/components/ElementCrossing.astro";
-import PointerOnNavigation from "astro-vtbot/components/PointerOnNavigation.astro";
 import Header from "@components/Header.astro";
 import Sidebar from "@components/Sidebar.astro";
 import Footer from "@components/Footer.astro";
@@ -70,8 +68,6 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       })();
     </script>
     <ClientRouter />
-    <ElementCrossing />
-    <PointerOnNavigation />
     <Header
       title={title}
       description={description || SITE_DESCRIPTION}
@@ -218,21 +214,24 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       )
     }
 
-    <!-- Microsoft Clarity -->
-    <script type="text/javascript" is:inline>
-      (function (c, l, a, r, i, t, y) {
-        c[a] =
-          c[a] ||
-          function () {
-            (c[a].q = c[a].q || []).push(arguments);
-          };
-        t = l.createElement(r);
-        t.async = 1;
-        t.src = "https://www.clarity.ms/tag/" + i;
-        y = l.getElementsByTagName(r)[0];
-        y.parentNode.insertBefore(t, y);
-      })(window, document, "clarity", "script", "skz108rus8");
-    </script>
+    {
+      import.meta.env.PUBLIC_CLARITY_ID && (
+        <script type="text/javascript" is:inline define:vars={{ clarityId: import.meta.env.PUBLIC_CLARITY_ID }}>
+          (function (c, l, a, r, i, t, y) {
+            c[a] =
+              c[a] ||
+              function () {
+                (c[a].q = c[a].q || []).push(arguments);
+              };
+            t = l.createElement(r);
+            t.async = 1;
+            t.src = "https://www.clarity.ms/tag/" + i;
+            y = l.getElementsByTagName(r)[0];
+            y.parentNode.insertBefore(t, y);
+          })(window, document, "clarity", "script", clarityId);
+        </script>
+      )
+    }
 
     <!-- 主题管理脚本 -->
     <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>

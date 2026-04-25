@@ -37,12 +37,7 @@ const useLargeFont =
     !currentPath.includes("/blog/tag/") &&
     !currentPath.includes("/blog/category/"));
 const useTypewriter =
-  pageKey === "home" ||
-  (currentPath.startsWith("/blog/") &&
-    !currentPath.includes("/blog/page/") &&
-    currentPath !== "/blog" &&
-    !currentPath.includes("/blog/tag/") &&
-    !currentPath.includes("/blog/category/"));
+  pageKey === "home";
 const enableWaveMotion = useTypewriter;
 const displayTitle = pageConfig.title || "";
 const displaySubtitle = pageConfig.subtitle || "";
