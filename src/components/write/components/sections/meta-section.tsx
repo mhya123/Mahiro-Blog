@@ -2,7 +2,7 @@ import { motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import type { AiModelDefinition } from '@/lib/ai-models'
-import { SITE_API_BASE_URL } from '@/consts'
+import { secureApiRequest } from '@/lib/secure-api'
 import { useWriteStore } from '../../stores/write-store'
 import { TagInput } from '../ui/tag-input'
 import { CustomSelect } from '../ui/custom-select'
@@ -50,7 +50,24 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 
 		try {
 			setIsGeneratingSummary(true)
-			const response = await fetch(`${SITE_API_BASE_URL}/api/ai/summary`, {
+			const payload = await secureApiRequest<{
+				summary?: string
+				model?: string
+				modelName?: string
+			}>('/api/ai/secure', {
+				action: 'summary',
+				payload: {
+					title: form.title,
+					content: form.md,
+					summary: form.summary,
+					aiModel: form.aiModel
+				}
+			})
+			if (!payload?.summary || typeof payload.summary !== 'string') {
+				throw new Error('AI summary API did not return a valid summary')
+			}
+			/*
+			const response = await fetch(`${SITE_API_BASE_URL}/api/ai/plaintext-summary-legacy`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -69,6 +86,7 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 				throw new Error('接口未返回有效摘要')
 			}
 
+			*/
 			updateForm({ summary: payload.summary })
 			toast.success(`摘要已由 ${payload.modelName || payload.model || form.aiModel} 生成`)
 		} catch (error) {

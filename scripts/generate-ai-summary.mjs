@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
+import { constants, createCipheriv, createDecipheriv, publicEncrypt, randomBytes } from 'node:crypto'
 import dotenv from 'dotenv'
 import yaml from 'js-yaml'
 
@@ -11,6 +12,9 @@ const DEFAULT_BASE_URL = 'https://api.openai.com/v1'
 const DEFAULT_TIMEOUT_MS = 60_000
 const DEFAULT_RETRIES = 3
 const SUMMARY_MAX_SOURCE_CHARS = 24_000
+const SECURE_API_VERSION = 'rsa-oaep-aes-gcm-v1'
+const GCM_TAG_BYTES = 16
+const servicePublicKeyCache = new Map()
 
 const SYSTEM_PROMPT = [
   '你是一个只负责压缩摘要的模型。',
@@ -276,6 +280,96 @@ function buildUserPrompt(filePath, frontmatter, body) {
   ].join('\n\n')
 }
 
+function toBase64(buffer) {
+  return Buffer.from(buffer).toString('base64')
+}
+
+function fromBase64(base64) {
+  return Buffer.from(String(base64 || ''), 'base64')
+}
+
+function encryptSecurePayload(publicKey, payload) {
+  const aesKey = randomBytes(32)
+  const iv = randomBytes(12)
+  const cipher = createCipheriv('aes-256-gcm', aesKey, iv)
+  const ciphertext = Buffer.concat([
+    cipher.update(Buffer.from(JSON.stringify(payload), 'utf8')),
+    cipher.final(),
+  ])
+  const tag = cipher.getAuthTag()
+  const encryptedKey = publicEncrypt(
+    {
+      key: publicKey,
+      padding: constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: 'sha256',
+    },
+    aesKey,
+  )
+
+  return {
+    aesKey,
+    envelope: {
+      encrypted: true,
+      version: SECURE_API_VERSION,
+      key: toBase64(encryptedKey),
+      iv: toBase64(iv),
+      data: toBase64(Buffer.concat([ciphertext, tag])),
+    },
+  }
+}
+
+function decryptSecurePayload(aesKey, envelope) {
+  if (!envelope?.encrypted || envelope.version !== SECURE_API_VERSION || !envelope.iv || !envelope.data) {
+    throw new Error(envelope?.error || envelope?.message || 'Invalid encrypted service response')
+  }
+
+  const encryptedPayload = fromBase64(envelope.data)
+  if (encryptedPayload.length <= GCM_TAG_BYTES) {
+    throw new Error('Invalid encrypted service response body')
+  }
+
+  const ciphertext = encryptedPayload.subarray(0, encryptedPayload.length - GCM_TAG_BYTES)
+  const tag = encryptedPayload.subarray(encryptedPayload.length - GCM_TAG_BYTES)
+  const decipher = createDecipheriv('aes-256-gcm', aesKey, fromBase64(envelope.iv))
+  decipher.setAuthTag(tag)
+
+  return JSON.parse(Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8'))
+}
+
+async function loadServicePublicKey(runtime) {
+  const cacheKey = runtime.serviceUrl
+  if (!servicePublicKeyCache.has(cacheKey)) {
+    servicePublicKeyCache.set(cacheKey, (async () => {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), runtime.timeoutMs)
+
+      try {
+        const response = await fetch(`${runtime.serviceUrl}/api/crypto/public-key`, {
+          signal: controller.signal,
+          cache: 'no-store',
+        })
+        const payload = await response.json().catch(() => ({}))
+
+        if (!response.ok) {
+          throw new Error(payload?.error || payload?.message || `HTTP ${response.status}`)
+        }
+        if (!payload?.enabled || payload.version !== SECURE_API_VERSION || !payload.publicKey) {
+          throw new Error('Summary service encryption key is unavailable')
+        }
+
+        return payload.publicKey
+      } catch (error) {
+        servicePublicKeyCache.delete(cacheKey)
+        throw error
+      } finally {
+        clearTimeout(timer)
+      }
+    })())
+  }
+
+  return servicePublicKeyCache.get(cacheKey)
+}
+
 async function requestSummaryViaLocalModel(runtime, modelId, prompt) {
   const endpoint = `${runtime.baseUrl}/chat/completions`
 
@@ -327,27 +421,33 @@ async function requestSummaryViaLocalModel(runtime, modelId, prompt) {
 }
 
 async function requestSummaryViaService(runtime, modelId, title, body) {
-  const endpoint = `${runtime.serviceUrl}/api/ai/summary`
+  const endpoint = `${runtime.serviceUrl}/api/ai/secure`
 
   for (let attempt = 1; attempt <= runtime.retries; attempt += 1) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), runtime.timeoutMs)
 
     try {
+      const publicKey = await loadServicePublicKey(runtime)
+      const encrypted = encryptSecurePayload(publicKey, {
+        action: 'summary',
+        payload: {
+          title,
+          content: body,
+          aiModel: modelId,
+        },
+      })
       const response = await fetch(endpoint, {
         method: 'POST',
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title,
-          content: body,
-          aiModel: modelId,
-        }),
+        body: JSON.stringify(encrypted.envelope),
       })
 
-      const payload = await response.json().catch(() => ({}))
+      const encryptedPayload = await response.json().catch(() => ({}))
+      const payload = decryptSecurePayload(encrypted.aesKey, encryptedPayload)
       if (!response.ok) {
         const message = payload?.error || payload?.message || `HTTP ${response.status}`
         throw new Error(message)

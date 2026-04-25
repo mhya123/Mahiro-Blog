@@ -1,5 +1,4 @@
-import { SITE_API_BASE_URL } from '@/consts'
-import { decryptDrivePayload, encryptDrivePayload } from './drive-crypto'
+import { secureApiRequest } from '@/lib/secure-api'
 
 type DriveSecureAction =
     | 'status'
@@ -28,27 +27,7 @@ export async function requestJson<T>(input: string, init?: RequestInit): Promise
 }
 
 export async function requestDriveJson<T>(action: DriveSecureAction, payload: Record<string, unknown> = {}): Promise<T> {
-    const encrypted = await encryptDrivePayload({ action, payload })
-    const response = await fetch(`${SITE_API_BASE_URL}/api/drive/secure`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(encrypted.envelope),
-    })
-    const data = await response.json().catch(() => ({}))
-    const decrypted = await decryptDrivePayload<T | { error?: string; details?: unknown }>(encrypted.aesKey, data)
-
-    if (!response.ok) {
-        const errorPayload = decrypted as { error?: string; details?: unknown }
-        const message = typeof errorPayload?.error === 'string' ? errorPayload.error : `Request failed with status ${response.status}`
-        const error = new Error(message) as Error & { status?: number; details?: unknown }
-        error.status = response.status
-        error.details = errorPayload?.details
-        throw error
-    }
-
-    return decrypted as T
+    return secureApiRequest<T>('/api/drive/secure', { action, payload })
 }
 
 export function describeDriveError(error: unknown, fallback: string) {

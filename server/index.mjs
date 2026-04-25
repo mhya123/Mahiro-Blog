@@ -39,13 +39,14 @@ const alistService = createAListService({
 })
 
 const driveCrypto = createDriveCrypto({
-  enabled: process.env.DRIVE_RSA_ENCRYPTION !== 'false',
+  enabled: (process.env.API_RSA_ENCRYPTION || process.env.DRIVE_RSA_ENCRYPTION) !== 'false',
 })
 
-const { handleSummary, handleTranslate } = createAiHandlers({
+const { handleSummary, handleSecureAi, handleTranslate } = createAiHandlers({
   log,
   json,
   readJsonBody,
+  driveCrypto,
   defaultBaseUrl: DEFAULT_BASE_URL,
   defaultTimeoutMs: DEFAULT_TIMEOUT_MS,
   defaultRetries: DEFAULT_RETRIES,
@@ -115,6 +116,10 @@ const server = createServer(async (req, res) => {
     return handleDriveCryptoPublicKey(req, res, origin)
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/crypto/public-key') {
+    return handleDriveCryptoPublicKey(req, res, origin)
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/drive/secure') {
     return handleDriveSecure(req, res, origin)
   }
@@ -161,6 +166,10 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'POST' && url.pathname === '/api/ai/summary') {
     return handleSummary(req, res, origin)
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/ai/secure') {
+    return handleSecureAi(req, res, origin)
   }
 
   if (req.method === 'POST' && url.pathname === '/api/ai/translate') {

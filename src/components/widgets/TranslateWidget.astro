@@ -334,9 +334,150 @@ const languages = [
     const MAX_CHUNK_ITEMS = 32;
     const MAX_CHUNK_CHARS = 5000;
     const SUPPORTED_LANGUAGES = ["en", "ja", "ko", "fr", "de", "es", "ru", "zh-CN", "zh-TW"];
+    const SECURE_API_VERSION = "rsa-oaep-aes-gcm-v1";
     const originalTextMap = new WeakMap();
     let suggestionRenderTimer = 0;
     let suggestionRenderPromise = null;
+    let securePublicConfigPromise = null;
+    let securePublicKeyPromise = null;
+
+    function getSubtleCrypto() {
+      const subtle = globalThis.crypto?.subtle;
+      if (!subtle) {
+        throw new Error(getMessageHtml("当前浏览器不支持 WebCrypto 加密。", "This browser does not support WebCrypto encryption."));
+      }
+      return subtle;
+    }
+
+    function base64ToBytes(base64) {
+      const binary = atob(String(base64 || ""));
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+      }
+      return bytes;
+    }
+
+    function bytesToBase64(bytes) {
+      const view = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+      let binary = "";
+      view.forEach((byte) => {
+        binary += String.fromCharCode(byte);
+      });
+      return btoa(binary);
+    }
+
+    function pemToDer(pem) {
+      return base64ToBytes(
+        String(pem || "")
+          .replace(/-----BEGIN PUBLIC KEY-----/g, "")
+          .replace(/-----END PUBLIC KEY-----/g, "")
+          .replace(/\s+/g, ""),
+      );
+    }
+
+    async function getSecurePublicConfig() {
+      if (!securePublicConfigPromise) {
+        securePublicConfigPromise = fetch(`${SITE_API_BASE_URL}/api/crypto/public-key`, {
+          cache: "no-store",
+        }).then(async (response) => {
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data?.error || getMessageHtml("加载加密公钥失败。", "Failed to load encryption public key."));
+          }
+          if (!data?.enabled || data.version !== SECURE_API_VERSION || !data.publicKey) {
+            throw new Error(getMessageHtml("后端加密通道不可用。", "The encrypted backend channel is unavailable."));
+          }
+          return data;
+        });
+      }
+      return securePublicConfigPromise;
+    }
+
+    async function getSecurePublicKey() {
+      if (!securePublicKeyPromise) {
+        securePublicKeyPromise = getSecurePublicConfig().then((config) => getSubtleCrypto().importKey(
+          "spki",
+          pemToDer(config.publicKey),
+          {
+            name: "RSA-OAEP",
+            hash: "SHA-256",
+          },
+          false,
+          ["encrypt"],
+        ));
+      }
+      return securePublicKeyPromise;
+    }
+
+    async function encryptSecurePayload(payload) {
+      const subtle = getSubtleCrypto();
+      const publicKey = await getSecurePublicKey();
+      const aesKey = await subtle.generateKey(
+        {
+          name: "AES-GCM",
+          length: 256,
+        },
+        true,
+        ["encrypt", "decrypt"],
+      );
+      const rawAesKey = await subtle.exportKey("raw", aesKey);
+      const encryptedKey = await subtle.encrypt({ name: "RSA-OAEP" }, publicKey, rawAesKey);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encryptedData = await subtle.encrypt(
+        {
+          name: "AES-GCM",
+          iv,
+        },
+        aesKey,
+        new TextEncoder().encode(JSON.stringify(payload)),
+      );
+
+      return {
+        aesKey,
+        envelope: {
+          encrypted: true,
+          version: SECURE_API_VERSION,
+          key: bytesToBase64(encryptedKey),
+          iv: bytesToBase64(iv),
+          data: bytesToBase64(encryptedData),
+        },
+      };
+    }
+
+    async function decryptSecurePayload(aesKey, envelope) {
+      if (!envelope?.encrypted || envelope.version !== SECURE_API_VERSION || !envelope.iv || !envelope.data) {
+        throw new Error(envelope?.error || getMessageHtml("加密响应无效。", "Invalid encrypted response."));
+      }
+
+      const decrypted = await getSubtleCrypto().decrypt(
+        {
+          name: "AES-GCM",
+          iv: base64ToBytes(envelope.iv),
+        },
+        aesKey,
+        base64ToBytes(envelope.data),
+      );
+
+      return JSON.parse(new TextDecoder().decode(decrypted));
+    }
+
+    async function secureAiRequest(payload) {
+      const encryptedPayload = await encryptSecurePayload(payload);
+      const response = await fetch(`${SITE_API_BASE_URL}/api/ai/secure`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(encryptedPayload.envelope),
+      });
+      const responsePayload = await response.json().catch(() => ({}));
+      const decrypted = await decryptSecurePayload(encryptedPayload.aesKey, responsePayload);
+      if (!response.ok) {
+        throw new Error(decrypted?.error || decrypted?.message || `HTTP ${response.status}`);
+      }
+      return decrypted;
+    }
 
     function normalizeProvider(provider, fallback) {
       const value = provider ? String(provider) : fallback;
@@ -950,25 +1091,15 @@ const languages = [
     }
 
     async function translateChunk(chunk, language, model, sourceLanguage) {
-      const response = await fetch(`${SITE_API_BASE_URL}/api/ai/translate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const payload = await secureAiRequest({
+        action: "translate",
+        payload: {
           items: chunk.map((entry) => entry.original),
           sourceLanguage,
           targetLanguage: language,
           aiModel: model,
-        }),
+        },
       });
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(
-          payload?.error || getMessageHtml("翻译请求失败。", "Translation request failed."),
-        );
-      }
 
       if (!Array.isArray(payload?.translations)) {
         throw new Error(

@@ -2,20 +2,20 @@ import { SITE_API_BASE_URL } from '@/consts'
 
 const VERSION = 'rsa-oaep-aes-gcm-v1'
 
-type DriveCryptoPublicConfig = {
+type SecurePublicConfig = {
     enabled: boolean
     version: string
     publicKey: string
 }
 
-type DriveEncryptedResponse = {
+type SecureEncryptedResponse = {
     encrypted: true
     version: string
     iv: string
     data: string
 }
 
-let publicConfigPromise: Promise<DriveCryptoPublicConfig> | null = null
+let publicConfigPromise: Promise<SecurePublicConfig> | null = null
 let importedPublicKeyPromise: Promise<CryptoKey> | null = null
 
 function getSubtleCrypto() {
@@ -53,28 +53,28 @@ function pemToDer(pem: string) {
     )
 }
 
-async function getDriveCryptoPublicConfig() {
+async function getSecurePublicConfig() {
     if (!publicConfigPromise) {
-        publicConfigPromise = fetch(`${SITE_API_BASE_URL}/api/drive/crypto/public-key`, {
+        publicConfigPromise = fetch(`${SITE_API_BASE_URL}/api/crypto/public-key`, {
             cache: 'no-store',
         }).then(async (response) => {
             const data = await response.json().catch(() => ({}))
             if (!response.ok) {
-                throw new Error(typeof data?.error === 'string' ? data.error : 'Failed to load drive encryption key')
+                throw new Error(typeof data?.error === 'string' ? data.error : 'Failed to load API encryption key')
             }
             if (!data?.enabled || data.version !== VERSION || !data.publicKey) {
-                throw new Error('Drive RSA encryption is not available')
+                throw new Error('API RSA encryption is not available')
             }
-            return data as DriveCryptoPublicConfig
+            return data as SecurePublicConfig
         })
     }
 
     return publicConfigPromise
 }
 
-async function getDrivePublicKey() {
+async function getSecurePublicKey() {
     if (!importedPublicKeyPromise) {
-        importedPublicKeyPromise = getDriveCryptoPublicConfig().then((config) => {
+        importedPublicKeyPromise = getSecurePublicConfig().then((config) => {
             return getSubtleCrypto().importKey(
                 'spki',
                 pemToDer(config.publicKey),
@@ -91,9 +91,9 @@ async function getDrivePublicKey() {
     return importedPublicKeyPromise
 }
 
-export async function encryptDrivePayload(payload: unknown) {
+export async function encryptSecurePayload(payload: unknown) {
     const subtle = getSubtleCrypto()
-    const publicKey = await getDrivePublicKey()
+    const publicKey = await getSecurePublicKey()
     const aesKey = await subtle.generateKey(
         {
             name: 'AES-GCM',
@@ -103,22 +103,15 @@ export async function encryptDrivePayload(payload: unknown) {
         ['encrypt', 'decrypt'],
     )
     const rawAesKey = await subtle.exportKey('raw', aesKey)
-    const encryptedKey = await subtle.encrypt(
-        {
-            name: 'RSA-OAEP',
-        },
-        publicKey,
-        rawAesKey,
-    )
+    const encryptedKey = await subtle.encrypt({ name: 'RSA-OAEP' }, publicKey, rawAesKey)
     const iv = crypto.getRandomValues(new Uint8Array(12))
-    const encodedPayload = new TextEncoder().encode(JSON.stringify(payload))
     const encryptedData = await subtle.encrypt(
         {
             name: 'AES-GCM',
             iv,
         },
         aesKey,
-        encodedPayload,
+        new TextEncoder().encode(JSON.stringify(payload)),
     )
 
     return {
@@ -133,9 +126,9 @@ export async function encryptDrivePayload(payload: unknown) {
     }
 }
 
-export async function decryptDrivePayload<T>(aesKey: CryptoKey, envelope: DriveEncryptedResponse): Promise<T> {
+export async function decryptSecurePayload<T>(aesKey: CryptoKey, envelope: SecureEncryptedResponse): Promise<T> {
     if (!envelope?.encrypted || envelope.version !== VERSION || !envelope.iv || !envelope.data) {
-        throw new Error('Invalid encrypted drive response')
+        throw new Error('Invalid encrypted API response')
     }
 
     const decrypted = await getSubtleCrypto().decrypt(
@@ -148,4 +141,28 @@ export async function decryptDrivePayload<T>(aesKey: CryptoKey, envelope: DriveE
     )
 
     return JSON.parse(new TextDecoder().decode(decrypted)) as T
+}
+
+export async function secureApiRequest<T>(path: string, payload: unknown): Promise<T> {
+    const encrypted = await encryptSecurePayload(payload)
+    const response = await fetch(`${SITE_API_BASE_URL}${path}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(encrypted.envelope),
+    })
+    const data = await response.json().catch(() => ({}))
+    const decrypted = await decryptSecurePayload<T | { error?: string; message?: string; details?: unknown }>(encrypted.aesKey, data)
+
+    if (!response.ok) {
+        const errorPayload = decrypted as { error?: string; message?: string; details?: unknown }
+        const message = errorPayload.error || errorPayload.message || `Request failed with status ${response.status}`
+        const error = new Error(message) as Error & { status?: number; details?: unknown }
+        error.status = response.status
+        error.details = errorPayload.details
+        throw error
+    }
+
+    return decrypted as T
 }
