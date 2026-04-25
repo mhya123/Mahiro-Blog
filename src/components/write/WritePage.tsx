@@ -23,6 +23,7 @@ export default function WritePage({ categories = [], aiModels = [] }: WritePageP
     const { isPreview, closePreview } = usePreviewStore()
     const [slug, setSlug] = useState<string | null>(null)
     const [shouldRenderPreview, setShouldRenderPreview] = useState(false)
+    const [toastTheme, setToastTheme] = useState<'light' | 'dark'>('light')
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
@@ -35,6 +36,34 @@ export default function WritePage({ categories = [], aiModels = [] }: WritePageP
     }, [])
 
     useLoadBlog(slug || undefined)
+
+    useEffect(() => {
+        const root = document.documentElement
+
+        const syncToastTheme = () => {
+            setToastTheme(root.getAttribute('data-theme-type') === 'dark' ? 'dark' : 'light')
+        }
+
+        syncToastTheme()
+
+        const handleThemeChange = (event: Event) => {
+            const detail = (event as CustomEvent<{ themeType?: string }>).detail
+            setToastTheme(detail?.themeType === 'dark' ? 'dark' : 'light')
+        }
+
+        const observer = new MutationObserver(syncToastTheme)
+
+        window.addEventListener('mahiro:theme-change', handleThemeChange)
+        observer.observe(root, {
+            attributes: true,
+            attributeFilter: ['data-theme-type'],
+        })
+
+        return () => {
+            window.removeEventListener('mahiro:theme-change', handleThemeChange)
+            observer.disconnect()
+        }
+    }, [])
 
     // 创建模式：自动恢复草稿
     useEffect(() => {
@@ -105,25 +134,18 @@ export default function WritePage({ categories = [], aiModels = [] }: WritePageP
         <>
             <Toaster
                 richColors
+                theme={toastTheme}
                 position="top-center"
                 offset={120}
+                visibleToasts={6}
+                expand={true}
                 toastOptions={{
                     className: '!flex-row flex !items-center shadow-xl rounded-2xl border-2 border-primary/20 backdrop-blur-sm',
                     style: {
                         fontSize: '1rem',
                         padding: '14px 20px',
                         zIndex: '999999',
-                        borderRadius: '12px',
-                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
-                        transition: 'all 0.3s ease-in-out',
-                    },
-                    classNames: {
-                        title: 'text-lg font-semibold tracking-tight',
-                        description: 'text-sm font-medium opacity-90',
-                        error: 'bg-error/95 text-error-content border-error/30',
-                        success: 'bg-success/95 text-success-content border-success/30',
-                        warning: 'bg-warning/95 text-warning-content border-warning/30',
-                        info: 'bg-info/95 text-info-content border-info/30',
+                        borderRadius: '14px',
                     },
                     duration: 5000,
                     closeButton: false,
