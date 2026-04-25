@@ -335,6 +335,8 @@ const languages = [
     const MAX_CHUNK_CHARS = 5000;
     const SUPPORTED_LANGUAGES = ["en", "ja", "ko", "fr", "de", "es", "ru", "zh-CN", "zh-TW"];
     const originalTextMap = new WeakMap();
+    let suggestionRenderTimer = 0;
+    let suggestionRenderPromise = null;
 
     function normalizeProvider(provider, fallback) {
       const value = provider ? String(provider) : fallback;
@@ -600,16 +602,52 @@ const languages = [
       return !!getPreferredBrowserLanguage();
     }
 
-    async function renderTranslateSuggestion() {
-      await removeTranslateSuggestion({ animate: false });
-      if (!shouldShowTranslateSuggestion()) return;
+    function getTranslateSuggestionKey(language) {
+      return [
+        window.location.pathname,
+        normalizeLanguage(language || ""),
+        isActiveTranslationEnabled() ? "active" : "idle",
+      ].join(":");
+    }
 
+    function scheduleTranslateSuggestion(delay = 160) {
+      window.clearTimeout(suggestionRenderTimer);
+      suggestionRenderTimer = window.setTimeout(() => {
+        suggestionRenderPromise = Promise.resolve(suggestionRenderPromise)
+          .catch(() => {})
+          .then(() => renderTranslateSuggestion());
+      }, delay);
+    }
+
+    async function renderTranslateSuggestion() {
       const preferredLanguage = getPreferredBrowserLanguage();
-      if (!preferredLanguage) return;
+      const suggestionKey = getTranslateSuggestionKey(preferredLanguage);
+      const existingPanel = document.getElementById(SUGGESTION_ID);
+
+      if (!shouldShowTranslateSuggestion()) {
+        if (existingPanel) {
+          await removeTranslateSuggestion({ animate: false });
+        }
+        return;
+      }
+
+      if (!preferredLanguage) {
+        if (existingPanel) {
+          await removeTranslateSuggestion({ animate: false });
+        }
+        return;
+      }
+
+      if (existingPanel?.dataset.suggestionKey === suggestionKey) {
+        return;
+      }
+
+      await removeTranslateSuggestion({ animate: false });
 
       const label = getLanguageDisplayName(preferredLanguage);
       const panel = document.createElement("aside");
       panel.id = SUGGESTION_ID;
+      panel.dataset.suggestionKey = suggestionKey;
       panel.className =
         "notranslate fixed bottom-24 right-4 z-[140] w-[min(22rem,calc(100vw-2rem))] rounded-[1.4rem] border border-base-200/80 bg-base-100/95 p-4 shadow-2xl backdrop-blur-xl md:top-1/2 md:bottom-auto md:-translate-y-1/2";
       panel.setAttribute("data-no-translate", "true");
@@ -1371,7 +1409,7 @@ const languages = [
       document.querySelectorAll("[data-translate-widget]").forEach((widget) => {
         syncWidgetState(widget);
       });
-      renderTranslateSuggestion();
+      scheduleTranslateSuggestion(120);
     }
 
     async function applyCurrentTranslation(options = {}) {
@@ -1589,16 +1627,16 @@ const languages = [
 
       syncAllWidgets();
       restoreActiveTranslationOnPageLoad();
-      window.setTimeout(renderTranslateSuggestion, 240);
+      scheduleTranslateSuggestion(240);
     }
 
     document.addEventListener("astro:page-load", initTranslateWidgets);
     window.addEventListener("pageshow", () => {
-      window.setTimeout(renderTranslateSuggestion, 160);
+      scheduleTranslateSuggestion(160);
     });
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
-        window.setTimeout(renderTranslateSuggestion, 160);
+        scheduleTranslateSuggestion(160);
       }
     });
 
