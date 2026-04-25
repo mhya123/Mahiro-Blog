@@ -20,6 +20,20 @@ type AiSummaryPayload = {
 	modelName?: string
 }
 
+function getSummaryErrorMessage(error: unknown) {
+	const message = error instanceof Error ? error.message : String(error || '')
+	if (/failed to fetch|networkerror|load api encryption key|encryption key/i.test(message)) {
+		return 'AI 摘要生成失败：暂时无法连接摘要后端，请检查本地/远程后端是否正常运行。'
+	}
+	if (/unsupported aimodel/i.test(message)) {
+		return 'AI 摘要生成失败：当前后端不支持这个模型，请换一个模型后重试。'
+	}
+	if (/missing .*api_key|api key/i.test(message)) {
+		return 'AI 摘要生成失败：后端 API Key 没有配置好，请检查服务端环境变量。'
+	}
+	return `AI 摘要生成失败：${message || '请稍后重试'}`
+}
+
 export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaSectionProps) {
 	const { form, updateForm, setAiSummaryStatus } = useWriteStore()
 	const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
@@ -46,6 +60,24 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 		{ value: 'local', label: '本地后端' }
 	]
 
+	const requestSummary = async (apiBaseUrl: string) => {
+		const payload = await secureApiRequest<AiSummaryPayload>('/api/ai/secure', {
+			action: 'summary',
+			payload: {
+				title: form.title,
+				content: form.md,
+				summary: form.summary,
+				aiModel: form.aiModel
+			}
+		}, apiBaseUrl)
+
+		if (!payload?.summary || typeof payload.summary !== 'string') {
+			throw new Error('AI summary API did not return a valid summary')
+		}
+
+		return payload
+	}
+
 	const handleGenerateSummary = async () => {
 		if (!form.aiModel) {
 			toast.info('请先选择 AI 模型')
@@ -64,26 +96,27 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 			setIsGeneratingSummary(true)
 			setAiSummaryStatus('generating')
 			const apiBaseUrl = form.aiSummaryChannel === 'local' ? SITE_LOCAL_API_BASE_URL : SITE_REMOTE_API_BASE_URL
-			const payload = await secureApiRequest<AiSummaryPayload>('/api/ai/secure', {
-				action: 'summary',
-				payload: {
-					title: form.title,
-					content: form.md,
-					summary: form.summary,
-					aiModel: form.aiModel
-				}
-			}, apiBaseUrl)
+			let lastError: unknown = null
 
-			if (!payload?.summary || typeof payload.summary !== 'string') {
-				throw new Error('AI summary API did not return a valid summary')
+			for (let attempt = 1; attempt <= 2; attempt += 1) {
+				try {
+					const payload = await requestSummary(apiBaseUrl)
+					updateForm({ summary: payload.summary })
+					setAiSummaryStatus('ready')
+					toast.success(`摘要已由 ${payload.modelName || payload.model || form.aiModel} 生成`)
+					return
+				} catch (error) {
+					lastError = error
+					if (attempt === 1) {
+						toast.info('AI 摘要生成失败，正在自动重试一次...')
+					}
+				}
 			}
 
-			updateForm({ summary: payload.summary })
-			setAiSummaryStatus('ready')
-			toast.success(`摘要已由 ${payload.modelName || payload.model || form.aiModel} 生成`)
-		} catch (error) {
 			setAiSummaryStatus('failed')
-			toast.error(error instanceof Error ? error.message : '生成摘要失败')
+			toast.error(getSummaryErrorMessage(lastError), {
+				description: '已取消保存保护，你仍然可以手动编辑摘要后保存文章。'
+			})
 		} finally {
 			setIsGeneratingSummary(false)
 		}
@@ -140,7 +173,7 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 						) : form.summary ? '重新生成摘要' : '生成摘要'}
 					</button>
 					<p className='text-xs text-base-content/50'>
-						点击生成摘要后，请等待结果写入上方摘要框再保存文章。
+						点击生成摘要后，请等待结果写入上方摘要框再保存文章。失败时会自动重试一次，仍失败则释放保存保护。
 					</p>
 				</div>
 
