@@ -161,9 +161,9 @@ const languages = [
             class="mb-4 min-h-[3.2rem] rounded-2xl border border-base-200/70 bg-base-200/35 px-3 py-2 text-xs leading-5 text-base-content/70"
             data-translate-status
           >
-            当前默认使用谷歌站内翻译；AI 翻译会逐块显示结果，微软翻译会打开外部页面。
+            当前默认使用谷歌站内翻译；AI 翻译会逐块显示结果，微软翻译会打开文本翻译页并预设目标语言。
             <br />
-            Google is the default in-page translator; AI translates chunk by chunk, and Microsoft opens an external page.
+            Google is the default in-page translator; AI translates chunk by chunk, and Microsoft opens a text translator with the target language prefilled.
           </p>
 
           <div class="flex items-center gap-2">
@@ -287,9 +287,9 @@ const languages = [
               class="mb-3 min-h-[3.2rem] rounded-2xl border border-base-200/70 bg-base-200/35 px-3 py-2 text-xs leading-5 text-base-content/70"
               data-translate-status
             >
-              当前默认使用谷歌站内翻译；AI 翻译会逐块显示结果，微软翻译会打开外部页面。
+              当前默认使用谷歌站内翻译；AI 翻译会逐块显示结果，微软翻译会打开文本翻译页并预设目标语言。
               <br />
-              Google is the default in-page translator; AI translates chunk by chunk, and Microsoft opens an external page.
+              Google is the default in-page translator; AI translates chunk by chunk, and Microsoft opens a text translator with the target language prefilled.
             </p>
 
             <div class="flex gap-2">
@@ -783,8 +783,8 @@ const languages = [
 
       if (provider === "bing") {
         return getMessageHtml(
-          "微软翻译会打开 Microsoft 网页翻译页面；如果外部服务不可用，不会自动切换到其它翻译方式。",
-          "Microsoft Translator opens an external web translation page; it will not switch providers automatically if that service is unavailable.",
+          "微软翻译只打开文本翻译页，并预先选择目标语言；需要你手动粘贴要翻译的文字。",
+          "Microsoft Translator opens text translation only with the target language preselected; paste the text manually there.",
         );
       }
 
@@ -1318,10 +1318,9 @@ const languages = [
       return normalized;
     }
 
-    function buildMicrosoftTranslateUrl(language, currentUrl) {
-      const target = encodeURIComponent(currentUrl);
+    function buildMicrosoftTranslateUrl(language) {
       const microsoftLanguage = encodeURIComponent(toMicrosoftLanguageCode(language));
-      return `https://www.translatetheweb.com/?from=&to=${microsoftLanguage}&a=${target}`;
+      return `https://www.bing.com/translator?from=auto&to=${microsoftLanguage}`;
     }
 
     async function handleGoogleTranslationFailure(widget, language, model, sourceLanguage, options = {}) {
@@ -1415,7 +1414,7 @@ const languages = [
       }
 
       if (!options.silent) {
-        window.location.href = buildMicrosoftTranslateUrl(language, window.location.href);
+        window.location.href = buildMicrosoftTranslateUrl(language);
       }
     }
 
@@ -1551,12 +1550,12 @@ const languages = [
           setActiveTranslation(false);
           setAllStatuses(
             getMessageHtml(
-              "即将打开微软翻译页面……",
-              "Opening Microsoft Translator page...",
+              "即将打开微软文本翻译页，请在新页面手动粘贴要翻译的文字。",
+              "Opening Microsoft text translator. Please paste the text manually on the next page.",
             ),
             "success",
           );
-          window.location.href = buildMicrosoftTranslateUrl(state.language, window.location.href);
+          window.location.href = buildMicrosoftTranslateUrl(state.language);
           return;
         }
 
