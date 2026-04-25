@@ -1,10 +1,10 @@
 {
-  "commitSha": "6c2d60b5e753c7f8e3b39b1885b64649b4b8f94f",
-  "commitShort": "6c2d60b",
-  "commitMessage": "新增功能：增强云端硬盘预览功能，新增外部预览选项并改进用户界面",
+  "commitSha": "eb4458faf66a5e615fdc98fcd0f5c18bdb8c3b28",
+  "commitShort": "eb4458f",
+  "commitMessage": "新增功能：实现下载链接复制功能，优化预览加载逻辑，添加对 mammoth 的依赖",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-25T17:03:10+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6c2d60b5e753c7f8e3b39b1885b64649b4b8f94f",
-  "buildTime": "2026/4/25 17:03:41",
-  "totalCommits": 371
+  "commitDate": "2026-04-25T18:43:41+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/eb4458faf66a5e615fdc98fcd0f5c18bdb8c3b28",
+  "buildTime": "2026/4/25 18:44:12",
+  "totalCommits": 373
 }
