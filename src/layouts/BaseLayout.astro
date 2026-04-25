@@ -149,6 +149,58 @@ const bannerSubtitle = pageConfig?.subtitle || "";
       })();
     </script>
 
+    <script is:inline>
+      (function () {
+        if (typeof window === "undefined" || window.__mahiroViewportResizeOptimized) {
+          return;
+        }
+
+        window.__mahiroViewportResizeOptimized = true;
+
+        var root = document.documentElement;
+        var resizeTimer = 0;
+        var lastWidth = window.innerWidth;
+        var lastHeight = window.innerHeight;
+        var lastPixelRatio = window.devicePixelRatio || 1;
+
+        var finishResize = function () {
+          root.classList.remove("mahiro-viewport-resizing");
+          root.style.removeProperty("--mahiro-current-device-pixel-ratio");
+        };
+
+        var markResizing = function () {
+          var width = window.innerWidth;
+          var height = window.innerHeight;
+          var pixelRatio = window.devicePixelRatio || 1;
+          var changed =
+            width !== lastWidth ||
+            height !== lastHeight ||
+            Math.abs(pixelRatio - lastPixelRatio) > 0.001;
+
+          lastWidth = width;
+          lastHeight = height;
+          lastPixelRatio = pixelRatio;
+
+          if (!changed) {
+            return;
+          }
+
+          root.classList.add("mahiro-viewport-resizing");
+          root.style.setProperty("--mahiro-current-device-pixel-ratio", String(pixelRatio));
+          window.clearTimeout(resizeTimer);
+          resizeTimer = window.setTimeout(finishResize, 260);
+        };
+
+        window.addEventListener("resize", markResizing, { passive: true });
+        window.visualViewport?.addEventListener("resize", markResizing, { passive: true });
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") {
+            finishResize();
+          }
+        });
+      })();
+    </script>
+
     <!-- Umami分析（自建） -->
     {
       umamiConfig.enable && umamiConfig.websiteId && (

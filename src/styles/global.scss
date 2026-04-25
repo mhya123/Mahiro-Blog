@@ -14,7 +14,6 @@
 [class*="hover:scale-"] {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  will-change: transform;
 }
 
 .gpu-layer,
@@ -25,11 +24,51 @@
 }
 
 .gpu-layer {
-  will-change: transform, opacity;
+  will-change: transform;
 }
 
 .gpu-layer-soft {
-  will-change: transform;
+  will-change: auto;
+}
+
+html.mahiro-viewport-resizing *,
+html.mahiro-viewport-resizing *::before,
+html.mahiro-viewport-resizing *::after {
+  transition-duration: 0s !important;
+  animation-play-state: paused !important;
+}
+
+html.mahiro-viewport-resizing [class*="backdrop-blur"],
+html.mahiro-viewport-resizing .backdrop-blur,
+html.mahiro-viewport-resizing .backdrop-blur-sm,
+html.mahiro-viewport-resizing .backdrop-blur-md,
+html.mahiro-viewport-resizing .backdrop-blur-lg,
+html.mahiro-viewport-resizing .backdrop-blur-xl,
+html.mahiro-viewport-resizing .modal-backdrop {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html.mahiro-viewport-resizing [class*="shadow"],
+html.mahiro-viewport-resizing .shadow,
+html.mahiro-viewport-resizing .shadow-sm,
+html.mahiro-viewport-resizing .shadow-lg,
+html.mahiro-viewport-resizing .shadow-xl,
+html.mahiro-viewport-resizing .shadow-2xl {
+  box-shadow: none !important;
+}
+
+html.mahiro-viewport-resizing [class*="blur"],
+html.mahiro-viewport-resizing [class*="drop-shadow"],
+html.mahiro-viewport-resizing [style*="filter"] {
+  filter: none !important;
+}
+
+html.mahiro-viewport-resizing .gpu-layer,
+html.mahiro-viewport-resizing .gpu-layer-soft,
+html.mahiro-viewport-resizing [class*="will-change"] {
+  will-change: auto !important;
+  transform: none !important;
 }
 
 @media (pointer: coarse) {
