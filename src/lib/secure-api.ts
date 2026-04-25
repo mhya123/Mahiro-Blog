@@ -16,6 +16,8 @@ type SecureEncryptedResponse = {
 
 let publicConfigPromise: Promise<SecurePublicConfig> | null = null
 let importedPublicKeyPromise: Promise<CryptoKey> | null = null
+const publicConfigPromises = new Map<string, Promise<SecurePublicConfig>>()
+const importedPublicKeyPromises = new Map<string, Promise<CryptoKey>>()
 
 function getSubtleCrypto() {
     const subtle = globalThis.crypto?.subtle
@@ -52,7 +54,31 @@ function pemToDer(pem: string) {
     )
 }
 
-async function getSecurePublicConfig() {
+function normalizeBaseUrl(baseUrl = SITE_API_BASE_URL) {
+    return String(baseUrl || '').replace(/\/+$/, '')
+}
+
+async function getSecurePublicConfig(baseUrl = SITE_API_BASE_URL) {
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+    if (normalizedBaseUrl !== SITE_API_BASE_URL) {
+        if (!publicConfigPromises.has(normalizedBaseUrl)) {
+            publicConfigPromises.set(normalizedBaseUrl, fetch(`${normalizedBaseUrl}/api/crypto/public-key`, {
+                cache: 'no-store',
+            }).then(async (response) => {
+                const data = await response.json().catch(() => ({}))
+                if (!response.ok) {
+                    throw new Error(typeof data?.error === 'string' ? data.error : 'Failed to load API encryption key')
+                }
+                if (!data?.enabled || !data.publicKey) {
+                    throw new Error('API RSA encryption is not available')
+                }
+                return data as SecurePublicConfig
+            }))
+        }
+
+        return publicConfigPromises.get(normalizedBaseUrl)!
+    }
+
     if (!publicConfigPromise) {
         publicConfigPromise = fetch(`${SITE_API_BASE_URL}/api/crypto/public-key`, {
             cache: 'no-store',
@@ -71,7 +97,27 @@ async function getSecurePublicConfig() {
     return publicConfigPromise
 }
 
-async function getSecurePublicKey() {
+async function getSecurePublicKey(baseUrl = SITE_API_BASE_URL) {
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+    if (normalizedBaseUrl !== SITE_API_BASE_URL) {
+        if (!importedPublicKeyPromises.has(normalizedBaseUrl)) {
+            importedPublicKeyPromises.set(normalizedBaseUrl, getSecurePublicConfig(normalizedBaseUrl).then((config) => {
+                return getSubtleCrypto().importKey(
+                    'spki',
+                    pemToDer(config.publicKey),
+                    {
+                        name: 'RSA-OAEP',
+                        hash: 'SHA-256',
+                    },
+                    false,
+                    ['encrypt'],
+                )
+            }))
+        }
+
+        return importedPublicKeyPromises.get(normalizedBaseUrl)!
+    }
+
     if (!importedPublicKeyPromise) {
         importedPublicKeyPromise = getSecurePublicConfig().then((config) => {
             return getSubtleCrypto().importKey(
@@ -90,9 +136,9 @@ async function getSecurePublicKey() {
     return importedPublicKeyPromise
 }
 
-export async function encryptSecurePayload(payload: unknown) {
+export async function encryptSecurePayload(payload: unknown, baseUrl = SITE_API_BASE_URL) {
     const subtle = getSubtleCrypto()
-    const publicKey = await getSecurePublicKey()
+    const publicKey = await getSecurePublicKey(baseUrl)
     const aesKey = await subtle.generateKey(
         {
             name: 'AES-GCM',
@@ -142,9 +188,10 @@ export async function decryptSecurePayload<T>(aesKey: CryptoKey, envelope: Secur
     return JSON.parse(new TextDecoder().decode(decrypted)) as T
 }
 
-export async function secureApiRequest<T>(path: string, payload: unknown): Promise<T> {
-    const encrypted = await encryptSecurePayload(payload)
-    const response = await fetch(`${SITE_API_BASE_URL}${path}`, {
+export async function secureApiRequest<T>(path: string, payload: unknown, baseUrl = SITE_API_BASE_URL): Promise<T> {
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+    const encrypted = await encryptSecurePayload(payload, normalizedBaseUrl)
+    const response = await fetch(`${normalizedBaseUrl}${path}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

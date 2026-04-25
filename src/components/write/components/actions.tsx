@@ -7,7 +7,7 @@ import { usePublish } from '../hooks/use-publish'
 import { WRITE_DRAFT_STORAGE_KEY, isDraftFormMeaningful } from '../constants'
 
 export function WriteActions() {
-	const { loading, mode, form, originalSlug, updateForm } = useWriteStore()
+	const { loading, mode, form, originalSlug, updateForm, aiSummaryStatus } = useWriteStore()
 	const { openPreview } = usePreviewStore()
 	const { isAuth, onChoosePrivateKey, onPublish, onDelete } = usePublish()
 	const keyInputRef = useRef<HTMLInputElement>(null)
@@ -76,18 +76,20 @@ export function WriteActions() {
 		const handler = (e: KeyboardEvent) => {
 			if ((e.ctrlKey || e.metaKey) && e.key === 's') {
 				e.preventDefault()
-				if (!loading && isAuth) {
+				if (!loading && isAuth && aiSummaryStatus !== 'generating') {
 					onPublish()
 				}
 			}
 		}
 		window.addEventListener('keydown', handler)
 		return () => window.removeEventListener('keydown', handler)
-	}, [loading, isAuth, onPublish])
+	}, [loading, isAuth, aiSummaryStatus, onPublish])
 
 	const handleImportOrPublish = () => {
 		if (!isAuth) {
 			keyInputRef.current?.click()
+		} else if (aiSummaryStatus === 'generating') {
+			toast.warning('AI 摘要正在生成中，请等待摘要填充完成后再保存')
 		} else {
 			const confirmMsg = mode === 'edit'
 				? `确定更新《${form.title}》吗？这将直接推送到 GitHub 仓库。`
@@ -110,7 +112,7 @@ export function WriteActions() {
 		}
 	}
 
-	const buttonText = isAuth ? (mode === 'edit' ? '更新' : '发布') : '导入密钥'
+	const buttonText = aiSummaryStatus === 'generating' ? '等待摘要' : isAuth ? (mode === 'edit' ? '更新' : '发布') : '导入密钥'
 
 	const handleDelete = () => {
 		if (!isAuth) {
@@ -254,7 +256,7 @@ export function WriteActions() {
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
 					className='btn btn-sm btn-primary rounded-xl px-6 shadow-lg shadow-primary/20'
-					disabled={loading}
+					disabled={loading || aiSummaryStatus === 'generating'}
 					onClick={handleImportOrPublish}>
 					{loading ? (
 						<>

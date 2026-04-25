@@ -1,11 +1,12 @@
 import { motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { SITE_LOCAL_API_BASE_URL, SITE_REMOTE_API_BASE_URL } from '@/consts'
 import type { AiModelDefinition } from '@/lib/ai-models'
 import { secureApiRequest } from '@/lib/secure-api'
 import { useWriteStore } from '../../stores/write-store'
-import { TagInput } from '../ui/tag-input'
 import { CustomSelect } from '../ui/custom-select'
+import { TagInput } from '../ui/tag-input'
 
 type MetaSectionProps = {
 	delay?: number
@@ -13,8 +14,14 @@ type MetaSectionProps = {
 	aiModels?: AiModelDefinition[]
 }
 
+type AiSummaryPayload = {
+	summary?: string
+	model?: string
+	modelName?: string
+}
+
 export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaSectionProps) {
-	const { form, updateForm } = useWriteStore()
+	const { form, updateForm, setAiSummaryStatus } = useWriteStore()
 	const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
 	const [isCustomCategory, setIsCustomCategory] = useState(() => {
 		if (form.categories.length === 0) return false
@@ -23,7 +30,7 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 
 	const categoryOptions = [
 		...categories.map((category) => ({ value: category, label: category })),
-		{ value: '__custom__', label: '+ 自定义 / 多选...' }
+		{ value: '__custom__', label: '+ 自定义 / 多分类...' }
 	]
 
 	const aiModelOptions = [
@@ -32,6 +39,11 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 			value: model.id,
 			label: `${model.name} · ${model.brand}`
 		}))
+	]
+
+	const aiSummaryChannelOptions = [
+		{ value: 'remote', label: '远程后端' },
+		{ value: 'local', label: '本地后端' }
 	]
 
 	const handleGenerateSummary = async () => {
@@ -50,11 +62,9 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 
 		try {
 			setIsGeneratingSummary(true)
-			const payload = await secureApiRequest<{
-				summary?: string
-				model?: string
-				modelName?: string
-			}>('/api/ai/secure', {
+			setAiSummaryStatus('generating')
+			const apiBaseUrl = form.aiSummaryChannel === 'local' ? SITE_LOCAL_API_BASE_URL : SITE_REMOTE_API_BASE_URL
+			const payload = await secureApiRequest<AiSummaryPayload>('/api/ai/secure', {
 				action: 'summary',
 				payload: {
 					title: form.title,
@@ -62,34 +72,17 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 					summary: form.summary,
 					aiModel: form.aiModel
 				}
-			})
+			}, apiBaseUrl)
+
 			if (!payload?.summary || typeof payload.summary !== 'string') {
 				throw new Error('AI summary API did not return a valid summary')
 			}
-			/*
-			const response = await fetch(`${SITE_API_BASE_URL}/api/ai/plaintext-summary-legacy`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					title: form.title,
-					content: form.md,
-					summary: form.summary,
-					aiModel: form.aiModel
-				})
-			})
 
-			const payload = await response.json().catch(() => ({}))
-			if (!response.ok) {
-				throw new Error(payload?.error || payload?.message || '生成摘要失败')
-			}
-			if (!payload?.summary || typeof payload.summary !== 'string') {
-				throw new Error('接口未返回有效摘要')
-			}
-
-			*/
 			updateForm({ summary: payload.summary })
+			setAiSummaryStatus('ready')
 			toast.success(`摘要已由 ${payload.modelName || payload.model || form.aiModel} 生成`)
 		} catch (error) {
+			setAiSummaryStatus('failed')
 			toast.error(error instanceof Error ? error.message : '生成摘要失败')
 		} finally {
 			setIsGeneratingSummary(false)
@@ -111,10 +104,21 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 					rows={3}
 					className='textarea textarea-bordered w-full bg-base-100 focus:textarea-primary resize-none text-sm'
 					value={form.summary}
-					onChange={e => updateForm({ summary: e.target.value })}
+					onChange={e => {
+						updateForm({ summary: e.target.value })
+						setAiSummaryStatus('idle')
+					}}
 				/>
 
 				<div className='space-y-2'>
+					<div className='text-xs font-medium text-base-content/70'>AI 摘要通道</div>
+					<CustomSelect
+						value={form.aiSummaryChannel || 'remote'}
+						onChange={value => updateForm({ aiSummaryChannel: value as 'remote' | 'local' })}
+						options={aiSummaryChannelOptions}
+						placeholder='选择摘要生成通道'
+					/>
+
 					<div className='text-xs font-medium text-base-content/70'>AI 摘要模型</div>
 					<CustomSelect
 						value={form.aiModel || ''}
@@ -131,12 +135,12 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 						{isGeneratingSummary ? (
 							<>
 								<span className='loading loading-spinner loading-xs'></span>
-								生成中
+								生成中...
 							</>
 						) : form.summary ? '重新生成摘要' : '生成摘要'}
 					</button>
 					<p className='text-xs text-base-content/50'>
-						未选择模型时，发布允许继续，但 CI 会跳过这篇文章的 AI 摘要生成。
+						点击生成摘要后，请等待结果写入上方摘要框再保存文章。
 					</p>
 				</div>
 
@@ -187,10 +191,10 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 						{categories.length > 0 && (
 							<button
 								type='button'
+								className='btn btn-xs btn-ghost text-base-content/60'
 								onClick={() => setIsCustomCategory(false)}
-								className='text-xs text-primary hover:underline'
 							>
-								返回选择已有分类
+								返回分类选择
 							</button>
 						)}
 					</div>

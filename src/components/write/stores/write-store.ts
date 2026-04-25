@@ -30,6 +30,8 @@ type WriteStore = {
 	// Publish state
 	loading: boolean
 	setLoading: (loading: boolean) => void
+	aiSummaryStatus: 'idle' | 'generating' | 'ready' | 'failed'
+	setAiSummaryStatus: (status: 'idle' | 'generating' | 'ready' | 'failed') => void
 
 	// Load blog for editing
 	loadBlogForEdit: (slug: string) => Promise<void>
@@ -46,6 +48,7 @@ const initialForm: PublishForm = {
 	date: formatDateTimeLocal(),
 	summary: '',
 	aiModel: '',
+	aiSummaryChannel: 'remote',
 	hidden: false,
 	categories: [],
 	fileFormat: 'md', // 默认使用md格式
@@ -62,7 +65,7 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 	// Form state
 	form: { ...initialForm },
 	updateForm: updates => set(state => ({ form: { ...state.form, ...updates } })),
-	setForm: form => set({ form }),
+	setForm: form => set({ form: { ...initialForm, ...form }, aiSummaryStatus: 'idle' }),
 
 	// Image state
 	images: [],
@@ -150,6 +153,8 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 	// Publish state
 	loading: false,
 	setLoading: loading => set({ loading }),
+	aiSummaryStatus: 'idle',
+	setAiSummaryStatus: status => set({ aiSummaryStatus: status }),
 
 	// Load blog for editing
 	loadBlogForEdit: async (slug: string) => {
@@ -186,6 +191,7 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 				originalSlug: slug,
 				originalFileFormat: form.fileFormat,
 				form: {
+					...initialForm,
 					...form,
 					date: form.date ? form.date : formatDateTimeLocal(),
 				},
@@ -223,6 +229,7 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 			originalSlug: null,
 			originalFileFormat: null,
 			form: { ...initialForm, date: formatDateTimeLocal() },
+			aiSummaryStatus: 'idle',
 			images: [],
 			cover: null
 		})

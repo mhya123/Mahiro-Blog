@@ -11,7 +11,7 @@ import { WRITE_DRAFT_STORAGE_KEY } from '../constants'
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9\-_]*$/
 
 export function usePublish() {
-	const { loading, setLoading, form, cover, images, mode, originalSlug, originalFileFormat } = useWriteStore()
+	const { loading, setLoading, form, cover, images, mode, originalSlug, originalFileFormat, aiSummaryStatus } = useWriteStore()
 	const { isAuth, setPrivateKey } = useAuthStore()
 
 	const onChoosePrivateKey = useCallback(
@@ -40,6 +40,11 @@ export function usePublish() {
 			return
 		}
 
+		if (aiSummaryStatus === 'generating') {
+			toast.warning('AI 摘要正在生成中，请等待摘要填充完成后再保存')
+			return
+		}
+
 		try {
 			setLoading(true)
 			await pushBlog({
@@ -63,7 +68,7 @@ export function usePublish() {
 		} finally {
 			setLoading(false)
 		}
-	}, [form, cover, images, mode, originalSlug, originalFileFormat, setLoading])
+	}, [form, cover, images, mode, originalSlug, originalFileFormat, aiSummaryStatus, setLoading])
 
 	const onDelete = useCallback(async () => {
 		const targetSlug = originalSlug || form.slug

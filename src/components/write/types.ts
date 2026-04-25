@@ -6,6 +6,7 @@ export type PublishForm = {
 	date: string
 	summary: string
 	aiModel?: string
+	aiSummaryChannel?: 'remote' | 'local'
 	hidden?: boolean
 	badge?: string
 	categories: string[]
