@@ -129,6 +129,55 @@ export function WriteActions() {
 		mdInputRef.current?.click()
 	}
 
+	const handleExportMdExample = () => {
+		const example = `---
+title: 从 README 到实战：Mahiro-Blog 的设计思路与上手指南
+description: 一篇基于 Mahiro-Blog README 的完整导读，包含核心特性、技术选型、目录结构、开发流程与部署建议。
+pubDate: 2026-04-07T10:30
+aiModel: gpt-5.4-mini
+image: /images/covers/mahiro-blog-readme-guide.webp
+draft: false
+tags:
+  - Astro
+  - 博客系统
+  - README
+  - 开源项目
+  - 教程
+categories:
+  - 教程
+badge: Pin
+encrypted: false
+---
+
+# 从 README 到实战：Mahiro-Blog 的设计思路与上手指南
+
+这里开始编写正文内容。可以使用标准 Markdown。
+
+## 二级标题
+
+- 支持列表
+- 支持图片
+- 支持代码块
+
+![示例图片](/images/covers/mahiro-blog-readme-guide.webp)
+
+\`\`\`ts
+const site = 'Mahiro-Blog'
+console.log(site)
+\`\`\`
+`
+		const blob = new Blob([example], { type: 'text/markdown;charset=utf-8' })
+		const url = URL.createObjectURL(blob)
+		const link = document.createElement('a')
+		link.href = url
+		link.download = 'mahiro-blog-example.md'
+		document.body.appendChild(link)
+		link.click()
+		link.remove()
+		URL.revokeObjectURL(url)
+		toast.success('MD 示例已导出')
+	}
+
 	const handleMdFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (!file) return
@@ -219,6 +268,16 @@ export function WriteActions() {
 					disabled={loading}
 					onClick={handleImportMd}>
 					导入 MD
+				</motion.button>
+				<motion.button
+					initial={{ opacity: 0, scale: 0.6 }}
+					animate={{ opacity: 1, scale: 1 }}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
+					className='btn btn-sm btn-ghost rounded-xl text-base-content'
+					disabled={loading}
+					onClick={handleExportMdExample}>
+					导出 MD 示例
 				</motion.button>
 				<div className='dropdown dropdown-end'>
 					<motion.button
