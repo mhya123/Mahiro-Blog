@@ -131,21 +131,40 @@ export function WriteActions() {
 
 	const handleExportMdExample = () => {
 		const example = `---
+# title：文章标题，会显示在文章页、列表页和 SEO 标题里。
 title: 从 README 到实战：Mahiro-Blog 的设计思路与上手指南
+
+# description：文章摘要，会写入 frontmatter，并显示为文章卡片摘要。
 description: 一篇基于 Mahiro-Blog README 的完整导读，包含核心特性、技术选型、目录结构、开发流程与部署建议。
+
+# pubDate：发布时间，推荐格式为 YYYY-MM-DDTHH:mm。
 pubDate: 2026-04-07T10:30
+
+# aiModel：AI 摘要使用的模型；不需要 AI 摘要时可以留空或删除。
 aiModel: gpt-5.4-mini
+
+# image：文章封面图路径，可以使用 /images/... 或远程图片 URL。
 image: /images/covers/mahiro-blog-readme-guide.webp
+
+# draft：是否作为草稿隐藏，true 表示隐藏，false 表示公开。
 draft: false
+
+# tags：文章标签，可以写多个。
 tags:
   - Astro
   - 博客系统
   - README
   - 开源项目
   - 教程
+
+# categories：文章分类，可以写一个或多个。
 categories:
   - 教程
+
+# badge：文章徽章，例如 Pin 表示置顶；不需要可以删除。
 badge: Pin
+
+# encrypted：是否启用文章加密，需要密码查看时设为 true。
 encrypted: false
 ---
 
