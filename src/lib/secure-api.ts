@@ -4,7 +4,6 @@ const VERSION = 'rsa-oaep-aes-gcm-v1'
 
 type SecurePublicConfig = {
     enabled: boolean
-    version: string
     publicKey: string
 }
 
@@ -62,7 +61,7 @@ async function getSecurePublicConfig() {
             if (!response.ok) {
                 throw new Error(typeof data?.error === 'string' ? data.error : 'Failed to load API encryption key')
             }
-            if (!data?.enabled || data.version !== VERSION || !data.publicKey) {
+            if (!data?.enabled || !data.publicKey) {
                 throw new Error('API RSA encryption is not available')
             }
             return data as SecurePublicConfig

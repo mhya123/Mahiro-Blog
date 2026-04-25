@@ -384,8 +384,8 @@ const languages = [
           const data = await response.json().catch(() => ({}));
           if (!response.ok) {
             throw new Error(data?.error || getMessageHtml("加载加密公钥失败。", "Failed to load encryption public key."));
-          }
-          if (!data?.enabled || data.version !== SECURE_API_VERSION || !data.publicKey) {
+           }
+          if (!data?.enabled || !data.publicKey) {
             throw new Error(getMessageHtml("后端加密通道不可用。", "The encrypted backend channel is unavailable."));
           }
           return data;

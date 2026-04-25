@@ -113,10 +113,7 @@ export function createDriveCrypto({ enabled = true } = {}) {
   function getPublicConfig() {
     return {
       enabled: Boolean(keyPair),
-      version: VERSION,
-      algorithm: 'RSA-OAEP-256 + AES-256-GCM',
       publicKey: keyPair?.publicKey || '',
-      publicKeyPath: keyPair?.publicKeyPath || '',
     }
   }
 

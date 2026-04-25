@@ -353,7 +353,7 @@ async function loadServicePublicKey(runtime) {
         if (!response.ok) {
           throw new Error(payload?.error || payload?.message || `HTTP ${response.status}`)
         }
-        if (!payload?.enabled || payload.version !== SECURE_API_VERSION || !payload.publicKey) {
+        if (!payload?.enabled || !payload.publicKey) {
           throw new Error('Summary service encryption key is unavailable')
         }
 
