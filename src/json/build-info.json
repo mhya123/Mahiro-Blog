@@ -1,10 +1,10 @@
 {
-  "commitSha": "d0a3e493b616164173263d04f9f42ad0958f8df9",
-  "commitShort": "d0a3e49",
-  "commitMessage": "Drive 页面功能增强与多格式预览集成 1. 新增多媒体与文档预览系统 为了提供更丰富的交互体验，我们构建了一套完整的预览架构：",
+  "commitSha": "6c2d60b5e753c7f8e3b39b1885b64649b4b8f94f",
+  "commitShort": "6c2d60b",
+  "commitMessage": "新增功能：增强云端硬盘预览功能，新增外部预览选项并改进用户界面",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-25T01:55:47+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/d0a3e493b616164173263d04f9f42ad0958f8df9",
-  "buildTime": "2026/4/25 01:56:21",
-  "totalCommits": 369
+  "commitDate": "2026-04-25T17:03:10+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6c2d60b5e753c7f8e3b39b1885b64649b4b8f94f",
+  "buildTime": "2026/4/25 17:03:41",
+  "totalCommits": 371
 }
