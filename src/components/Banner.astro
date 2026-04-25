@@ -43,6 +43,7 @@ const useTypewriter =
     currentPath !== "/blog" &&
     !currentPath.includes("/blog/tag/") &&
     !currentPath.includes("/blog/category/"));
+const enableWaveMotion = useTypewriter;
 const displayTitle = pageConfig.title || "";
 const displaySubtitle = pageConfig.subtitle || "";
 const hasTitle = displayTitle !== undefined && displayTitle !== "";
@@ -111,7 +112,7 @@ const initialRandomImage = isRandomEnabled
   </div>
 
   <!-- 波浪动画效果 -->
-  <div class="waves">
+  <div class:list={["waves", enableWaveMotion ? "waves-motion" : "waves-static"]}>
     <svg
       class="waves"
       xmlns="http://www.w3.org/2000/svg"
@@ -449,9 +450,16 @@ const initialRandomImage = isRandomEnabled
     @apply md:h-[15vh];
   }
 
-  .waves > .parallax use {
+  .waves .parallax use {
     fill: var(--banner-wave-bg);
+  }
+
+  .waves-motion .parallax use {
     animation: wave 25s cubic-bezier(0.5, 0.5, 0.45, 0.5) infinite;
+  }
+
+  .waves-static .parallax use {
+    transform: translate3d(0, 0, 0);
   }
 
   @keyframes wave {

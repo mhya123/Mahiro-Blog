@@ -1,5 +1,15 @@
 import { animate } from 'animejs'
 
+function prepareHoverLayer(el: HTMLElement) {
+  el.style.willChange = 'transform'
+  el.style.backfaceVisibility = 'hidden'
+}
+
+function releaseHoverLayer(el: HTMLElement) {
+  el.style.willChange = ''
+  el.style.backfaceVisibility = ''
+}
+
 /**
  * 交互动效模块 — anime.js 驱动
  *
@@ -16,10 +26,8 @@ function bindCardHover() {
     if (card.dataset.hoverBound) return
     card.dataset.hoverBound = '1'
 
-    // 确保 card 有 transition-shadow
-    card.style.willChange = 'transform, box-shadow'
-
     card.addEventListener('mouseenter', () => {
+      prepareHoverLayer(card)
       animate(card, {
         scale: 1.02,
         duration: 350,
@@ -33,6 +41,9 @@ function bindCardHover() {
         scale: 1,
         duration: 400,
         ease: 'out(2)',
+        onComplete() {
+          releaseHoverLayer(card)
+        },
       })
       card.style.boxShadow = ''
     })
@@ -50,6 +61,7 @@ function bindTagHover() {
     btn.classList.remove('hover:scale-110')
 
     btn.addEventListener('mouseenter', () => {
+      prepareHoverLayer(btn)
       animate(btn, {
         scale: 1.12,
         duration: 300,
@@ -62,6 +74,9 @@ function bindTagHover() {
         scale: 1,
         duration: 350,
         ease: 'out(2)',
+        onComplete() {
+          releaseHoverLayer(btn)
+        },
       })
     })
   })
@@ -75,6 +90,7 @@ function bindNavHover() {
     item.dataset.hoverBound = '1'
 
     item.addEventListener('mouseenter', () => {
+      prepareHoverLayer(item)
       animate(item, {
         scale: 1.08,
         duration: 250,
@@ -87,6 +103,9 @@ function bindNavHover() {
         scale: 1,
         duration: 300,
         ease: 'out(2)',
+        onComplete() {
+          releaseHoverLayer(item)
+        },
       })
     })
   })

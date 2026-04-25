@@ -106,25 +106,19 @@ import { Icon } from "astro-icon/components";
       ring.style.strokeDashoffset = String(offset);
     };
 
-    // ── 呼吸脉冲（出场后持续循环） ─────────────────────────────────────────
+    // ── 轻量待机光晕（避免 JS 无限循环占用 CPU） ─────────────────────────
     const startPulse = () => {
       if (prefersReducedMotion || pulseAnim) return;
-      pulseAnim = animate(glow, {
-        opacity: [0.15, 0.5, 0.15],
-        scale:   [0.9,  1.15, 0.9],
-        duration: 2600,
-        ease:    "inOutSine",
-        loop: true,
-      });
+      remove(glow);
+      (glow as HTMLElement).style.opacity = "0.18";
+      (glow as HTMLElement).style.transform = "scale(1)";
     };
 
     const stopPulse = () => {
-      if (pulseAnim) {
-        remove(glow);
-        pulseAnim = null;
-        (glow as HTMLElement).style.opacity = "0";
-        (glow as HTMLElement).style.transform = "";
-      }
+      remove(glow);
+      pulseAnim = null;
+      (glow as HTMLElement).style.opacity = "0";
+      (glow as HTMLElement).style.transform = "";
     };
 
     // ── 出场动画（弹簧物理） ─────────────────────────────────────────────
@@ -322,6 +316,10 @@ import { Icon } from "astro-icon/components";
     if (pulseAnim) {
       glow && remove(glow);
       pulseAnim = null;
+    }
+    if (glow) {
+      glow.style.opacity = "0";
+      glow.style.transform = "";
     }
   }
 </script>

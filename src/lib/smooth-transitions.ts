@@ -11,6 +11,16 @@ function promoteToGpu(elements: Iterable<HTMLElement> | ArrayLike<HTMLElement>) 
   })
 }
 
+function releaseGpu(elements: Iterable<HTMLElement> | ArrayLike<HTMLElement>) {
+  Array.from(elements).forEach((el) => {
+    el.style.willChange = ''
+    el.style.backfaceVisibility = ''
+    if (el.style.transform === 'translateZ(0)') {
+      el.style.transform = ''
+    }
+  })
+}
+
 /**
  * 全局柔和过渡系统 — anime.js 缓动函数注入
  *
@@ -55,6 +65,7 @@ function animateSidebar() {
       Array.from(cards).forEach(el => {
         el.style.transform = ''
       })
+      releaseGpu(cards)
     },
   })
 }
@@ -73,12 +84,12 @@ function bindElasticHover() {
   document.querySelectorAll<HTMLElement>(selectors.join(',')).forEach(el => {
     if (el.dataset.elasticBound) return
     el.dataset.elasticBound = '1'
-    promoteToGpu([el])
 
     // 取消 Tailwind 的硬切 translate，由 anime.js 接管
     el.classList.remove('hover:-translate-y-1')
 
     el.addEventListener('mouseenter', () => {
+      promoteToGpu([el])
       animate(el, {
         translateY: '-4px',
         duration: 400,
@@ -91,6 +102,9 @@ function bindElasticHover() {
         translateY: '0px',
         duration: 500,
         ease: 'out(2)',       // 更慢回弹，有"放下"的质感
+        onComplete() {
+          releaseGpu([el])
+        },
       })
     })
   })
@@ -200,6 +214,9 @@ function animateCategoryCards() {
     duration: 600,
     delay: stagger(80),
     ease: 'out(3)',
+    onComplete() {
+      releaseGpu(cards)
+    },
   })
 }
 
@@ -219,6 +236,9 @@ function animateTagItems() {
     duration: 500,
     delay: stagger(25, { start: 100 }),
     ease: 'out(3)',
+    onComplete() {
+      releaseGpu(items)
+    },
   })
 }
 
@@ -234,9 +254,9 @@ function bindLinkCardHover() {
   document.querySelectorAll<HTMLElement>(selectors.join(',')).forEach(el => {
     if (el.dataset.softHover) return
     el.dataset.softHover = '1'
-    promoteToGpu([el])
 
     el.addEventListener('mouseenter', () => {
+      promoteToGpu([el])
       animate(el, {
         translateY: '-3px',
         scale: 1.015,
@@ -251,6 +271,9 @@ function bindLinkCardHover() {
         scale: 1,
         duration: 450,
         ease: 'out(2)',
+        onComplete() {
+          releaseGpu([el])
+        },
       })
     })
   })
@@ -262,13 +285,16 @@ function bindImagePressEffect() {
   document.querySelectorAll<HTMLElement>('.prose img').forEach(img => {
     if (img.dataset.pressBound) return
     img.dataset.pressBound = '1'
-    promoteToGpu([img])
 
     img.addEventListener('click', () => {
+      promoteToGpu([img])
       animate(img, {
         scale: [1, 0.97, 1.01, 1],
         duration: 400,
         ease: 'out(3)',
+        onComplete() {
+          releaseGpu([img])
+        },
       })
     })
   })
