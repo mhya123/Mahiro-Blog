@@ -1,0 +1,464 @@
+import { PassThrough } from 'node:stream'
+import { formatBytes, normalizeEntry, normalizeFileType, sortEntries } from './alist-entries.mjs'
+import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from './alist-config.mjs'
+import { getParentPath, joinPath, normalizePath, sanitizeName } from './alist-paths.mjs'
+import { getSearchScore } from './alist-search.mjs'
+
+function assertPermission(permissions, permission) {
+  if (permissions[permission] !== false) {
+    return
+  }
+
+  const error = new Error(`Drive permission denied: ${permission}`)
+  error.status = 403
+  throw error
+}
+
+export function createAListOperations({
+  log,
+  defaultRoot,
+  permissions,
+  requestUpstream,
+  getAccessToken,
+  buildSignedRawUrl,
+  resolveDirectUrl,
+}) {
+  async function getStatus(requestId, publicConfig) {
+    if (!publicConfig.configured) {
+      return {
+        ...publicConfig,
+        connected: false,
+      }
+    }
+
+    try {
+      await getAccessToken(requestId)
+      return {
+        ...publicConfig,
+        connected: true,
+      }
+    } catch (error) {
+      log('ERROR', 'AList status check failed', {
+        requestId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return {
+        ...publicConfig,
+        connected: false,
+        error: error instanceof Error ? error.message : String(error),
+      }
+    }
+  }
+
+  async function listDirectory(requestId, inputPath = defaultRoot, options = {}) {
+    assertPermission(permissions, 'view')
+    const path = normalizePath(inputPath)
+    const data = await requestUpstream({
+      requestId,
+      method: 'POST',
+      path: '/api/fs/list',
+      body: {
+        path,
+        password: options.password || '',
+        page: Number(options.page || DEFAULT_PAGE),
+        per_page: Number(options.perPage || DEFAULT_PER_PAGE),
+        refresh: Boolean(options.refresh),
+      },
+    })
+
+    const content = Array.isArray(data?.content) ? data.content : []
+    return {
+      path,
+      parentPath: getParentPath(path),
+      total: Number(data?.total || content.length),
+      readme: typeof data?.readme === 'string' ? data.readme : '',
+      write: Boolean(data?.write),
+      provider: String(data?.provider || ''),
+      items: sortEntries(content.map((item) => normalizeEntry(item, path))),
+    }
+  }
+
+  async function listDirectoryEntriesAllPages(requestId, inputPath = defaultRoot) {
+    const path = normalizePath(inputPath)
+    const pageSize = 200
+    let page = 1
+    const entries = []
+
+    while (true) {
+      const data = await requestUpstream({
+        requestId,
+        method: 'POST',
+        path: '/api/fs/list',
+        body: {
+          path,
+          password: '',
+          page,
+          per_page: pageSize,
+          refresh: false,
+        },
+      })
+
+      const content = Array.isArray(data?.content) ? data.content : []
+      entries.push(...content.map((item) => normalizeEntry(item, path)))
+
+      const total = Number(data?.total || entries.length)
+      if (content.length === 0 || page * pageSize >= total) {
+        break
+      }
+
+      page += 1
+    }
+
+    return entries
+  }
+
+  async function getItem(requestId, inputPath, options = {}) {
+    const intent = options.intent === 'download' ? 'download' : 'view'
+    assertPermission(permissions, intent)
+    const path = normalizePath(inputPath)
+    const providedSign = String(options.sign || '').trim()
+    const data = await requestUpstream({
+      requestId,
+      method: 'POST',
+      path: '/api/fs/get',
+      body: {
+        path,
+        password: options.password || '',
+      },
+    })
+
+    const upstreamSign = String(data?.sign || '')
+    const sign = upstreamSign || providedSign
+    const rawUrl = String(data?.raw_url || data?.rawUrl || '') || (sign ? buildSignedRawUrl(path, sign) : '')
+    return {
+      path,
+      name: path === '/' ? '/' : path.split('/').filter(Boolean).pop() || path,
+      rawUrl,
+      resolvedUrl: rawUrl,
+      provider: String(data?.provider || ''),
+      sign,
+      thumb: String(data?.thumb || ''),
+      type: normalizeFileType(data?.type, path, Boolean(data?.is_dir)),
+      size: Number(data?.size || 0),
+      sizeLabel: formatBytes(data?.size || 0),
+      modified: String(data?.modified || data?.updated_at || ''),
+      isDir: Boolean(data?.is_dir),
+      related: data,
+    }
+  }
+
+  async function getLatestSign(requestId, inputPath, options = {}) {
+    const path = normalizePath(inputPath)
+    if (path === '/') {
+      return ''
+    }
+
+    const parentPath = getParentPath(path) || '/'
+    const pageSize = 200
+    let page = 1
+
+    while (true) {
+      const data = await requestUpstream({
+        requestId,
+        method: 'POST',
+        path: '/api/fs/list',
+        body: {
+          path: parentPath,
+          password: options.password || '',
+          page,
+          per_page: pageSize,
+          refresh: true,
+        },
+      })
+
+      const content = Array.isArray(data?.content) ? data.content : []
+      const matched = content.find((item) => {
+        const entryPath = item?.path ? normalizePath(item.path) : joinPath(parentPath, String(item?.name || ''))
+        return entryPath === path
+      })
+
+      if (matched) {
+        return String(matched?.sign || '').trim()
+      }
+
+      const total = Number(data?.total || content.length)
+      if (content.length === 0 || page * pageSize >= total) {
+        break
+      }
+
+      page += 1
+    }
+
+    return ''
+  }
+
+  async function getResolvedItem(requestId, inputPath, options = {}) {
+    const item = await getItem(requestId, inputPath, options)
+    if (item.isDir) {
+      return item
+    }
+
+    const latestSign = await getLatestSign(requestId, inputPath, options)
+    const signedRawUrl = latestSign ? buildSignedRawUrl(inputPath, latestSign) : item.rawUrl
+    const resolvedUrl = signedRawUrl ? await resolveDirectUrl(requestId, signedRawUrl) : ''
+
+    if (latestSign) {
+      return {
+        ...item,
+        sign: latestSign,
+        rawUrl: signedRawUrl,
+        resolvedUrl: resolvedUrl || signedRawUrl,
+      }
+    }
+
+    return {
+      ...item,
+      resolvedUrl: resolvedUrl || item.rawUrl,
+    }
+  }
+
+  async function search(requestId, { parent = defaultRoot, keywords = '', page = DEFAULT_PAGE, perPage = DEFAULT_PER_PAGE } = {}) {
+    assertPermission(permissions, 'view')
+    const normalizedParent = normalizePath(parent)
+    const query = String(keywords || '').trim()
+    if (!query) {
+      return {
+        parentPath: normalizedParent,
+        total: 0,
+        items: [],
+      }
+    }
+
+    const currentPage = Math.max(1, Number(page || DEFAULT_PAGE))
+    const pageSize = Math.max(1, Number(perPage || DEFAULT_PER_PAGE))
+    const entries = await listDirectoryEntriesAllPages(requestId, normalizedParent)
+    const matchedEntries = entries
+      .map((entry) => ({
+        entry,
+        score: getSearchScore(entry, query),
+      }))
+      .filter((item) => Number.isFinite(item.score))
+      .sort((left, right) => {
+        if (left.score !== right.score) {
+          return left.score - right.score
+        }
+
+        if (left.entry.isDir !== right.entry.isDir) {
+          return left.entry.isDir ? -1 : 1
+        }
+
+        return left.entry.name.localeCompare(right.entry.name, 'zh-CN', {
+          numeric: true,
+          sensitivity: 'base',
+        })
+      })
+
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return {
+      parentPath: normalizedParent,
+      total: matchedEntries.length,
+      items: matchedEntries.slice(startIndex, endIndex).map((item) => item.entry),
+    }
+  }
+
+  async function makeDirectory(requestId, inputPath) {
+    assertPermission(permissions, 'mkdir')
+    const path = normalizePath(inputPath)
+    const name = sanitizeName(path.split('/').pop())
+    if (!name) {
+      const error = new Error('Missing folder name')
+      error.status = 400
+      throw error
+    }
+
+    await requestUpstream({
+      requestId,
+      method: 'POST',
+      path: '/api/fs/mkdir',
+      body: { path },
+    })
+
+    return {
+      ok: true,
+      path,
+    }
+  }
+
+  async function rename(requestId, inputPath, nextName) {
+    assertPermission(permissions, 'rename')
+    const path = normalizePath(inputPath)
+    const name = sanitizeName(nextName)
+    if (!name) {
+      const error = new Error('Missing new name')
+      error.status = 400
+      throw error
+    }
+
+    await requestUpstream({
+      requestId,
+      method: 'POST',
+      path: '/api/fs/rename',
+      body: {
+        path,
+        name,
+      },
+    })
+
+    return {
+      ok: true,
+      path,
+      nextPath: joinPath(getParentPath(path) || '/', name),
+    }
+  }
+
+  async function remove(requestId, dir, names) {
+    assertPermission(permissions, 'remove')
+    const normalizedDir = normalizePath(dir || '/')
+    const normalizedNames = Array.isArray(names)
+      ? names.map((item) => sanitizeName(item)).filter(Boolean)
+      : []
+
+    if (normalizedNames.length === 0) {
+      const error = new Error('Missing names')
+      error.status = 400
+      throw error
+    }
+
+    await requestUpstream({
+      requestId,
+      method: 'POST',
+      path: '/api/fs/remove',
+      body: {
+        dir: normalizedDir,
+        names: normalizedNames,
+      },
+    })
+
+    return {
+      ok: true,
+      dir: normalizedDir,
+      names: normalizedNames,
+    }
+  }
+
+  async function move(requestId, srcDir, dstDir, names) {
+    assertPermission(permissions, 'move')
+    const normalizedNames = Array.isArray(names)
+      ? names.map((item) => sanitizeName(item)).filter(Boolean)
+      : []
+
+    if (normalizedNames.length === 0) {
+      const error = new Error('Missing names')
+      error.status = 400
+      throw error
+    }
+
+    await requestUpstream({
+      requestId,
+      method: 'POST',
+      path: '/api/fs/move',
+      body: {
+        src_dir: normalizePath(srcDir || '/'),
+        dst_dir: normalizePath(dstDir || '/'),
+        names: normalizedNames,
+      },
+    })
+
+    return { ok: true }
+  }
+
+  async function copy(requestId, srcDir, dstDir, names) {
+    assertPermission(permissions, 'copy')
+    const normalizedNames = Array.isArray(names)
+      ? names.map((item) => sanitizeName(item)).filter(Boolean)
+      : []
+
+    if (normalizedNames.length === 0) {
+      const error = new Error('Missing names')
+      error.status = 400
+      throw error
+    }
+
+    await requestUpstream({
+      requestId,
+      method: 'POST',
+      path: '/api/fs/copy',
+      body: {
+        src_dir: normalizePath(srcDir || '/'),
+        dst_dir: normalizePath(dstDir || '/'),
+        names: normalizedNames,
+      },
+    })
+
+    return { ok: true }
+  }
+
+  async function upload(requestId, req, { path = defaultRoot, asTask = false } = {}) {
+    assertPermission(permissions, 'upload')
+    const targetPath = normalizePath(path)
+    const contentType = String(req.headers['content-type'] || '').trim()
+    if (!contentType) {
+      const error = new Error('Missing multipart content-type')
+      error.status = 400
+      throw error
+    }
+
+    const bodyStream = new PassThrough()
+    req.pipe(bodyStream)
+
+    const headers = {
+      'Content-Type': contentType,
+      'File-Path': targetPath,
+      'As-Task': asTask ? 'true' : 'false',
+    }
+
+    const contentLength = req.headers['content-length']
+    if (contentLength) {
+      headers['Content-Length'] = String(contentLength)
+    }
+
+    const data = await requestUpstream({
+      requestId,
+      method: 'PUT',
+      path: '/api/fs/form',
+      body: bodyStream,
+      headers,
+      responseType: 'json',
+    })
+
+    return {
+      ok: true,
+      path: targetPath,
+      data,
+    }
+  }
+
+  async function getRawUrl(requestId, inputPath, options = {}) {
+    const intent = options.intent === 'view' ? 'view' : 'download'
+    assertPermission(permissions, intent)
+    const data = await getResolvedItem(requestId, inputPath, { intent })
+    if (!data.rawUrl) {
+      const error = new Error('This file did not return a raw download URL')
+      error.status = 404
+      throw error
+    }
+
+    return data.rawUrl
+  }
+
+  return {
+    getStatus,
+    listDirectory,
+    getItem,
+    getResolvedItem,
+    search,
+    makeDirectory,
+    rename,
+    remove,
+    move,
+    copy,
+    upload,
+    getRawUrl,
+  }
+}

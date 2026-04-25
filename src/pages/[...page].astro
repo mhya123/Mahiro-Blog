@@ -32,7 +32,7 @@ const pageLinks = generatePageLinksByCurrent(totalPages, page.current);
 
 <BaseLayout title="Blog" isIndexed={false}>
   <!-- Blog Navigation Cards -->
-  <CardGroup cols="2" class="grid-cols-2">
+  <CardGroup cols="3" class="grid-cols-2">
     <!-- Archives Card -->
     <a href="/blog/archives" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent onload-animation press-effect" data-stagger-index="0">
       <div class="card-body p-2 sm:p-4 flex flex-row items-center gap-2 sm:gap-3">
@@ -84,10 +84,36 @@ const pageLinks = generatePageLinksByCurrent(totalPages, page.current);
         </div>
       </div>
     </a>
+
+    <!-- Drive Card -->
+    <a href="/drive" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent onload-animation press-effect" data-stagger-index="4">
+      <div class="card-body p-2 sm:p-4 flex flex-row items-center gap-2 sm:gap-3">
+        <div class="rounded-full bg-success/10 p-2 sm:p-3 flex-shrink-0">
+          <Icon name="lucide:hard-drive" class="w-4 h-4 sm:w-6 sm:h-6 text-success" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <h2 class="card-title text-xs sm:text-lg leading-tight mb-0.5">网盘</h2>
+          <p class="text-[10px] sm:text-sm opacity-75 truncate">站内文件浏览、预览与下载</p>
+        </div>
+      </div>
+    </a>
+
+    <!-- Write Card -->
+    <a href="/write" class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 w-full rounded-2xl border border-transparent outline outline-1 outline-transparent onload-animation press-effect" data-stagger-index="5">
+      <div class="card-body p-2 sm:p-4 flex flex-row items-center gap-2 sm:gap-3">
+        <div class="rounded-full bg-warning/10 p-2 sm:p-3 flex-shrink-0">
+          <Icon name="lucide:square-pen" class="w-4 h-4 sm:w-6 sm:h-6 text-warning" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <h2 class="card-title text-xs sm:text-lg leading-tight mb-0.5">写作台</h2>
+          <p class="text-[10px] sm:text-sm opacity-75 truncate">配置站点、生成摘要与管理内容</p>
+        </div>
+      </div>
+    </a>
   </CardGroup>
 
   <!-- Announcement -->
-  <div class="onload-animation" data-stagger-index="4">
+  <div class="onload-animation" data-stagger-index="6">
     <Announcement />
   </div>
 
@@ -95,7 +121,7 @@ const pageLinks = generatePageLinksByCurrent(totalPages, page.current);
   <CardGroup cols="1">
     {
       page.data.map((blog: Post, index: number) => (
-        <div class="onload-animation" data-stagger-index={5 + index}>
+        <div class="onload-animation" data-stagger-index={7 + index}>
           <PostCard
             title={blog.data.title}
             image={blog.data.image}
@@ -112,7 +138,7 @@ const pageLinks = generatePageLinksByCurrent(totalPages, page.current);
       ))
     }
   </CardGroup>
-  <div class="onload-animation" data-stagger-index={5 + page.data.length}>
+  <div class="onload-animation" data-stagger-index={7 + page.data.length}>
     <Pagination page={page} totalPages={totalPages} pageLinks={pageLinks} baseUrl={``} />
   </div>
 </BaseLayout>

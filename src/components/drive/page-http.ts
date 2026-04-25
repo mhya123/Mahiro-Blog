@@ -16,15 +16,15 @@ export async function requestJson<T>(input: string, init?: RequestInit): Promise
 export function describeDriveError(error: unknown, fallback: string) {
     if (error instanceof Error) {
         if ('status' in error && (error as Error & { status?: number }).status === 403) {
-            return '褰撳墠鏉冮檺涓嶅厑璁告墽琛岃繖涓綉鐩樻搷浣溿€?'
+            return '当前权限不允许执行这个网盘操作。'
         }
 
         if ('status' in error && (error as Error & { status?: number }).status === 404) {
-            return '鐩爣鏂囦欢鎴栨帴鍙ｄ笉瀛樺湪锛屽彲鑳芥槸鍚庣杩樻病閮ㄧ讲鏈€鏂扮綉鐩樻帴鍙ｏ紝鎴栬鏂囦欢宸茬粡澶辨晥銆?'
+            return '目标文件或接口不存在，可能是后端还没部署最新网盘接口，或该文件已经失效。'
         }
 
         if ('status' in error && (error as Error & { status?: number }).status === 401) {
-            return '缃戠洏閴存潈澶辫触锛岃妫€鏌ュ悗绔噷鐨?AList 璐﹀彿銆佸瘑鐮佹垨 Token銆?'
+            return '网盘鉴权失败，请检查后端里的 AList 账号、密码或 Token。'
         }
 
         return error.message || fallback

@@ -1,5 +1,7 @@
 # Mahiro Blog Backend
 
+[🇨🇳 Read in Chinese (中文)](./README_zh-cn.md)
+
 This directory contains the standalone backend extracted from the Astro site.
 It is self-contained and can be started independently.
 The static frontend calls this service for AI summary, AI translation, and the AList-powered drive page.
@@ -42,7 +44,7 @@ npm start
 Default listen address:
 
 ```text
-http://0.0.0.0:3000
+[http://0.0.0.0:3000](http://0.0.0.0:3000)
 ```
 
 You can also start it from the repo root:
@@ -75,16 +77,16 @@ Main variables:
 
 ```env
 PORT=3000
-ALIST_BASE_URL=https://s.mahiro.work
+ALIST_BASE_URL=[https://s.mahiro.work](https://s.mahiro.work)
 ALIST_USERNAME=mahiro
 ALIST_PASSWORD=mahiro
 ALIST_PERMISSIONS=view,download
 OPENAI_API_KEY=your_summary_api_key
-OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_BASE_URL=[https://api.openai.com/v1](https://api.openai.com/v1)
 OPENAI_TIMEOUT_MS=60000
 OPENAI_RETRIES=3
 AI_TRANSLATE_API_KEY=your_translate_api_key
-AI_TRANSLATE_BASE_URL=https://api.openai.com/v1
+AI_TRANSLATE_BASE_URL=[https://api.openai.com/v1](https://api.openai.com/v1)
 AI_TRANSLATE_TIMEOUT_MS=60000
 AI_TRANSLATE_RETRIES=3
 ```
@@ -115,7 +117,7 @@ That example keeps the drive readable but disables all write operations.
 The static frontend should point to this backend with:
 
 ```env
-PUBLIC_SITE_API_BASE_URL=https://back.mahiro.work
+PUBLIC_SITE_API_BASE_URL=[https://back.mahiro.work](https://back.mahiro.work)
 ```
 
 The frontend build output remains:
@@ -138,7 +140,7 @@ node scripts/generate-ai-summary.mjs --all --channel local
 ```
 
 ```bash
-node scripts/generate-ai-summary.mjs --all --channel service --service-url https://back.mahiro.work
+node scripts/generate-ai-summary.mjs --all --channel service --service-url [https://back.mahiro.work](https://back.mahiro.work)
 ```
 
 ## Deployment Notes

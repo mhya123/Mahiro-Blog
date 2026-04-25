@@ -59,12 +59,12 @@ export function getParentPath(path: string) {
 export function splitBreadcrumbs(path: string) {
     const normalized = normalizePath(path)
     if (normalized === '/') {
-        return [{ label: '鏍圭洰褰?', path: '/' }]
+        return [{ label: '根目录', path: '/' }]
     }
 
     const segments = normalized.split('/').filter(Boolean)
     return [
-        { label: '鏍圭洰褰?', path: '/' },
+        { label: '根目录', path: '/' },
         ...segments.map((segment, index) => ({
             label: segment,
             path: `/${segments.slice(0, index + 1).join('/')}`,
@@ -96,14 +96,14 @@ export function getFileIcon(entry: DriveEntry) {
 
 export function getPermissionLabel(key: keyof DrivePermissions) {
     const labels: Record<keyof DrivePermissions, string> = {
-        upload: '涓婁紶',
-        mkdir: '鏂板缓鏂囦欢澶?',
-        view: '鏌ョ湅',
-        download: '涓嬭浇',
-        rename: '閲嶅懡鍚?',
-        copy: '澶嶅埗',
-        move: '绉诲姩',
-        remove: '鍒犻櫎',
+        upload: '上传',
+        mkdir: '新建文件夹',
+        view: '查看',
+        download: '下载',
+        rename: '重命名',
+        copy: '复制',
+        move: '移动',
+        remove: '删除',
     }
 
     return labels[key]
