@@ -959,7 +959,7 @@ async function handleDriveRaw(req, res, origin, url) {
     const path = getQueryString(url, 'path', '/')
     const intent = getQueryString(url, 'intent', 'download')
     const item = await alistService.getResolvedItem(requestId, path, { intent })
-    const rawUrl = item?.resolvedUrl || item?.rawUrl
+    const rawUrl = item?.rawUrl || item?.resolvedUrl
     if (!rawUrl) {
       const error = new Error('This file did not return a raw download URL')
       error.status = 404

@@ -16,14 +16,8 @@ function getGooglePreviewUrl(sourceUrl: string) {
     if (!sourceUrl) {
         return ''
     }
-    return `https://docs.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(sourceUrl)}`
-}
 
-function getZohoPreviewUrl(sourceUrl: string) {
-    if (!sourceUrl) {
-        return ''
-    }
-    return `https://viewer.zoho.com/api/urlview.do?url=${encodeURIComponent(sourceUrl)}`
+    return `https://docs.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(sourceUrl)}`
 }
 
 function EditorView({ content, wrap }: { content: string; wrap: boolean }) {
@@ -66,11 +60,6 @@ export function TextPreviewPanel({ previewState }: TextPreviewPanelProps) {
         }
 
         return [{ label: 'Google Preview', url: getGooglePreviewUrl(rawPreviewUrl) }].filter((item) => Boolean(item.url))
-
-        return [
-            { label: 'Google 外部', url: getGooglePreviewUrl(rawPreviewUrl) },
-            { label: 'Zoho 外部', url: getZohoPreviewUrl(rawPreviewUrl) },
-        ].filter((item) => Boolean(item.url))
     }, [rawPreviewUrl])
 
     const [markdownMode, setMarkdownMode] = useState<MarkdownPreviewMode>('markdown')

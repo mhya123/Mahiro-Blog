@@ -602,6 +602,35 @@ export default function DrivePage({ permissions }: DrivePageProps) {
         anchor.remove()
     }
 
+    async function copyTextToClipboard(text: string) {
+        const value = String(text || '').trim()
+        if (!value) {
+            throw new Error('empty clipboard text')
+        }
+
+        if (navigator.clipboard?.writeText && window.isSecureContext) {
+            await navigator.clipboard.writeText(value)
+            return
+        }
+
+        const textarea = document.createElement('textarea')
+        textarea.value = value
+        textarea.setAttribute('readonly', 'true')
+        textarea.style.position = 'fixed'
+        textarea.style.opacity = '0'
+        textarea.style.pointerEvents = 'none'
+        document.body.appendChild(textarea)
+        textarea.select()
+        textarea.setSelectionRange(0, value.length)
+
+        const succeeded = document.execCommand('copy')
+        textarea.remove()
+
+        if (!succeeded) {
+            throw new Error('copy command failed')
+        }
+    }
+
     function buildPotPlayerUrl(url: string) {
         return `potplayer://${String(url || '').trim()}`
     }
@@ -617,6 +646,21 @@ export default function DrivePage({ permissions }: DrivePageProps) {
         window.setTimeout(() => {
             showDriveInfo('已尝试唤起 PotPlayer。若没有自动打开，请确认系统已注册 potplayer:// 协议。')
         }, 250)
+    }
+
+    async function copyItemDownloadLink(item: DriveItemPayload) {
+        const downloadUrl = item.rawUrl || item.resolvedUrl
+        if (!downloadUrl) {
+            showDriveError('当前文件没有可复制的下载链接。')
+            return
+        }
+
+        try {
+            await copyTextToClipboard(downloadUrl)
+            showDriveInfo(`已复制 ${item.name} 的下载链接。`)
+        } catch {
+            showDriveError('复制下载链接失败，请检查浏览器剪贴板权限。')
+        }
     }
 
     function buildDriveFileUrl(path: string, intent: 'view' | 'download') {
@@ -764,6 +808,7 @@ export default function DrivePage({ permissions }: DrivePageProps) {
             return
         }
 
+        showDriveInfo(`正在开始下载 ${item.name || entry.name} ...`)
         triggerExternalUrl(item.resolvedUrl || item.rawUrl, {
             downloadName: item.name || entry.name,
         })
@@ -840,6 +885,9 @@ export default function DrivePage({ permissions }: DrivePageProps) {
                     onClose={() => setPreviewState(null)}
                     onDownload={() => {
                         void downloadFileEntry(previewState.entry)
+                    }}
+                    onCopyDownloadLink={() => {
+                        void copyItemDownloadLink(previewState.item)
                     }}
                     onOpenInPotPlayer={() => {
                         openItemInPotPlayer(previewState.item)

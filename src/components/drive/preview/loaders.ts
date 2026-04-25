@@ -21,9 +21,18 @@ import type {
 } from './types'
 
 type SupportedTextEncoding = 'utf-8' | 'utf-16le' | 'gb18030' | 'windows-1252'
+const PREVIEW_FETCH_TIMEOUT_MS = 30_000
 
 async function fetchPreviewResponse(previewUrl: string) {
-    const response = await fetch(previewUrl)
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), PREVIEW_FETCH_TIMEOUT_MS)
+
+    const response = await fetch(previewUrl, {
+        cache: 'no-store',
+        signal: controller.signal,
+    }).finally(() => {
+        window.clearTimeout(timeoutId)
+    })
     if (!response.ok) {
         throw new Error(`Preview request failed: ${response.status}`)
     }
@@ -55,7 +64,7 @@ async function fetchPreviewTextWithFallback(urls: string[]) {
 }
 
 function getPreviewSourceUrls(item: DriveItemPayload, previewUrl: string) {
-    return [item.resolvedUrl, item.rawUrl, previewUrl].filter(Boolean)
+    return [previewUrl, item.rawUrl, item.resolvedUrl].filter(Boolean)
 }
 
 function getRemoteOfficeEmbedSource(item: DriveItemPayload, previewUrl: string) {
@@ -91,9 +100,6 @@ function buildGoogleOfficeEmbedUrl(sourceUrl: string) {
     return `https://docs.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(sourceUrl)}`
 }
 
-function buildZohoOfficeEmbedUrl(_sourceUrl?: string) {
-    return ''
-}
 
 function supportsMicrosoftOfficeEmbed(format: OfficePreviewData['format']) {
     return format === 'doc' || format === 'docx' || format === 'xlsx' || format === 'pptx'
@@ -104,7 +110,7 @@ function buildOfficeOnlinePreviews(format: OfficePreviewData['format'], sourceUr
         return []
     }
 
-    const nextProviders: OfficePreviewProvider[] = [
+    const providers: OfficePreviewProvider[] = [
         {
             id: 'microsoft',
             label: 'Microsoft Preview',
@@ -116,29 +122,6 @@ function buildOfficeOnlinePreviews(format: OfficePreviewData['format'], sourceUr
             label: 'Google Preview',
             mode: 'embed',
             url: buildGoogleOfficeEmbedUrl(sourceUrl),
-        },
-    ]
-
-    return nextProviders.filter((provider) => Boolean(provider.url))
-
-    const providers: OfficePreviewProvider[] = [
-        {
-            id: 'microsoft',
-            label: 'Microsoft 预览',
-            mode: 'embed',
-            url: buildMicrosoftOfficeEmbedUrl(sourceUrl),
-        },
-        {
-            id: 'google',
-            label: 'Google 预览',
-            mode: 'external',
-            url: buildGoogleOfficeEmbedUrl(sourceUrl),
-        },
-        {
-            id: 'zoho',
-            label: 'Zoho 预览',
-            mode: 'external',
-            url: buildZohoOfficeEmbedUrl(sourceUrl),
         },
     ]
 
@@ -495,7 +478,7 @@ async function loadTextPreview(entry: DriveEntry, item: DriveItemPayload, previe
 }
 
 async function loadDocxPreview(arrayBuffer: ArrayBuffer): Promise<OfficePreviewData> {
-    const mammothModule = await import('mammoth/mammoth.browser')
+    const mammothModule = await import('./mammoth-browser')
     const mammoth = (mammothModule.default || mammothModule) as {
         convertToHtml: (input: { arrayBuffer: ArrayBuffer }) => Promise<{ value: string }>
         extractRawText: (input: { arrayBuffer: ArrayBuffer }) => Promise<{ value: string }>

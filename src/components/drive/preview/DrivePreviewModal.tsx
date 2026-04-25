@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Download, ExternalLink, FileAudio2, FileText, X } from 'lucide-react'
+import { Copy, Download, ExternalLink, FileAudio2, FileText, X } from 'lucide-react'
 import type { DrivePreviewState, VideoPreviewMode } from './types'
 import { ArchivePreviewPanel } from './ArchivePreviewPanel'
 import { OfficePreviewPanel } from './OfficePreviewPanel'
@@ -12,6 +12,7 @@ type DrivePreviewModalProps = {
     previewState: DrivePreviewState
     onClose: () => void
     onDownload: () => void
+    onCopyDownloadLink?: () => void
     onOpenInPotPlayer?: () => void
 }
 
@@ -24,7 +25,7 @@ function formatTime(value: string) {
     return date.toLocaleString('zh-CN', { hour12: false })
 }
 
-export function DrivePreviewModal({ previewState, onClose, onDownload, onOpenInPotPlayer }: DrivePreviewModalProps) {
+export function DrivePreviewModal({ previewState, onClose, onDownload, onCopyDownloadLink, onOpenInPotPlayer }: DrivePreviewModalProps) {
     const [videoMode, setVideoMode] = useState<VideoPreviewMode>('video')
     const canOpenInPotPlayer = Boolean(onOpenInPotPlayer) && (previewState.kind === 'video' || previewState.kind === 'audio')
 
@@ -95,6 +96,17 @@ export function DrivePreviewModal({ previewState, onClose, onDownload, onOpenInP
                             >
                                 <ExternalLink className="h-4 w-4" />
                                 PotPlayer
+                            </button>
+                        )}
+
+                        {onCopyDownloadLink && (
+                            <button
+                                type="button"
+                                className="btn btn-ghost btn-sm rounded-full"
+                                onClick={onCopyDownloadLink}
+                            >
+                                <Copy className="h-4 w-4" />
+                                复制链接
                             </button>
                         )}
 

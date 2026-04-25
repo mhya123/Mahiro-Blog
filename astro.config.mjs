@@ -22,6 +22,9 @@ const backendApiTarget = (process.env.PUBLIC_SITE_API_BASE_URL || "https://back.
 export default defineConfig({
   vite: {
     envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_'],
+    optimizeDeps: {
+      include: ['mammoth'],
+    },
     define: {
       'import.meta.env.YAML_GITHUB_CONFIG': JSON.stringify(GITHUB_CONFIG || null),
     },
