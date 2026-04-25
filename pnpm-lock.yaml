@@ -47,6 +47,9 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@24.2.0)(typescript@5.8.3)))
+      '@theme-toggles/react':
+        specifier: 5.0.0-rc.0
+        version: 5.0.0-rc.0(react@19.2.3)
       '@types/three':
         specifier: ^0.184.0
         version: 0.184.0
@@ -2326,6 +2329,11 @@ packages:
     resolution: {integrity: sha512-0wDLwCVF5V3x3b1SGXPCDcdsbDHMBe+lkFzBRaHeLvNi+nrrnZ1lA18u+OTWO8iSWU2GxUOCvlXtDuqftc1oiA==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
+
+  '@theme-toggles/react@5.0.0-rc.0':
+    resolution: {integrity: sha512-24icbf85M9AZs2jQNe9Z4Boy5Gic5S5qkjHcNpDwC1xuWmUhO7ksXAOq//8ZsYVEFYhMBHCpiJAbZ/XTwEDwaA==}
+    peerDependencies:
+      react: ^19.0.0
 
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
@@ -10334,6 +10342,11 @@ snapshots:
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
       tailwindcss: 3.4.17(ts-node@10.9.2(@types/node@24.2.0)(typescript@5.8.3))
+
+  '@theme-toggles/react@5.0.0-rc.0(react@19.2.3)':
+    dependencies:
+      clsx: 2.1.1
+      react: 19.2.3
 
   '@trysound/sax@0.2.0': {}
 

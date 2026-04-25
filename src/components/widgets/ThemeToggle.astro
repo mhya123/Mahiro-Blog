@@ -1,114 +1,76 @@
----  
-import { Icon } from "astro-icon/components";  
-import type { ThemeToggleProps } from "@interfaces/data";  
-import { t } from "@config";  
-  
-// Generate a unique ID for each component instance  
-const uniqueId = `theme-toggle-${Math.random().toString(36).substring(2, 11)}`;  
-  
-const { className = "" } = Astro.props as ThemeToggleProps;  
----  
-  
-<button  
-  id={uniqueId}  
-  class:list={["btn btn-circle btn-md bg-transparent backdrop-blur-md shadow-sm hover:scale-110", className]}  
-  aria-label="Toggle theme"  
-  data-theme-toggle  
-  title={t("label.themeToggle")}  
->  
-  <!-- Moon to sun transition icon (shown when light theme is active) -->  
-  <Icon  
-    name="line-md:moon-alt-to-sunny-outline-loop-transition"  
-    class="theme-toggle-icon h-5 w-5 light-icon"  
-    size={20}  
-  />  
-  
-  <!-- Sun to moon transition icon (shown when dark theme is active) -->  
-  <Icon  
-    name="line-md:sunny-outline-to-moon-alt-loop-transition"  
-    class="theme-toggle-icon h-5 w-5 dark-icon hidden"  
-    size={20}  
-  />  
-</button>  
-  
-<script is:inline define:vars={{ uniqueId }}>  
-  const updateThemeIcons = (toggleButton, isDark) => {  
-    if (!toggleButton) return;  
-  
-    const lightIcon = toggleButton.querySelector(".light-icon");  
-    const darkIcon = toggleButton.querySelector(".dark-icon");  
-  
-    if (lightIcon && darkIcon) {  
-      lightIcon.classList.toggle("hidden", isDark);  
-      darkIcon.classList.toggle("hidden", !isDark);  
-    }  
-  };  
+---
+import type { ThemeToggleProps } from "@interfaces/data";
+import ThemeToggleButton from "./ThemeToggleButton";
 
-  const refreshAllThemeToggles = (forcedIsDark) => {
-    const currentTheme = document.documentElement.getAttribute("data-theme") || "";
-    const resolvedThemeType =
-      typeof forcedIsDark === "boolean"
-        ? (forcedIsDark ? "dark" : "light")
-        : (window.__mahiroResolveThemeType?.(currentTheme) || document.documentElement.getAttribute("data-theme-type") || "light");
-    const isDark = resolvedThemeType === "dark";
+const { className = "" } = Astro.props as ThemeToggleProps;
+---
 
-    document.querySelectorAll("[data-theme-toggle]").forEach((toggleButton) => {
-      updateThemeIcons(toggleButton, isDark);
-    });
-  };
+<ThemeToggleButton client:load className={className} />
 
-  if (!window.__mahiroThemeToggleSyncBound) {
-    window.__mahiroThemeToggleSyncBound = true;
-    window.addEventListener("mahiro:theme-change", (event) => {
-      refreshAllThemeToggles(Boolean(event.detail?.isDark));
-    });
-    document.addEventListener("astro:after-swap", () => {
-      window.setTimeout(() => refreshAllThemeToggles(), 0);
-    });
+<style is:global>
+  .theme-toggles-button {
+    position: relative;
   }
-  
-  document.addEventListener("astro:page-load", () => {  
-    const themeToggle = document.getElementById(uniqueId);  
-    if (!themeToggle) {
-      refreshAllThemeToggles();
-      return;
-    }
 
-    if (themeToggle.dataset.bound !== "true") {
-      themeToggle.dataset.bound = "true";
-      themeToggle.addEventListener("click", () => {  
-        window.__mahiroSetThemeTrigger?.(themeToggle);
-        window.__mahiroAnimateThemeControl?.(themeToggle);
-        themeToggle.classList.add("animate-spin-once");  
-        window.__mahiroToggleTheme?.({ animate: true });
-  
-        setTimeout(() => {  
-          themeToggle.classList.remove("animate-spin-once");  
-        }, 220);  
-      });
-    }
+  .theme-toggles-button::before {
+    content: "";
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 1.28rem;
+    height: 1.28rem;
+    border-radius: 999px;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M21.75 15.0a9.75 9.75 0 0 1-12.75-12.75 0.75 0.75 0 0 0-0.9-0.9A10.5 10.5 0 1 0 22.65 15.9a0.75 0.75 0 0 0-0.9-0.9Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.72) rotate(-8deg);
+    transition:
+      opacity 0.18s ease,
+      transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+  }
 
-    refreshAllThemeToggles();
-  });  
-</script>  
-  
-<style>  
-  @keyframes theme-toggle-bump {  
-    0% {  
-      transform: scale(0.96);  
-    }  
-    100% {  
-      transform: scale(1);  
-    }  
-  }  
-  
-  .animate-spin-once {  
-    animation: theme-toggle-bump 0.18s ease-out;  
-  }  
-  
-  .theme-toggle-icon {  
-    transition:  
-      opacity 0.2s ease-in-out,  
-      transform 0.2s ease-in-out;  
-  }  
+  .theme-toggles-button svg {
+    overflow: visible;
+    shape-rendering: geometricPrecision;
+    transition:
+      opacity 0.16s ease,
+      transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .theme-toggles-button .toggles-dev--\[transform-origin\:center\] {
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+
+  .theme-toggles-button .toggles-dev--transition-\[d\,translate\] {
+    transition-property: d, translate;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+
+  .theme-toggles-button .toggles-dev--\[transition-delay\:0s\] {
+    transition-delay: 0s;
+  }
+
+  .theme-toggles-button .toggles-dev--\[transition-duration\:calc\(var\(--toggles-expand--duration\)_\*_0\.6\)\] {
+    transition-duration: calc(var(--toggles-expand--duration) * 0.6);
+  }
+
+  .theme-toggles-button .toggles-dev--\[transition-timing-function\:cubic-bezier\(0\,0\,0\.5\,1\)\] {
+    transition-timing-function: cubic-bezier(0, 0, 0.5, 1);
+  }
+
+  .theme-toggles-button .toggles-dev--\[transition\:transform_calc\(var\(--toggles-expand--duration\)_\*_0\.65\)_cubic-bezier\(0\,0\,0\,1\.25\)_calc\(var\(--toggles-expand--duration\)_\*_0\.35\)\] {
+    transition: transform calc(var(--toggles-expand--duration) * 0.65) cubic-bezier(0, 0, 0, 1.25) calc(var(--toggles-expand--duration) * 0.35);
+  }
+
+  .dark .theme-toggles-button::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(-8deg);
+  }
+
+  .dark .theme-toggles-button svg {
+    opacity: 0;
+    transform: scale(0.72) rotate(12deg);
+  }
 </style>
