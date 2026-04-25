@@ -1,10 +1,10 @@
 {
-  "commitSha": "495c45d1a1c5007b67eeba86282a76b676079413",
-  "commitShort": "495c45d",
-  "commitMessage": "特性：添加主题切换功能和GPU加速支持",
+  "commitSha": "9d34c586ea7ac59538628dea6cd81a1a3f0792ae",
+  "commitShort": "9d34c58",
+  "commitMessage": "Merge branch 'main' of https://github.com/mhya123/Mahiro-Blog",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-25T23:01:12+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/495c45d1a1c5007b67eeba86282a76b676079413",
-  "buildTime": "2026/4/25 23:01:41",
-  "totalCommits": 381
+  "commitDate": "2026-04-25T23:08:23+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/9d34c586ea7ac59538628dea6cd81a1a3f0792ae",
+  "buildTime": "2026/4/25 23:08:49",
+  "totalCommits": 384
 }
