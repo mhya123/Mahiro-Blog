@@ -1,10 +1,10 @@
 {
-  "commitSha": "825b3b741abe61c5013c143ca589e922403ac1e5",
-  "commitShort": "825b3b7",
-  "commitMessage": "特性：实现核心文件处理和实用程序",
+  "commitSha": "143b766d3f832565916bfe3863e693f7a469ba62",
+  "commitShort": "143b766",
+  "commitMessage": "重构（驱动）：将 AList 服务和 DrivePage 拆分为更易于维护的模块",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-25T19:12:54+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/825b3b741abe61c5013c143ca589e922403ac1e5",
-  "buildTime": "2026/4/25 19:13:25",
-  "totalCommits": 375
+  "commitDate": "2026-04-25T21:31:49+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/143b766d3f832565916bfe3863e693f7a469ba62",
+  "buildTime": "2026/4/25 21:32:25",
+  "totalCommits": 377
 }
