@@ -17,6 +17,21 @@
   will-change: transform;
 }
 
+.gpu-layer,
+.gpu-layer-soft {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.gpu-layer {
+  will-change: transform, opacity;
+}
+
+.gpu-layer-soft {
+  will-change: transform;
+}
+
 @media (pointer: coarse) {
   html,
   body {
@@ -1661,31 +1676,47 @@ blockquote.admonition.bdm-ai {
    =================================================== */
 
 ::view-transition-group(root) {
-  animation-duration: 0.7s;
-  animation-timing-function: cubic-bezier(0.8, 0, 0.2, 1);
+  animation-duration: 0.28s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  isolation: isolate;
 }
 
-[data-theme-transition="true"]::view-transition-old(root) {
+[data-theme-transition="fade"]::view-transition-old(root) {
   z-index: 1;
+  animation: theme-crossfade-out 0.18s ease-out both;
 }
 
-[data-theme-transition="true"]::view-transition-new(root) {
+[data-theme-transition="fade"]::view-transition-new(root) {
   z-index: 2;
-  animation: theme-reveal 0.7s cubic-bezier(0.8, 0, 0.2, 1);
-  clip-path: circle(0px at var(--mahiro-theme-origin-x, 50vw) var(--mahiro-theme-origin-y, 50vh));
+  animation: theme-crossfade-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@keyframes theme-reveal {
+@keyframes theme-crossfade-in {
   0% {
-    clip-path: circle(0px at var(--mahiro-theme-origin-x, 50vw) var(--mahiro-theme-origin-y, 50vh));
+    opacity: 0;
+    filter: brightness(0.98);
   }
   100% {
-    clip-path: circle(var(--mahiro-theme-reveal-radius, 150vw) at var(--mahiro-theme-origin-x, 50vw) var(--mahiro-theme-origin-y, 50vh));
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@keyframes theme-crossfade-out {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  100% {
+    opacity: 0;
+    filter: brightness(1.02);
   }
 }

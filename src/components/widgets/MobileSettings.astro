@@ -1,6 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import TranslateWidget from "./TranslateWidget.astro";
+import ThemeToggle from "./ThemeToggle.astro";
 
 const themes = [
   { name: "light", color: "#ffffff" },
@@ -56,13 +57,10 @@ const fonts = [
 
   <ul tabindex="0" class="dropdown-content z-[100] menu p-2 shadow-2xl bg-base-200 rounded-box w-64 mt-4">
     <li>
-      <button id="mobile-theme-toggle" class="flex justify-between items-center gap-2 p-2 hover:bg-base-300 rounded-lg w-full">
+      <div class="flex justify-between items-center gap-2 p-2 rounded-lg w-full">
         <span class="font-medium">Dark/Light</span>
-        <div class="btn btn-ghost btn-circle btn-sm text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-300 pointer-events-none flex items-center justify-center">
-          <Icon name="line-md:moon-alt-to-sunny-outline-loop-transition" class="w-5 h-5 light-icon" />
-          <Icon name="line-md:sunny-outline-to-moon-alt-loop-transition" class="w-5 h-5 dark-icon hidden" />
-        </div>
-      </button>
+        <ThemeToggle className="btn btn-ghost btn-circle btn-sm text-primary hover:bg-primary/10 hover:text-primary transition-colors duration-200" />
+      </div>
     </li>
 
     <li>
@@ -162,21 +160,6 @@ const fonts = [
 </div>
 
 <script is:inline>
-  const updateMobileThemeToggleIcons = () => {
-    const toggle = document.getElementById("mobile-theme-toggle");
-    if (!toggle) return;
-
-    const currentTheme = document.documentElement.getAttribute("data-theme") || "";
-    const themeType =
-      window.__mahiroResolveThemeType?.(currentTheme) ||
-      document.documentElement.getAttribute("data-theme-type") ||
-      "light";
-    const isDark = themeType === "dark";
-
-    toggle.querySelector(".light-icon")?.classList.toggle("hidden", isDark);
-    toggle.querySelector(".dark-icon")?.classList.toggle("hidden", !isDark);
-  };
-
   const updateMobileThemeButtons = () => {
     const currentTheme =
       document.documentElement.getAttribute("data-theme") ||
@@ -225,12 +208,10 @@ const fonts = [
   if (!window.__mahiroMobileSettingsThemeSyncBound) {
     window.__mahiroMobileSettingsThemeSyncBound = true;
     window.addEventListener("mahiro:theme-change", () => {
-      updateMobileThemeToggleIcons();
       updateMobileThemeButtons();
     });
     document.addEventListener("astro:after-swap", () => {
       window.setTimeout(() => {
-        updateMobileThemeToggleIcons();
         updateMobileThemeButtons();
         updateActiveBannerButton();
         updateActiveFontButton();
@@ -239,16 +220,6 @@ const fonts = [
   }
 
   document.addEventListener("astro:page-load", () => {
-    const mobileThemeToggle = document.getElementById("mobile-theme-toggle");
-    if (mobileThemeToggle && mobileThemeToggle.dataset.bound !== "true") {
-      mobileThemeToggle.dataset.bound = "true";
-      mobileThemeToggle.addEventListener("click", () => {
-        window.__mahiroSetThemeTrigger?.(mobileThemeToggle);
-        window.__mahiroAnimateThemeControl?.(mobileThemeToggle);
-        window.__mahiroToggleTheme?.({ animate: true });
-      });
-    }
-
     document.querySelectorAll("[data-set-banner-mobile]").forEach((btn) => {
       if (btn.dataset.bound === "true") return;
       btn.dataset.bound = "true";
@@ -283,7 +254,6 @@ const fonts = [
       });
     });
 
-    updateMobileThemeToggleIcons();
     updateMobileThemeButtons();
     updateActiveBannerButton();
     updateActiveFontButton();

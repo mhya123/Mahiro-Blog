@@ -54,6 +54,21 @@ const bannerSubtitle = pageConfig?.subtitle || "";
   data-theme-type="light"
 >
   <head>
+    <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>
+      (function () {
+        const root = document.documentElement;
+        const darkThemes = ["dark", "synthwave", "halloween", "forest", "black", "luxury", "dracula", "business", "night", "coffee"];
+        const storedTheme = localStorage.getItem("theme") || SITE_THEME.light;
+        const storedBannerMode = localStorage.getItem("banner-mode") || DEFAULT_BANNER_MODE;
+        const themeType = storedTheme === SITE_THEME.dark || darkThemes.includes(storedTheme) ? "dark" : "light";
+
+        root.setAttribute("data-theme", storedTheme);
+        root.setAttribute("data-theme-type", themeType);
+        root.setAttribute("data-banner-mode", storedBannerMode);
+        root.classList.toggle("dark", themeType === "dark");
+        root.style.colorScheme = themeType;
+      })();
+    </script>
     <ClientRouter />
     <ElementCrossing />
     <PointerOnNavigation />
@@ -192,11 +207,13 @@ const bannerSubtitle = pageConfig?.subtitle || "";
           const shouldPersist = options.persist !== false;
           const shouldAnimate =
             options.animate === true &&
-            typeof window.__mahiroRunThemeFallbackAnimation === "function" &&
+            typeof window.__mahiroRunThemeTransition === "function" &&
             window.matchMedia &&
             !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
           const currentTheme = root.getAttribute("data-theme");
           const currentThemeType = root.getAttribute("data-theme-type");
+          const nextTransitionId = (window.__mahiroThemeTransitionId || 0) + 1;
+          window.__mahiroThemeTransitionId = nextTransitionId;
           const clearThemeAnimationState = () => {
             clearTimeout(window.__mahiroThemeSwitchTimer);
             cancelAnimationFrame(window.__mahiroThemeSwitchFrame || 0);
@@ -205,11 +222,9 @@ const bannerSubtitle = pageConfig?.subtitle || "";
           };
           const commitTheme = () => {
             root.setAttribute("data-theme-type", themeType);
-            root.style.colorScheme = themeType;
             root.setAttribute("data-theme", resolvedTheme);
-            window.requestAnimationFrame(() => {
-              root.style.removeProperty("color-scheme");
-            });
+            root.classList.toggle("dark", themeType === "dark");
+            root.style.colorScheme = themeType;
 
             if (shouldPersist) {
               localStorage.setItem("theme", resolvedTheme);
@@ -229,13 +244,15 @@ const bannerSubtitle = pageConfig?.subtitle || "";
           clearThemeAnimationState();
 
           if (shouldAnimate) {
-            root.setAttribute("data-theme-transition", "overlay");
-            window.__mahiroRunThemeFallbackAnimation(commitTheme)
+            root.setAttribute("data-theme-transition", "fade");
+            window.__mahiroRunThemeTransition(commitTheme, { targetThemeType: themeType })
               .catch(() => {
                 commitTheme();
               })
               .finally(() => {
-                clearThemeAnimationState();
+                if (window.__mahiroThemeTransitionId === nextTransitionId) {
+                  clearThemeAnimationState();
+                }
               });
             return resolvedTheme;
           }
@@ -314,6 +331,33 @@ const bannerSubtitle = pageConfig?.subtitle || "";
 
     <!-- 其余脚本保持不变 -->
     <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>
+      document.addEventListener("astro:before-swap", (event) => {
+        const newDocument = event.newDocument;
+        const nextRoot = newDocument?.documentElement;
+        if (!nextRoot) {
+          return;
+        }
+
+        const nextTheme =
+          localStorage.getItem("theme") ||
+          document.documentElement.getAttribute("data-theme") ||
+          SITE_THEME.light;
+        const nextThemeType =
+          window.__mahiroResolveThemeType?.(nextTheme) ||
+          document.documentElement.getAttribute("data-theme-type") ||
+          "light";
+        const nextBannerMode =
+          localStorage.getItem("banner-mode") ||
+          document.documentElement.getAttribute("data-banner-mode") ||
+          DEFAULT_BANNER_MODE;
+
+        nextRoot.setAttribute("data-theme", nextTheme);
+        nextRoot.setAttribute("data-theme-type", nextThemeType);
+        nextRoot.setAttribute("data-banner-mode", nextBannerMode);
+        nextRoot.classList.toggle("dark", nextThemeType === "dark");
+        nextRoot.style.colorScheme = nextThemeType;
+      });
+
       document.addEventListener("astro:after-swap", () => {
         const storedTheme = localStorage.getItem("theme");
         const storedBannerMode = localStorage.getItem("banner-mode") || DEFAULT_BANNER_MODE;
@@ -340,10 +384,14 @@ const bannerSubtitle = pageConfig?.subtitle || "";
 
       const mahiroWindow = window as typeof window & {
         __mahiroClientAnimationHelpersReady?: boolean;
+        __mahiroThemeTransitionId?: number;
         __mahiroSetThemeTrigger?: (element?: Element | null) => void;
         __mahiroEnsureThemeTrigger?: () => void;
         __mahiroAnimateThemeControl?: (element?: Element | null) => void;
-        __mahiroRunThemeFallbackAnimation?: (commitTheme: () => void) => Promise<void>;
+        __mahiroRunThemeTransition?: (
+          commitTheme: () => void,
+          options?: { targetThemeType?: "light" | "dark" },
+        ) => Promise<void>;
         __mahiroAnimateTranslateSuggestion?: (element?: Element | null) => Promise<void>;
         __mahiroDismissTranslateSuggestion?: (element?: Element | null) => Promise<void>;
       };
@@ -385,12 +433,13 @@ const bannerSubtitle = pageConfig?.subtitle || "";
           gsap.killTweensOf(element);
           gsap.fromTo(
             element,
-            { scale: 0.97 },
+            { scale: 0.97, force3D: true },
             {
               scale: 1,
               duration: 0.22,
               ease: "power2.out",
               clearProps: "transform",
+              force3D: true,
             },
           );
 
@@ -398,22 +447,36 @@ const bannerSubtitle = pageConfig?.subtitle || "";
             gsap.killTweensOf(icon);
             gsap.fromTo(
               icon,
-              { scale: 0.94, opacity: 0.82 },
+              { scale: 0.94, opacity: 0.82, force3D: true },
               {
                 scale: 1,
                 opacity: 1,
                 duration: 0.2,
                 ease: "power2.out",
                 clearProps: "transform,opacity",
+                force3D: true,
               },
             );
           }
         };
 
-        const runThemeFallbackAnimation = (commitTheme: () => void) => {
+        const runThemeTransition = (
+          commitTheme: () => void,
+          options: { targetThemeType?: "light" | "dark" } = {},
+        ) => {
           if (prefersReducedMotion.matches) {
             commitTheme();
             return Promise.resolve();
+          }
+
+          if (typeof document.startViewTransition === "function") {
+            const transition = document.startViewTransition(() => {
+              commitTheme();
+            });
+
+            return transition.finished.then(() => {
+              root.style.colorScheme = options.targetThemeType || root.getAttribute("data-theme-type") || "light";
+            });
           }
 
           const overlay = document.createElement("div");
@@ -426,12 +489,15 @@ const bannerSubtitle = pageConfig?.subtitle || "";
           overlay.style.background = bodyStyles.backgroundColor || "var(--custom-page-bg)";
           overlay.style.opacity = "0";
           overlay.style.willChange = "opacity";
+          overlay.style.transform = "translateZ(0)";
+          overlay.style.backfaceVisibility = "hidden";
           document.body.appendChild(overlay);
 
           return new Promise<void>((resolve) => {
             const timeline = gsap.timeline({
               defaults: {
                 ease: "power2.out",
+                force3D: true,
               },
               onComplete: () => {
                 overlay.remove();
@@ -474,7 +540,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
             if (direction === "enter") {
               gsap.fromTo(
                 element,
-                { autoAlpha: 0, x: 20, y: 16, scale: 0.94, filter: "blur(10px)" },
+                { autoAlpha: 0, x: 20, y: 16, scale: 0.94, filter: "blur(10px)", force3D: true },
                 {
                   autoAlpha: 1,
                   x: 0,
@@ -484,6 +550,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
                   duration: 0.44,
                   ease: "power3.out",
                   clearProps: "transform,filter",
+                  force3D: true,
                   onComplete: () => resolve(),
                 },
               );
@@ -498,6 +565,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
               filter: "blur(8px)",
               duration: 0.28,
               ease: "power2.in",
+              force3D: true,
               onComplete: () => resolve(),
             });
           });
@@ -507,7 +575,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
         mahiroWindow.__mahiroSetThemeTrigger = setThemeTrigger;
         mahiroWindow.__mahiroEnsureThemeTrigger = ensureThemeTrigger;
         mahiroWindow.__mahiroAnimateThemeControl = animateThemeControl;
-        mahiroWindow.__mahiroRunThemeFallbackAnimation = runThemeFallbackAnimation;
+        mahiroWindow.__mahiroRunThemeTransition = runThemeTransition;
         mahiroWindow.__mahiroAnimateTranslateSuggestion = (element: Element | null | undefined) =>
           animateTranslateSuggestion(element, "enter");
         mahiroWindow.__mahiroDismissTranslateSuggestion = (element: Element | null | undefined) =>

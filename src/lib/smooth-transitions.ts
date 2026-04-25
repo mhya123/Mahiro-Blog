@@ -1,5 +1,16 @@
 import { animate, stagger } from 'animejs'
 
+function promoteToGpu(elements: Iterable<HTMLElement> | ArrayLike<HTMLElement>) {
+  Array.from(elements).forEach((el) => {
+    el.style.willChange = 'transform, opacity'
+    el.style.transform =
+      el.style.transform && el.style.transform !== 'none'
+        ? `${el.style.transform} translateZ(0)`
+        : 'translateZ(0)'
+    el.style.backfaceVisibility = 'hidden'
+  })
+}
+
 /**
  * 全局柔和过渡系统 — anime.js 缓动函数注入
  *
@@ -32,6 +43,7 @@ function animateSidebar() {
     el.style.opacity = '0'
     el.style.transform = 'translateX(-20px)'
   })
+  promoteToGpu(cards)
 
   animate(cards, {
     opacity: [0, 1],
@@ -61,6 +73,7 @@ function bindElasticHover() {
   document.querySelectorAll<HTMLElement>(selectors.join(',')).forEach(el => {
     if (el.dataset.elasticBound) return
     el.dataset.elasticBound = '1'
+    promoteToGpu([el])
 
     // 取消 Tailwind 的硬切 translate，由 anime.js 接管
     el.classList.remove('hover:-translate-y-1')
@@ -98,6 +111,7 @@ function bindNavbarSmooth() {
   let lastScrollY = window.scrollY
   let desktopHidden = false
   let mobileHidden = false
+  promoteToGpu([navDesktop, navMobile].filter(Boolean) as HTMLElement[])
 
   // 移除原有 CSS transition 类（我们用 anime.js 接管）
   navDesktop?.classList.remove('transition-opacity', 'duration-500')
@@ -173,6 +187,7 @@ function bindNavbarSmooth() {
 function animateCategoryCards() {
   const cards = document.querySelectorAll<HTMLElement>('.category-card')
   if (cards.length === 0) return
+  promoteToGpu(cards)
 
   // 用 anime.js 替代 CSS @keyframes fadeIn
   cards.forEach(el => {
@@ -191,6 +206,7 @@ function animateCategoryCards() {
 function animateTagItems() {
   const items = document.querySelectorAll<HTMLElement>('.tags-item')
   if (items.length === 0) return
+  promoteToGpu(items)
 
   items.forEach(el => {
     el.style.animation = 'none'
@@ -218,6 +234,7 @@ function bindLinkCardHover() {
   document.querySelectorAll<HTMLElement>(selectors.join(',')).forEach(el => {
     if (el.dataset.softHover) return
     el.dataset.softHover = '1'
+    promoteToGpu([el])
 
     el.addEventListener('mouseenter', () => {
       animate(el, {
@@ -245,6 +262,7 @@ function bindImagePressEffect() {
   document.querySelectorAll<HTMLElement>('.prose img').forEach(img => {
     if (img.dataset.pressBound) return
     img.dataset.pressBound = '1'
+    promoteToGpu([img])
 
     img.addEventListener('click', () => {
       animate(img, {

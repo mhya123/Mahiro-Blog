@@ -26,7 +26,7 @@ const s = sizeClasses[size] || sizeClasses.md;
 ---
 
 {enable && content && (
-  <div id="announcement-card" class={`announcement-banner rounded-2xl shadow-sm border border-base-200 bg-base-100 ${s.padding} mb-4 transition-all`}>
+  <div id="announcement-card" class={`announcement-banner rounded-2xl shadow-sm border border-base-200 bg-base-100 ${s.padding} mb-4 transition-[transform,opacity,box-shadow] duration-200 ease-out`}>
     <div class="flex items-center gap-3 w-full">
       <div class={`rounded-full bg-primary/10 ${s.iconBg} shrink-0`}>
         <Icon name={iconMap[type] || 'lucide:megaphone'} class={`${s.icon} text-primary`} />
@@ -61,7 +61,7 @@ const s = sizeClasses[size] || sizeClasses.md;
         btn.addEventListener('click', function() {
           card.style.opacity = '0';
           card.style.transform = 'scale(0.98)';
-          card.style.transition = 'all 0.2s ease-out';
+          card.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
           setTimeout(function() {
             card.style.display = 'none';
           }, 200);

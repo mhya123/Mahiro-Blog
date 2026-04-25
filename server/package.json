@@ -8,5 +8,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@theme-toggles/react": "^5.0.0-rc.0"
   }
 }
