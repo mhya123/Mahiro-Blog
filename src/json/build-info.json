@@ -1,10 +1,10 @@
 {
-  "commitSha": "54644161d209f43f55714d8bc81ad01c3959bcb3",
-  "commitShort": "5464416",
-  "commitMessage": "fix: improve write toast theming",
+  "commitSha": "6bde5da14e66824e9318aa1bf1f7f485cd18bbf5",
+  "commitShort": "6bde5da",
+  "commitMessage": "docs, refactor & perf: 深度完善全站视觉交互、SEO 架构与项目文档",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-26T01:30:32+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/54644161d209f43f55714d8bc81ad01c3959bcb3",
-  "buildTime": "2026/4/26 01:32:29",
-  "totalCommits": 409
+  "commitDate": "2026-04-26T16:35:01+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6bde5da14e66824e9318aa1bf1f7f485cd18bbf5",
+  "buildTime": "2026/4/26 16:35:41",
+  "totalCommits": 411
 }
