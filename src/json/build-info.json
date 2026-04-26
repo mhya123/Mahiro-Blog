@@ -1,10 +1,10 @@
 {
-  "commitSha": "4cc0a2fad1f6fa975c95cec360e7873500683586",
-  "commitShort": "4cc0a2f",
-  "commitMessage": "feat: 优化网盘预览动画、集成后端 Redis 缓存及新增 AI 功能开关",
+  "commitSha": "6debe8ef26bc1b43b7f6a2305b1540a62b6af396",
+  "commitShort": "6debe8e",
+  "commitMessage": "fix navbar",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-26T17:19:09+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/4cc0a2fad1f6fa975c95cec360e7873500683586",
-  "buildTime": "2026/4/26 17:19:38",
-  "totalCommits": 413
+  "commitDate": "2026-04-26T17:46:11+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6debe8ef26bc1b43b7f6a2305b1540a62b6af396",
+  "buildTime": "2026/4/26 17:46:48",
+  "totalCommits": 415
 }
