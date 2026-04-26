@@ -16,8 +16,21 @@ export function usePublish() {
 
 	const onChoosePrivateKey = useCallback(
 		async (file: File) => {
-			const pem = await readFileAsText(file)
-			setPrivateKey(pem)
+			try {
+				const pem = await readFileAsText(file)
+				if (!pem.includes('BEGIN RSA PRIVATE KEY') && !pem.includes('BEGIN PRIVATE KEY')) {
+					throw new Error('无效的私钥文件格式')
+				}
+				setPrivateKey(pem)
+				toast.success('🔑 私钥导入成功', {
+					description: '您现在可以进行发布或删除操作了。'
+				})
+			} catch (err: any) {
+				console.error(err)
+				toast.error('❌ 私钥导入失败', {
+					description: err?.message || '请确保选择正确的 .pem 私钥文件'
+				})
+			}
 		},
 		[setPrivateKey]
 	)

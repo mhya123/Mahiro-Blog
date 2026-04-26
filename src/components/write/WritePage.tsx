@@ -13,6 +13,7 @@ import type { AiModelDefinition } from '@/lib/ai-models'
 import type { PublishForm } from './types'
 import { WRITE_DRAFT_STORAGE_KEY, isDraftFormMeaningful } from './constants'
 
+
 type WritePageProps = {
     categories?: string[]
     aiModels?: AiModelDefinition[]
@@ -138,22 +139,24 @@ export default function WritePage({ categories = [], aiModels = [] }: WritePageP
                 offset={80}
                 visibleToasts={6}
                 expand={true}
+                richColors
+                gap={10}
                 style={{ zIndex: 999999 }}
                 toastOptions={{
+                    className: 'sonner-toast-custom',
                     classNames: {
-                        toast: '!flex-row flex !items-center shadow-xl !rounded-2xl !backdrop-blur-xl !bg-base-100/95',
-                        default: 'border border-base-300/50 !text-base-content',
-                        error: 'border !border-error/40 !text-error font-semibold',
-                        success: 'border !border-success/40 !text-success font-semibold',
-                        warning: 'border !border-warning/40 !text-warning font-semibold',
-                        info: 'border !border-info/40 !text-info font-semibold',
+                        toast: '!flex-row flex !items-center shadow-2xl !rounded-2xl !backdrop-blur-xl !bg-base-100/90 border border-base-300/50',
+                        default: '!text-base-content',
+                        error: '!text-error font-semibold',
+                        success: '!text-success font-semibold',
+                        warning: '!text-warning font-semibold',
+                        info: '!text-info font-semibold',
                     },
                     style: {
-                        fontSize: '1rem',
-                        padding: '14px 20px',
+                        fontSize: '0.95rem',
+                        padding: '14px 22px',
                     },
                     duration: 4000,
-                    closeButton: false,
                 }}
             />
             <div className='relative'>
