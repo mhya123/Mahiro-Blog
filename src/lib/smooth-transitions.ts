@@ -114,24 +114,16 @@ function bindElasticHover() {
   })
 }
 
-// ─── 3. 导航栏智能显隐 (Compositor 线程驱动) ─────────
+let _navbarScrollListenerBound = false
+let _navbarLastScrollY = 0
+let _navbarDesktopHidden = false
+let _navbarMobileHidden = false
 
 /**
  * 导航栏随滚动智能显隐逻辑。
  * 使用 CSS Transition 替代 JS 动画循环，利用合成器线程确保 60FPS 的极致流畅。
  */
 function bindNavbarSmooth() {
-  const navBg = document.getElementById('navbar-bg')
-  const navMobBg = document.getElementById('navbar-mobile-bg')
-  const navDesktop = document.getElementById('navbar-desktop')
-  const navMobile = document.getElementById('navbar-mobile')
-
-  if (!navBg && !navMobBg) return
-
-  // 避免逻辑重复绑定
-  if ((window as any).__navbarSmoothBound) return
-  ;(window as any).__navbarSmoothBound = true
-
   // 动态注入核心显隐 CSS 规则
   const styleId = 'mahiro-navbar-transition'
   if (!document.getElementById(styleId)) {
@@ -155,53 +147,62 @@ function bindNavbarSmooth() {
     document.head.appendChild(style)
   }
 
-  let lastScrollY = window.scrollY
-  let desktopHidden = false
-  let mobileHidden = false
-
-  // 清除旧有的 CSS 动画干扰类
+  // 获取页面切换后的新 DOM 节点，清除旧有的 CSS 动画干扰类
+  const navDesktop = document.getElementById('navbar-desktop')
+  const navMobile = document.getElementById('navbar-mobile')
   navDesktop?.classList.remove('transition-opacity', 'duration-500')
   navMobile?.classList.remove('transition-all', 'duration-500', 'ease-in-out')
 
-  function handleScroll() {
-    const y = window.scrollY
-    const goingDown = y > lastScrollY && y > 50
+  // 若存在新页面重新初始化，则重置滚动状态
+  _navbarLastScrollY = window.scrollY
+  _navbarDesktopHidden = false
+  _navbarMobileHidden = false
 
-    // ── 桌面端控制 ──
-    if (navBg && navDesktop) {
-      if (goingDown && !desktopHidden) {
-        desktopHidden = true
-        navDesktop.style.pointerEvents = 'none'
-        navBg.classList.add('nav-hidden')
-      } else if (!goingDown && desktopHidden) {
-        desktopHidden = false
-        navDesktop.style.pointerEvents = ''
-        navBg.classList.remove('nav-hidden')
-      }
-    }
-
-    // ── 移动端控制 ──
-    if (navMobBg && navMobile) {
-      if (goingDown && !mobileHidden) {
-        mobileHidden = true
-        navMobile.style.pointerEvents = 'none'
-        navMobBg.classList.add('nav-hidden')
-      } else if (!goingDown && mobileHidden) {
-        mobileHidden = false
-        navMobile.style.pointerEvents = ''
-        navMobBg.classList.remove('nav-hidden')
-      }
-    }
-
-    lastScrollY = y
-  }
+  // 全局只绑定一次 window 的 scroll 事件
+  if (_navbarScrollListenerBound) return
+  _navbarScrollListenerBound = true
 
   // 使用 rAF (RequestAnimationFrame) 节流滚动事件
   let ticking = false
   window.addEventListener('scroll', () => {
     if (!ticking) {
       requestAnimationFrame(() => {
-        handleScroll()
+        const y = window.scrollY
+        const goingDown = y > _navbarLastScrollY && y > 50
+
+        // 因为 Astro 视图过渡会重建 DOM，所以需在每次滚动时动态获取元素
+        const curNavBg = document.getElementById('navbar-bg')
+        const curNavMobBg = document.getElementById('navbar-mobile-bg')
+        const curNavDesktop = document.getElementById('navbar-desktop')
+        const curNavMobile = document.getElementById('navbar-mobile')
+
+        // ── 桌面端控制 ──
+        if (curNavBg && curNavDesktop) {
+          if (goingDown && !_navbarDesktopHidden) {
+            _navbarDesktopHidden = true
+            curNavDesktop.style.pointerEvents = 'none'
+            curNavBg.classList.add('nav-hidden')
+          } else if (!goingDown && _navbarDesktopHidden) {
+            _navbarDesktopHidden = false
+            curNavDesktop.style.pointerEvents = ''
+            curNavBg.classList.remove('nav-hidden')
+          }
+        }
+
+        // ── 移动端控制 ──
+        if (curNavMobBg && curNavMobile) {
+          if (goingDown && !_navbarMobileHidden) {
+            _navbarMobileHidden = true
+            curNavMobile.style.pointerEvents = 'none'
+            curNavMobBg.classList.add('nav-hidden')
+          } else if (!goingDown && _navbarMobileHidden) {
+            _navbarMobileHidden = false
+            curNavMobile.style.pointerEvents = ''
+            curNavMobBg.classList.remove('nav-hidden')
+          }
+        }
+
+        _navbarLastScrollY = y
         ticking = false
       })
       ticking = true
