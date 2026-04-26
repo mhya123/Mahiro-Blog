@@ -112,6 +112,12 @@ ALIST_PERMISSIONS=view,download
 
 That example keeps the drive readable but disables all write operations.
 
+> [!CAUTION]
+> **Permission Synchronization**: To modify drive permissions (e.g., enabling upload), you must synchronize settings in **3 locations**:
+> 1.  `mahiro.config.yaml` (Frontend): Controls visibility of UI buttons.
+> 2.  `server/.env` (Backend): Enforces actual API execution permissions.
+> 3.  **AList Admin Panel**: The source provider must also allow these operations for the configured user.
+
 ## Frontend Integration
 
 The static frontend should point to this backend with:

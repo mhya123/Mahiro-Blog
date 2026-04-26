@@ -8,6 +8,7 @@ import {
   umamiConfig,
   SITE_PAGES,
   DEFAULT_BANNER_MODE,
+  SITE_GLASSMORPHISM,
 } from "@config";
 import { ClientRouter } from "astro:transitions";
 import Header from "@components/Header.astro";
@@ -52,7 +53,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
   data-theme-type="light"
 >
   <head>
-    <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE }} is:inline>
+    <script define:vars={{ SITE_THEME, DEFAULT_BANNER_MODE, SITE_GLASSMORPHISM }} is:inline>
       (function () {
         const root = document.documentElement;
         const darkThemes = ["dark", "synthwave", "halloween", "forest", "black", "luxury", "dracula", "business", "night", "coffee"];
@@ -65,6 +66,30 @@ const bannerSubtitle = pageConfig?.subtitle || "";
         root.setAttribute("data-banner-mode", storedBannerMode);
         root.classList.toggle("dark", themeType === "dark");
         root.style.colorScheme = themeType;
+
+        // 全局毛玻璃变量注入
+        var isGlassmorphismEnabled = SITE_GLASSMORPHISM && SITE_GLASSMORPHISM.enable !== false;
+        var glassmorphismIntensity = (SITE_GLASSMORPHISM && SITE_GLASSMORPHISM.intensity) || 16;
+        root.setAttribute("data-rich-effects", isGlassmorphismEnabled ? "true" : "false");
+
+        var styleEl = document.getElementById('mahiro-glassmorphism-vars');
+        if (!styleEl) {
+          styleEl = document.createElement('style');
+          styleEl.id = 'mahiro-glassmorphism-vars';
+          document.head.appendChild(styleEl);
+        }
+        
+        if (isGlassmorphismEnabled) {
+          styleEl.textContent = ':root { ' +
+            '--glassmorphism-blur: blur(' + glassmorphismIntensity + 'px); ' +
+            '--tw-backdrop-blur: blur(' + glassmorphismIntensity + 'px); ' +
+          '}';
+        } else {
+          styleEl.textContent = ':root { ' +
+            '--glassmorphism-blur: none; ' +
+            '--tw-backdrop-blur: none; ' +
+          '}';
+        }
       })();
     </script>
     <ClientRouter />
@@ -91,11 +116,18 @@ const bannerSubtitle = pageConfig?.subtitle || "";
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- 中文字体：异步加载，不阻塞渲染 -->
     <link
+      id="google-fonts-preload"
       rel="preload"
       as="style"
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&family=LXGW+WenKai:wght@400;700&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Long+Cang&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Liu+Jian+Mao+Cao&family=Zhi+Mang+Xing&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <script is:inline>
+      // 字体预加载完毕后转为正式样式表（替代 onload 内联属性，消除 TS 警告）
+      (function() {
+        var link = document.getElementById('google-fonts-preload');
+        if (link) { link.onload = function() { link.onload = null; link.rel = 'stylesheet'; }; }
+      })();
+    </script>
     <noscript>
       <link
         rel="stylesheet"
@@ -511,7 +543,7 @@ const bannerSubtitle = pageConfig?.subtitle || "";
           }
         };
 
-        const runThemeTransition = (
+        const runThemeTransition = async (
           commitTheme: () => void,
           options: { targetThemeType?: "light" | "dark" } = {},
         ) => {

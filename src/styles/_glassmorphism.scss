@@ -1,0 +1,226 @@
+/* ==========================================================
+ * Glassmorphism System v3
+ * 
+ * 架构：
+ * - 毛玻璃强度通过 JS 在 <html> 设置 --glassmorphism-blur 变量
+ * - 禁用模式仅当 data-rich-effects="false" 时生效
+ * - 全局卡片/容器类使用原生 CSS 控制
+ * ========================================================== */
+
+/* ---- 全局启用模式 ----
+ * 给默认的 base-100 和各种组件强行加上毛玻璃背景
+ */
+html[data-rich-effects="true"] {
+  .bg-base-100, .bg-base-200, .bg-base-300,
+  .card, .card-base, .modal-box, #twikoo {
+    // 注入透明度而不是写死背景色，完美适配 DaisyUI 各大主题（包括亮/暗模式自动切换）
+    --tw-bg-opacity: 0.72 !important;
+    -webkit-backdrop-filter: var(--glassmorphism-blur, blur(16px)) !important;
+    backdrop-filter: var(--glassmorphism-blur, blur(16px)) !important;
+  }
+}
+
+/* ---- 禁用模式 ----
+ * 仅当配置中 enable: false 时，data-rich-effects="false" 被设置在 <html> 上。
+ * 此时禁用所有视觉特效以提高性能。
+ */
+html[data-rich-effects="false"] [class*="backdrop-blur"],
+html[data-rich-effects="false"] .backdrop-blur,
+html[data-rich-effects="false"] .backdrop-blur-sm,
+html[data-rich-effects="false"] .backdrop-blur-md,
+html[data-rich-effects="false"] .backdrop-blur-lg,
+html[data-rich-effects="false"] .backdrop-blur-xl,
+html[data-rich-effects="false"] .modal-backdrop {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html[data-rich-effects="false"] [class*="shadow-2xl"],
+html[data-rich-effects="false"] .shadow-2xl {
+  box-shadow: 0 10px 28px -22px rgb(0 0 0 / 0.45) !important;
+}
+
+html[data-rich-effects="false"] [class*="shadow-xl"],
+html[data-rich-effects="false"] .shadow-xl {
+  box-shadow: 0 8px 22px -18px rgb(0 0 0 / 0.36) !important;
+}
+
+html[data-rich-effects="false"] [class*="shadow-lg"],
+html[data-rich-effects="false"] .shadow-lg {
+  box-shadow: 0 6px 18px -16px rgb(0 0 0 / 0.32) !important;
+}
+
+html[data-rich-effects="false"] [class*="blur-"],
+html[data-rich-effects="false"] [class*="drop-shadow"],
+html[data-rich-effects="false"] .drop-shadow-lg,
+html[data-rich-effects="false"] .drop-shadow-md {
+  filter: none !important;
+}
+
+html[data-rich-effects="false"] .animate-pulse,
+html[data-rich-effects="false"] .animate-pulsate,
+html[data-rich-effects="false"] .animate-bounce-gentle,
+html[data-rich-effects="false"] .animate-float,
+html[data-rich-effects="false"] .animate-breathe,
+html[data-rich-effects="false"] .shine-text,
+html[data-rich-effects="false"] .rainbow-text,
+html[data-rich-effects="false"] .rainbow-border,
+html[data-rich-effects="false"] .skeleton-loading {
+  animation: none !important;
+}
+
+html[data-rich-effects="false"] [class*="will-change"],
+html[data-rich-effects="false"] [style*="will-change"] {
+  will-change: auto !important;
+}
+
+html[data-rich-effects="false"] [class*="transition-all"] {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, transform !important;
+}
+
+/* ---- Viewport 调整大小时临时禁用 ---- */
+html.mahiro-viewport-resizing *,
+html.mahiro-viewport-resizing *::before,
+html.mahiro-viewport-resizing *::after {
+  transition-duration: 0s !important;
+  animation-play-state: paused !important;
+}
+
+html.mahiro-viewport-resizing [class*="backdrop-blur"],
+html.mahiro-viewport-resizing .backdrop-blur,
+html.mahiro-viewport-resizing .backdrop-blur-sm,
+html.mahiro-viewport-resizing .backdrop-blur-md,
+html.mahiro-viewport-resizing .backdrop-blur-lg,
+html.mahiro-viewport-resizing .backdrop-blur-xl,
+html.mahiro-viewport-resizing .modal-backdrop {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html.mahiro-viewport-resizing [class*="shadow"],
+html.mahiro-viewport-resizing .shadow,
+html.mahiro-viewport-resizing .shadow-sm,
+html.mahiro-viewport-resizing .shadow-lg,
+html.mahiro-viewport-resizing .shadow-xl,
+html.mahiro-viewport-resizing .shadow-2xl {
+  box-shadow: none !important;
+}
+
+html.mahiro-viewport-resizing [class*="blur"],
+html.mahiro-viewport-resizing [class*="drop-shadow"],
+html.mahiro-viewport-resizing [style*="filter"] {
+  filter: none !important;
+}
+
+html.mahiro-viewport-resizing .gpu-layer,
+html.mahiro-viewport-resizing .gpu-layer-soft,
+html.mahiro-viewport-resizing [class*="will-change"] {
+  will-change: auto !important;
+  transform: none !important;
+}
+
+/* Banner Modes */
+[data-banner-mode="fullscreen"] {
+  .banner {
+    height: 100vh !important;
+  }
+}
+
+[data-banner-mode="hidden"] {
+  .banner {
+    display: none !important;
+  }
+
+  .page-content-animate {
+    margin-top: 6rem !important;
+    min-height: calc(100vh - 6rem - 100px);
+  }
+
+  #navbar-bg,
+  #navbar-mobile>div {
+    box-shadow: none !important;
+  }
+}
+
+[data-banner-mode="background"] {
+  background-color: transparent !important;
+
+  body {
+    background-color: transparent !important;
+  }
+
+  body::before,
+  body::after {
+    display: none !important;
+  }
+
+  .banner {
+    display: block !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh !important;
+    z-index: -2;
+    opacity: 1 !important;
+    pointer-events: none;
+  }
+
+  .banner .banner-inner>.relative.z-20,
+  .banner .waves {
+    display: none !important;
+  }
+
+  &[data-theme-type="dark"] .banner .banner-inner>.absolute.z-10 {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .page-content-animate {
+    margin-top: 6rem !important;
+    min-height: calc(100vh - 6rem - 100px);
+  }
+
+  .bg-base-100,
+  .card-base,
+  .card,
+  .music-player-widget>.bg-neu-base {
+    background-color: oklch(var(--b1) / 0.85) !important;
+    border: 1px solid oklch(var(--bc) / 0.1);
+  }
+
+  .card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .bg-neu-base {
+    background-color: oklch(var(--b1) / 0.7) !important;
+  }
+
+  --shadow-neu-out: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  --shadow-neu-in: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05) !important;
+  --neu-text-muted: oklch(var(--bc)) !important;
+
+  .music-player-widget>.bg-neu-base {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+
+  .bg-base-200 {
+    background-color: oklch(var(--b2) / 0.85) !important;
+  }
+
+  .bg-base-300 {
+    background-color: oklch(var(--b3) / 0.85) !important;
+  }
+
+  #navbar-bg {
+    background-color: oklch(var(--b1) / 0.6) !important;
+  }
+
+  .nav-container {
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+  }
+}

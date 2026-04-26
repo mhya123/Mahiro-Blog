@@ -187,6 +187,10 @@ export interface SiteConfig {
     wechat?: string;
     alipay?: string;
   };
+  glassmorphism?: {
+    enable: boolean;
+    intensity: number;
+  };
 }
 
 export interface UserConfig {

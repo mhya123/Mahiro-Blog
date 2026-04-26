@@ -33,25 +33,26 @@ export default defineConfig({
     },
     worker: {
       format: "es",
-    },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          api: "modern-compiler",
+      },
+      css: {
+        preprocessorOptions: {
+          scss: {
+            api: "modern-compiler",
+            silenceDeprecations: ["import"],
+          },
         },
       },
-    },
-    server: {
-      proxy: {
-        "/__mahiro_api": {
-          target: backendApiTarget,
-          changeOrigin: true,
-          secure: true,
-          rewrite: (path) => path.replace(/^\/__mahiro_api/, ""),
+      server: {
+        proxy: {
+          "/__mahiro_api": {
+            target: backendApiTarget,
+            changeOrigin: true,
+            secure: true,
+            rewrite: (path) => path.replace(/^\/__mahiro_api/, ""),
+          },
         },
       },
-    },
-    preview: {
+      preview: {
       proxy: {
         "/__mahiro_api": {
           target: backendApiTarget,

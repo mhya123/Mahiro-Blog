@@ -1,5 +1,9 @@
 import { animate, stagger } from 'animejs'
 
+/**
+ * 提升元素至 GPU 渲染层，减少重绘引起的掉帧
+ * @param elements 需要开启硬件加速的 HTML 元素集合
+ */
 function promoteToGpu(elements: Iterable<HTMLElement> | ArrayLike<HTMLElement>) {
   Array.from(elements).forEach((el) => {
     el.style.willChange = 'transform, opacity'
@@ -11,6 +15,10 @@ function promoteToGpu(elements: Iterable<HTMLElement> | ArrayLike<HTMLElement>) 
   })
 }
 
+/**
+ * 释放 GPU 资源，在动画结束后清理 style 属性
+ * @param elements 需要清理硬件加速样式的 HTML 元素集合
+ */
 function releaseGpu(elements: Iterable<HTMLElement> | ArrayLike<HTMLElement>) {
   Array.from(elements).forEach((el) => {
     el.style.willChange = ''
@@ -21,23 +29,15 @@ function releaseGpu(elements: Iterable<HTMLElement> | ArrayLike<HTMLElement>) {
   })
 }
 
-/**
- * 全局柔和过渡系统 — anime.js 缓动函数注入
- *
- * 用真正的弹性 / 阻尼曲线替换 CSS 的 ease、ease-in-out 等生硬缓动，
- * 让整个博客的交互手感如丝般顺滑。
- *
- * 涵盖的场景：
- * 1. 侧边栏卡片入场（依次浮现）
- * 2. 可悬浮卡片的弹性 hover（替代 Tailwind hover:-translate-y-1）
- * 3. 导航栏滚动隐藏/显示（平滑滑动而非硬切）
- * 4. 分类/标签页卡片交错入场
- * 5. 归档卡片弹性 hover
- * 6. 返回顶部 / FAB 按钮呼吸感入场
- */
+/* ==========================================================
+ * 全局柔和过渡系统 (Global Smooth Transitions)
+ * ========================================================== */
 
 // ─── 1. 侧边栏卡片交错入场 ──────────────────────────
 
+/**
+ * 侧边栏卡片瀑布流交错入场动画
+ */
 function animateSidebar() {
   const sidebar = document.querySelector('aside')
   if (!sidebar) return
@@ -45,10 +45,11 @@ function animateSidebar() {
   const cards = sidebar.querySelectorAll<HTMLElement>(':scope > .relative, :scope > .md\\:sticky > *')
   if (cards.length === 0) return
 
-  // 避免重复绑定
+  // 避免逻辑重复执行
   if ((sidebar as any).__sidebarAnimated) return
   ;(sidebar as any).__sidebarAnimated = true
 
+  // 初始化初始状态
   cards.forEach(el => {
     el.style.opacity = '0'
     el.style.transform = 'translateX(-20px)'
@@ -59,9 +60,10 @@ function animateSidebar() {
     opacity: [0, 1],
     translateX: ['-20px', '0px'],
     duration: 700,
-    delay: stagger(120, { start: 200 }),
+    delay: stagger(120, { start: 200 }), // 分阶延迟，产生交错感
     ease: 'out(3)',
     onComplete() {
+      // 清收动画残留样式
       Array.from(cards).forEach(el => {
         el.style.transform = ''
       })
@@ -70,22 +72,24 @@ function animateSidebar() {
   })
 }
 
-// ─── 2. 弹性 hover — 替代 Tailwind hover:-translate-y-1 ─
+// ─── 2. 弹性悬浮交互 (取代 Tailwind 的普通位移) ─────
 
+/**
+ * 为特定的卡片式元素绑定具有物理阻尼感的悬浮动画
+ */
 function bindElasticHover() {
-  // 选择所有带 hover:-translate-y-1 的卡片式元素
   const selectors = [
     '.archive-card',           // 归档卡片
     '.category-inner',         // 分类卡片
     '.press-effect',           // 首页导航卡片
-    '.card.shadow-lg',         // 通用大卡片
+    '.card.shadow-lg',         // 通用卡片容器
   ]
 
   document.querySelectorAll<HTMLElement>(selectors.join(',')).forEach(el => {
     if (el.dataset.elasticBound) return
     el.dataset.elasticBound = '1'
 
-    // 取消 Tailwind 的硬切 translate，由 anime.js 接管
+    // 禁用 Tailwind 默认的硬切 translate 动画
     el.classList.remove('hover:-translate-y-1')
 
     el.addEventListener('mouseenter', () => {
@@ -93,7 +97,7 @@ function bindElasticHover() {
       animate(el, {
         translateY: '-4px',
         duration: 400,
-        ease: 'out(4)',       // 丝滑阻尼出
+        ease: 'out(4)',       // 丝滑阻尼式滑入
       })
     })
 
@@ -101,7 +105,7 @@ function bindElasticHover() {
       animate(el, {
         translateY: '0px',
         duration: 500,
-        ease: 'out(2)',       // 更慢回弹，有"放下"的质感
+        ease: 'out(2)',       // 优雅回弹，模拟"放下"的物理质感
         onComplete() {
           releaseGpu([el])
         },
@@ -110,24 +114,52 @@ function bindElasticHover() {
   })
 }
 
-// ─── 3. 导航栏平滑滑动 ─────────────────────────────
+// ─── 3. 导航栏智能显隐 (Compositor 线程驱动) ─────────
 
+/**
+ * 导航栏随滚动智能显隐逻辑。
+ * 使用 CSS Transition 替代 JS 动画循环，利用合成器线程确保 60FPS 的极致流畅。
+ */
 function bindNavbarSmooth() {
+  const navBg = document.getElementById('navbar-bg')
+  const navMobBg = document.getElementById('navbar-mobile-bg')
   const navDesktop = document.getElementById('navbar-desktop')
   const navMobile = document.getElementById('navbar-mobile')
 
-  if (!navDesktop && !navMobile) return
+  if (!navBg && !navMobBg) return
 
-  // 防止重复绑定
+  // 避免逻辑重复绑定
   if ((window as any).__navbarSmoothBound) return
   ;(window as any).__navbarSmoothBound = true
+
+  // 动态注入核心显隐 CSS 规则
+  const styleId = 'mahiro-navbar-transition'
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style')
+    style.id = styleId
+    style.textContent = `
+      #navbar-bg,
+      #navbar-mobile-bg {
+        transition: opacity 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+                    visibility 0s linear 0s;
+      }
+      #navbar-bg.nav-hidden,
+      #navbar-mobile-bg.nav-hidden {
+        opacity: 0 !important;
+        pointer-events: none;
+        visibility: hidden;
+        transition: opacity 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+                    visibility 0s linear 0.4s; /* 确保 display:hidden 在透明后触发 */
+      }
+    `
+    document.head.appendChild(style)
+  }
 
   let lastScrollY = window.scrollY
   let desktopHidden = false
   let mobileHidden = false
-  promoteToGpu([navDesktop, navMobile].filter(Boolean) as HTMLElement[])
 
-  // 移除原有 CSS transition 类（我们用 anime.js 接管）
+  // 清除旧有的 CSS 动画干扰类
   navDesktop?.classList.remove('transition-opacity', 'duration-500')
   navMobile?.classList.remove('transition-all', 'duration-500', 'ease-in-out')
 
@@ -135,55 +167,36 @@ function bindNavbarSmooth() {
     const y = window.scrollY
     const goingDown = y > lastScrollY && y > 50
 
-    // 桌面端：向下滚动淡出上滑 / 向上滚动淡入下滑
-    if (navDesktop) {
+    // ── 桌面端控制 ──
+    if (navBg && navDesktop) {
       if (goingDown && !desktopHidden) {
         desktopHidden = true
         navDesktop.style.pointerEvents = 'none'
-        animate(navDesktop, {
-          opacity: [1, 0],
-          translateY: ['0px', '-20px'],
-          duration: 350,
-          ease: 'in(3)',
-        })
+        navBg.classList.add('nav-hidden')
       } else if (!goingDown && desktopHidden) {
         desktopHidden = false
-        navDesktop.style.pointerEvents = 'auto'
-        animate(navDesktop, {
-          opacity: [0, 1],
-          translateY: ['-20px', '0px'],
-          duration: 450,
-          ease: 'out(3)',
-        })
+        navDesktop.style.pointerEvents = ''
+        navBg.classList.remove('nav-hidden')
       }
     }
 
-    // 移动端：向下滚动上滑隐藏 / 向上滚动弹回
-    if (navMobile) {
+    // ── 移动端控制 ──
+    if (navMobBg && navMobile) {
       if (goingDown && !mobileHidden) {
         mobileHidden = true
         navMobile.style.pointerEvents = 'none'
-        animate(navMobile, {
-          translateY: [0, -100],
-          opacity: [1, 0],
-          duration: 350,
-          ease: 'in(3)',
-        })
+        navMobBg.classList.add('nav-hidden')
       } else if (!goingDown && mobileHidden) {
         mobileHidden = false
-        navMobile.style.pointerEvents = 'auto'
-        animate(navMobile, {
-          translateY: [-100, 0],
-          opacity: [0, 1],
-          duration: 450,
-          ease: 'out(4)',     // 更有弹性的回弹
-        })
+        navMobile.style.pointerEvents = ''
+        navMobBg.classList.remove('nav-hidden')
       }
     }
 
     lastScrollY = y
   }
 
+  // 使用 rAF (RequestAnimationFrame) 节流滚动事件
   let ticking = false
   window.addEventListener('scroll', () => {
     if (!ticking) {
@@ -193,19 +206,22 @@ function bindNavbarSmooth() {
       })
       ticking = true
     }
-  })
+  }, { passive: true })
 }
 
-// ─── 4. 分类 / 标签页卡片 CSS 动画 → anime.js ──────
+// ─── 4. 内容页元素入场动画 ───────────────────────────
 
+/**
+ * 分类页面卡片交错入场
+ */
 function animateCategoryCards() {
   const cards = document.querySelectorAll<HTMLElement>('.category-card')
   if (cards.length === 0) return
   promoteToGpu(cards)
 
-  // 用 anime.js 替代 CSS @keyframes fadeIn
+  // 禁用原生的 CSS 渐变动画，交由 anime.js 精确控制
   cards.forEach(el => {
-    el.style.animation = 'none' // 取消原 CSS animation
+    el.style.animation = 'none'
   })
 
   animate(cards, {
@@ -220,6 +236,9 @@ function animateCategoryCards() {
   })
 }
 
+/**
+ * 标签页项目快速入场
+ */
 function animateTagItems() {
   const items = document.querySelectorAll<HTMLElement>('.tags-item')
   if (items.length === 0) return
@@ -242,13 +261,16 @@ function animateTagItems() {
   })
 }
 
-// ─── 5. 链接卡片 & 导航卡片柔和 hover ─────────────
+// ─── 5. 通用卡片柔和悬停 ───────────────────────────
 
+/**
+ * 为各种展示型卡片（项目、友链等）绑定微互动动画
+ */
 function bindLinkCardHover() {
   const selectors = [
-    '.navigation-card a',       // 导航页链接
-    '.friend-card',             // 友链卡片
-    '.project-card',            // 项目卡片
+    '.navigation-card a',       // 导航卡片链接
+    '.friend-card',             // 友情链接
+    '.project-card',            // 项目展示
   ]
 
   document.querySelectorAll<HTMLElement>(selectors.join(',')).forEach(el => {
@@ -279,8 +301,11 @@ function bindLinkCardHover() {
   })
 }
 
-// ─── 6. 图片点击缩放反馈 ─────────────────────────
+// ─── 6. 图片点击触感反馈 ───────────────────────────
 
+/**
+ * 为正文中的图片提供轻微的缩放点击反馈
+ */
 function bindImagePressEffect() {
   document.querySelectorAll<HTMLElement>('.prose img').forEach(img => {
     if (img.dataset.pressBound) return
@@ -289,7 +314,7 @@ function bindImagePressEffect() {
     img.addEventListener('click', () => {
       promoteToGpu([img])
       animate(img, {
-        scale: [1, 0.97, 1.01, 1],
+        scale: [1, 0.97, 1.01, 1], // 按下缩减，弹起微扩
         duration: 400,
         ease: 'out(3)',
         onComplete() {
@@ -300,29 +325,25 @@ function bindImagePressEffect() {
   })
 }
 
-// ─── 统一入口 ────────────────────────────────────────
+/* ==========================================================
+ * 模块入口 (Universal Initialization)
+ * ========================================================== */
 
 /**
- * 初始化全局柔和过渡。
- * 在 astro:page-load 中调用，在 initHoverEffects 之后。
+ * 启动全局柔和过渡系统。
+ * 通常在 `astro:page-load` 事件中触发。
  */
 export function initSmoothTransitions() {
-  // 侧边栏入场
+  // 组件层入场
   animateSidebar()
 
-  // 弹性 hover
+  // 交互式绑定
   bindElasticHover()
-
-  // 导航栏平滑滚动隐藏
   bindNavbarSmooth()
+  bindLinkCardHover()
+  bindImagePressEffect()
 
-  // 分类 / 标签页动画接管
+  // 页面特定元素入场
   animateCategoryCards()
   animateTagItems()
-
-  // 链接卡片柔和 hover
-  bindLinkCardHover()
-
-  // 图片点击反馈
-  bindImagePressEffect()
 }

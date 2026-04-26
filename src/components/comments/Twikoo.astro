@@ -203,13 +203,6 @@ const { envId, region = "", lang = "" } = Astro.props;
 </script>
 
 <style is:global>
-  .twikoo .tk-comments .tk-row,
-  .twikoo .tk-comments .tk-col,
-  .twikoo .tk-comments .el-input-group__append,
-  .twikoo .tk-comments .el-input-group__prepend {
-    background-color: transparent !important;
-  }
-
   .twikoo .tk-comments {
     color: inherit;
     font-family: inherit;
@@ -220,11 +213,13 @@ const { envId, region = "", lang = "" } = Astro.props;
     display: flex;
     flex-wrap: nowrap;
     gap: 0.75rem;
+    margin-bottom: 0.75rem;
   }
 
   .twikoo .tk-comments .tk-meta-input .el-input {
     flex: 1;
     width: 100% !important;
+    display: flex;
   }
 
   @media (max-width: 640px) {
@@ -237,17 +232,37 @@ const { envId, region = "", lang = "" } = Astro.props;
     }
   }
 
+  /* Prepend styling to match dark/glass theme */
+  .twikoo .tk-comments .el-input-group__append,
+  .twikoo .tk-comments .el-input-group__prepend {
+    background-color: rgba(128, 128, 128, 0.15) !important;
+    border: 1px solid rgba(128, 128, 128, 0.1) !important;
+    border-right: none !important;
+    color: inherit !important;
+    border-radius: 0.5rem 0 0 0.5rem !important;
+    padding: 0 1rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Inner inputs and textareas */
   .twikoo .tk-comments .el-input__inner,
   .twikoo .tk-comments .el-textarea__inner,
   .twikoo .tk-comments .tk-input textarea,
   .twikoo .tk-comments .tk-input input {
-    background-color: rgba(128, 128, 128, 0.15) !important;
-    border: 1px solid rgba(128, 128, 128, 0.05) !important;
+    background-color: rgba(128, 128, 128, 0.1) !important;
+    border: 1px solid rgba(128, 128, 128, 0.1) !important;
     color: inherit !important;
-    border-radius: 0.5rem;
+    border-radius: 0.5rem !important; /* Default for inputs without prepend */
     padding: 0.75rem 1rem !important;
     box-shadow: none !important;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+  }
+
+  /* Adjust border-radius for inputs with prepend so they connect smoothly */
+  .twikoo .tk-comments .el-input-group > .el-input__inner {
+    border-radius: 0 0.5rem 0.5rem 0 !important;
   }
 
   .twikoo .tk-comments .tk-input textarea {
@@ -255,12 +270,13 @@ const { envId, region = "", lang = "" } = Astro.props;
     margin-top: 0.75rem;
   }
 
+  /* Focus states */
   .twikoo .tk-comments .el-input__inner:focus,
   .twikoo .tk-comments .el-textarea__inner:focus,
   .twikoo .tk-comments .tk-input textarea:focus,
   .twikoo .tk-comments .tk-input input:focus {
     border-color: rgba(128, 128, 128, 0.4) !important;
-    background-color: rgba(128, 128, 128, 0.25) !important;
+    background-color: rgba(128, 128, 128, 0.15) !important;
     outline: none !important;
   }
 
@@ -272,20 +288,39 @@ const { envId, region = "", lang = "" } = Astro.props;
     fill: currentColor !important;
   }
 
-  .twikoo .tk-submit {
-    background-color: rgba(128, 128, 128, 0.2) !important;
-    color: inherit !important;
-    border: none !important;
+  /* Submit button matching global primary theme */
+  .twikoo .el-button--primary {
+    background-color: oklch(var(--p)) !important;
+    border-color: transparent !important;
+    color: oklch(var(--pc)) !important;
     border-radius: 0.5rem !important;
-    box-shadow: none !important;
     padding: 0 1.5rem !important;
-    transition: all 0.2s ease;
+    transition: opacity 0.3s ease;
   }
 
-  .twikoo .tk-submit:hover {
-    background-color: rgba(128, 128, 128, 0.4) !important;
+  .twikoo .el-button--primary:hover {
+    opacity: 0.8;
   }
 
+  /* Other buttons */
+  .twikoo .el-button:not(.el-button--primary) {
+    background-color: rgba(128, 128, 128, 0.15) !important;
+    border-color: transparent !important;
+    color: inherit !important;
+    border-radius: 0.5rem !important;
+    padding: 0 1.5rem !important;
+    transition: background-color 0.3s ease;
+  }
+
+  .twikoo .el-button:not(.el-button--primary):hover {
+    background-color: rgba(128, 128, 128, 0.25) !important;
+  }
+  
+  .twikoo .tk-submit {
+    padding-top: 0.5rem;
+  }
+
+  /* Reset transparent backgrounds that conflict */
   .twikoo,
   .twikoo .tk-comments,
   .twikoo .tk-comment,
@@ -295,9 +330,7 @@ const { envId, region = "", lang = "" } = Astro.props;
   .twikoo .tk-replies .tk-comment:hover,
   .twikoo .tk-meta-input,
   .twikoo .tk-row,
-  .twikoo .tk-col,
-  .twikoo .el-input-group__append,
-  .twikoo .el-input-group__prepend {
+  .twikoo .tk-col {
     background-color: transparent !important;
   }
 

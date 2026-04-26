@@ -140,7 +140,7 @@ function isMenuActive(item: MenuItem): boolean {
 <!-- 移动端顶部悬浮导航栏 -->
 <nav id="navbar-mobile" class="notranslate fixed top-0 left-0 right-0 z-50 lg:hidden gpu-layer" data-no-translate>
   <div class="max-w-blog mx-auto px-2 pt-2">
-    <div class="relative flex items-center px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full gpu-layer">
+    <div id="navbar-mobile-bg" class="relative flex items-center px-4 py-3 bg-base-100/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 w-full gpu-layer">
       <!-- 导航菜单项（可滚动区域） -->
       <div class="flex items-center gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex-1 min-w-0">
       {typedMenu.map((item) => {

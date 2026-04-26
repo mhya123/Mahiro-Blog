@@ -95,7 +95,7 @@ const schema = isPostPage ? {
   rel="preload"
   as="style"
   href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Nunito:wght@400;600;700&family=ZCOOL+KuaiLe&display=swap"
-  onload="this.onload=null;this.rel='stylesheet'"
+  onload="this.removeAttribute('onload'); this.setAttribute('rel', 'stylesheet');"
 />
 <noscript>
   <link

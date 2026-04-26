@@ -36,12 +36,15 @@ export async function copyTextToClipboard(text: string) {
     textarea.select()
     textarea.setSelectionRange(0, value.length)
 
-    const succeeded = document.execCommand('copy')
-    textarea.remove()
-
-    if (!succeeded) {
+    try {
+        // 降级方案：非安全上下文 (HTTP) 无法使用 Clipboard API，只能依赖已废弃的 execCommand
+        // @ts-ignore — execCommand 已被 W3C 标记为 deprecated，但在非 HTTPS 场景下无替代方案
+        document.execCommand('copy')
+    } catch {
+        textarea.remove()
         throw new Error('copy command failed')
     }
+    textarea.remove()
 }
 
 export function buildPotPlayerUrl(url: string) {

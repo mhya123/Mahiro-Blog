@@ -1,7 +1,7 @@
 // 评论系统配置
 import type { Config } from "@interfaces/site";
-import * as fs from "node:fs";
 import * as path from "node:path";
+import * as fs from "node:fs";
 import yaml from "js-yaml";
 import { config as loadDotEnv } from "dotenv";
 
@@ -12,6 +12,7 @@ loadDotEnv({ path: path.resolve(".env") });
 const configPath = path.resolve("mahiro.config.yaml");
 // 翻译文件路径
 const translationsPath = path.resolve("src/i18n/translations.yaml");
+
 // 读取并解析 YAML 文件
 const config = yaml.load(fs.readFileSync(configPath, "utf8")) as Config;
 // 读取并解析翻译文件
@@ -20,6 +21,7 @@ const translationsConfig = yaml.load(fs.readFileSync(translationsPath, "utf8")) 
 // 网站基本信息
 export const SITE_URL = config.site.url || "https://www.mahiro.work";
 export const SITE_TAB = config.site.tab;
+
 export const SITE_TITLE = config.site.title;
 export const SITE_DESCRIPTION = config.site.description;
 export const SITE_LANGUAGE = config.site.language;
@@ -32,6 +34,8 @@ export const SITE_TRANSLATION = {
   defaultTargetLanguage: config.site.translation?.defaultTargetLanguage || "en",
   defaultModel: config.site.translation?.defaultModel || "gpt-5.4-mini",
 } as const;
+
+export const SITE_GLASSMORPHISM = config.site.glassmorphism || { enable: true, intensity: 16 };
 
 // Banner 配置 - 使用安全访问  
 export const BANNER_CONFIG = config.site.banner;

@@ -1,59 +1,81 @@
+# ==========================================================
+# Mahiro Blog 全局配置文件
+# ──────────────────────────────────────────────────────────
+# 此文件用于管理博客的核心信息、界面展示、组件开关及第三方服务集成。
+# 修改后通常需要重启开发服务器以生效。
+# ==========================================================
+
 site:
-  url: https://www.mahiro.work
-  tab: Mahiro's Blog
-  title: Mahiro
+  # ─── 核心视觉交互 ───
+  glassmorphism:
+    enable: true          # 全局开启/关闭毛玻璃（Glassmorphism）特效
+    intensity: 16         # 毛玻璃模糊程度（单位 px），推荐值 16-32
+
+  url: https://www.mahiro.work  # 站点部署的正式根路径
+  tab: Mahiro's Blog            # 浏览器标签栏后缀
+  title: Mahiro                 # 网站主标题
   description: MhYa123 的个人博客，这里记录着对技术的探索、生活中的随想与各类有趣的杂谈。
-  language: zh
-  favicon: https://headimg.mahiro.work/
+  language: zh                  # 站点主语言 (zh/en)
+  favicon: https://headimg.mahiro.work/ # 网站图标 URL
+  
+  # ─── 主题与外观 ───
   theme:
-    light: garden
-    dark: dracula
-    code: github-dark
-  date_format: ddd MMM DD YYYY
+    light: garden               # 浅色模式主题 (基于 DaisyUI)
+    dark: dracula               # 深色模式主题 (基于 DaisyUI)
+    code: github-dark           # 代码块高亮主题 (Shiki)
+  
+  date_format: ddd MMM DD YYYY  # 全站日期展示格式 (Day.js 格式)
+
+  # ─── 内容 AI 翻译服务 ───
   translation:
-    enable: true
-    defaultProvider: google
-    defaultTargetLanguage: en
-    defaultModel: gpt-5.4-mini
+    enable: true                # 是否启用文章 AI 翻译功能
+    defaultProvider: google     # 翻译服务商可选: google, openai
+    defaultTargetLanguage: en   # 默认目标语言
+    defaultModel: gpt-5.4-mini  # 翻译所使用的 AI 模型 (仅 OpenAI 生效)
+
+  # ─── 博客功能设置 ───
   blog:
-    pageSize: 7 # 首页每页显示文章数量
-    ellipsisThreshold: 7 # 当总页数超过该值时，分页使用省略号（...）模式
-    commitHistorySize: 6 # 修订历史最大可见条数，超出后滚动查看
-    randomCoverSources: # 随机封面图床（按顺序回退）
+    pageSize: 7                 # 首页或文章列表每页显示的数量
+    ellipsisThreshold: 7        # 页码导航触发省略模式的临界页数
+    commitHistorySize: 6        # 文章修订历史最大可见条数 (超出后自动滚动)
+    randomCoverSources:         # 随机封面图床，当前一张失效时会自动尝试下一张
       - https://t.alcy.cc/ycy
       - https://moe.jitsu.top/img/?sort=pc&size=mw2048
+
+  # ─── 顶部 Banner 设置 ───
   banner:
-    defaultMode: background
-    enableRandom: false
-    randomUrl: https://sta.mahiro.work/i/2026/04/09/69d7596fcf8df.png
-    randomCount: 5
-    height: 60vh
-    images:
+    defaultMode: background     # 默认 Banner 模式: normal (带文字) | background (沉浸式背景)
+    enableRandom: false         # 开启即每次刷新随机切换 Banner
+    randomUrl: https://sta.mahiro.work/i/2026/04/09/69d7596fcf8df.png # 随机 Banner 的基础源
+    randomCount: 5              # 随机池数量
+    height: 60vh                # Banner 视觉高度
+    images:                     # Banner 轮播/展示图片列表
       - https://sta.mahiro.work/i/2026/04/09/69d7596fcf8df.png
+
+  # ─── 页脚 Footer 配置 ───
   footer:
-    # 区块显示开关
-    showBrand: true
-    showQuickLinks: true
-    showSocial: true
-    showTechStack: true
-    showStats: true
-    showRecordInfo: true
-    showRssIcon: true
-    showLicense: true
-    showCraftedBy: true
-    enableBuildInfoCard: true
+    # 模块显示控制 (true 为开启)
+    showBrand: true             # 显示品牌标识
+    showQuickLinks: true        # 显示快速导航入口
+    showSocial: true            # 显示社交媒体图标
+    showTechStack: true         # 显示项目依赖技术栈
+    showStats: true             # 显示访问量统计
+    showRecordInfo: true        # 显示备案信息
+    showRssIcon: true           # 显示 RSS 订阅图标
+    showLicense: true           # 显示版权协议
+    showCraftedBy: true         # 显示制作人致谢
+    enableBuildInfoCard: true   # 显示构建环境信息卡片
 
-    # 文案与年份
-    startYear: 2025
-    poweredByText: Powered by
-    poweredByName: Mahiro-Blog
+    startYear: 2025             # 博客运行的起始年份
+    poweredByText: Powered by   # 驱动文案
+    poweredByName: Mahiro-Blog  # 驱动项目名
     poweredByUrl: https://github.com/mhya123/Mahiro-Blog
-    builtWithText: Built with
-    quickLinksTitle: 导航
-    socialTitle: 社交
-    craftedByText: Crafted with
+    builtWithText: Built with   # 构建工具文案
+    quickLinksTitle: 导航        # 导航板块标题
+    socialTitle: 社交            # 社交板块标题
+    craftedByText: Crafted with # 致谢文案
 
-    # 导航与技术栈
+    # 快捷链接项定义
     quickLinks:
       - href: /
         icon: lucide:home
@@ -72,10 +94,12 @@ site:
         label: 导航
       - href: /drive
         icon: lucide:hard-drive
-        label: "\u7f51\u76d8"
+        label: 网盘
       - href: /rss.xml
         icon: ri:rss-line
         label: RSS
+
+    # 技术栈展示项定义
     techStack:
       - name: Astro
         href: https://astro.build
@@ -87,26 +111,33 @@ site:
         href: https://daisyui.com
       - name: GSAP
         href: https://gsap.com
+
+  # ─── 备案与合规 ───
   icp: 蜀ICP备2025178844号-2
   icp_link: https://beian.miit.gov.cn/
-  announcement:
-    enable: true
-    content: 🎉 欢迎来到 Mahiro's Blog！网站持续建设中~
-    type: info
-    size: lg
-    closable: false
-  reward:
-    enable: false
-    wechat: /weixin.jpg
-    alipay: /zhifubao.jpg
   police_beian: null
   police_beian_code: 11010801232033243
   police_beian_link: https://beian.mps.gov.cn/#/query/webSearch?code=11010801232033243
+
+  # ─── 站点组件配置 ───
+  announcement:
+    enable: true                # 是否启用全局公告条
+    content: 🎉 欢迎来到 Mahiro's Blog！网站持续建设中~
+    type: info                  # 公告类型: info, success, warning, error
+    size: lg                    # 尺寸: sm, md, lg
+    closable: false             # 用户是否可以手动关闭
+
+  reward:
+    enable: false               # 是否启用打赏功能
+    wechat: /weixin.jpg         # 微信支付二维码 URL
+    alipay: /zhifubao.jpg       # 支付宝支付二维码 URL
+
+  # ─── 独立页面 Meta 配置 ───
   pages:
     home:
       title: Mahiro's Blog
       subtitle: 欲买桂花同载酒，终不似，少年游！
-      typewriterTexts:
+      typewriterTexts:          # 首页打字机效果显示的文本段
         - 💻 Hello World, Hello Future. | 你好世界，你好未来。
         - 🌸 欲买桂花同载酒，终不似，少年游。
         - 🌟 保持热爱，奔赴山海。| Stay passionate, head for the mountains and seas.
@@ -123,25 +154,27 @@ site:
       subtitle: 一个热爱生活与技术的普通人！
     navigation:
       title: 网站导航
-      subtitle: 收藏的3常用网站和工具链接
+      subtitle: 收藏的常用网站和工具链接
     project:
       title: Projects
       subtitle: 收录优质开源项目，欢迎提交你的作品！
     drive:
-      title: "\u7f51\u76d8"
-      subtitle: "\u7ad9\u5185\u76f4\u63a5\u7ba1\u7406 AList \u6587\u4ef6\uff0c\u652f\u6301\u67e5\u770b\u3001\u641c\u7d22\u3001\u4e0a\u4f20\u4e0e\u6587\u4ef6\u64cd\u4f5c"
+      title: 网盘
+      subtitle: 站内直接管理 AList 文件，支持查看、搜索、上传与文件操作
       permissions:
-        upload: false
-        mkdir: false
-        view: true
-        download: true
-        rename: false
-        copy: false
-        move: false
-        remove: false
+        upload: false          # 是否允许访客上传 (危险)
+        mkdir: false           # 是否允许访客创建文件夹
+        view: true             # 是否允许查看
+        download: true         # 是否允许下载
+        rename: false          # 是否允许重命名
+        copy: false            # 是否允许复制
+        move: false            # 是否允许移动
+        remove: false          # 是否允许删除
     music:
       title: Cloud Music
       subtitle: 沉浸式享受音乐时光
+
+  # ─── 导航菜单项 ───
   menu:
     - id: home
       text: 首页
@@ -164,7 +197,7 @@ site:
       svg: material-symbols:music-note-rounded
       target: _self
     - id: drive
-      text: "\u7f51\u76d8"
+      text: 网盘
       href: /drive
       svg: lucide:hard-drive
       target: _self
@@ -178,23 +211,31 @@ site:
       href: /friend
       svg: material-symbols:supervisor-account-outline-rounded
       target: _self
+
+# ─── GitHub 后端集成 ────────────────────────────────
 github:
-  owner: mhya123
-  repo: Mahiro-Blog
-  branch: main
-  appId: 在部署端配置环境变量
-  encryptKey: 11111
+  owner: mhya123                # GitHub 用户名
+  repo: Mahiro-Blog             # 用于存储文章/数据的仓库
+  branch: main                  # 分支名
+  appId: 在部署端配置环境变量    # GitHub App ID
+  encryptKey: 11111             # 数据加密密钥 (用于随笔等功能)
+
+# ─── Umami 流量统计 ─────────────────────────────────
 umami:
-  enable: true
+  enable: true                  # 是否启用 Umami 统计
   baseUrl: https://umami.mahiro.work
   shareId: 在部署端或 .env 配置 PUBLIC_UMAMI_SHARE_ID
   websiteId: 在部署端或 .env 配置 PUBLIC_UMAMI_WEBSITE_ID
-  timezone: Asia/Shanghai
+  timezone: Asia/Shanghai       # 统计显示的时区
+
+# ─── 博主个人信息 ───────────────────────────────────
 user:
-  name: mhya520
-  description: Ciallo～(∠・ω<)⌒★
-  site: https://www.mahiro.work
-  avatar: https://headimg.mahiro.work/
+  name: mhya520                 # 用户昵称
+  description: Ciallo～(∠・ω<)⌒★ # 用户简介文案
+  site: https://www.mahiro.work # 个人链接
+  avatar: https://headimg.mahiro.work/ # 头像 URL
+  
+  # 侧边栏社交链接
   sidebar:
     social:
       - href: https://github.com/mhya123
@@ -205,6 +246,8 @@ user:
         ariaLabel: BiliBili
         title: BiliBili
         svg: ri:bilibili-line
+  
+  # 页脚社交链接
   footer:
     social:
       - href: https://github.com/mhya123
@@ -223,11 +266,14 @@ user:
         ariaLabel: Telegram
         title: Telegram
         svg: ri:telegram-line
+
+# ─── 音乐服务配置 ───────────────────────────────────
 music:
-  api: https://api.qijieya.cn/meting
-  autoplay: false
-  playlist:
+  api: https://api.qijieya.cn/meting # Meting API 地址
+  autoplay: false                    # 进入音乐页是否自动播放
+  playlist:                          # 默认显示的播放单 (网易云音乐 ID)
     - 1377164042
+
 # ─── 评论系统配置 ───────────────────────────────────
 comments:
   enable: true          # 是否启用评论功能
@@ -235,9 +281,9 @@ comments:
 
   # Twikoo 配置 (腾讯云开发/Vercel等部署的评论系统)
   twikoo:
-    envId: "https://tk.mahiro.work" # 您的环境id/服务器地址
+    envId: "https://tk.mahiro.work" # 环境 ID / 服务器地址
     region: ""            # 环境地域（可选，腾讯云需要）
-    lang: "zh-CN"         # 语言
+    lang: "zh-CN"         # 界面语言
 
   # Giscus 配置（基于 GitHub Discussions 的评论系统）
   giscus:
@@ -245,24 +291,24 @@ comments:
     repoId: R_kgDORMm8IQ           # 仓库 ID（通过 giscus.app 获取）
     category: General              # Discussion 分类
     categoryId: DIC_kwDORMm8Ic4C2HoO  # 分类 ID
-    mapping: pathname              # 评论与页面的映射方式：pathname | url | title | og:title
+    mapping: pathname              # 评论映射方式: pathname | url | title | og:title
     lang: zh-CN                    # 界面语言
-    inputPosition: top             # 评论框位置：top（顶部）| bottom（底部）
-    reactionsEnabled: '1'          # 是否启用表情回应（👍😄🎉等），'1' 启用 / '0' 禁用
-    emitMetadata: '0'              # 是否向父页面发送 Discussion 元数据，'0' 禁用
-    loading: lazy                  # 加载方式：lazy（懒加载，滚动到可见时才加载）| eager（立即加载）
+    inputPosition: top             # 评论框位置: top | bottom
+    reactionsEnabled: '1'          # 是否启用表情回应，'1' 开启 / '0' 禁用
+    emitMetadata: '0'              # 是否发送 Discussion 元数据，建议 '0'
+    loading: lazy                  # 加载方式: lazy (按需加载) | eager (立即加载)
 
-  # Waline 配置（自部署的评论系统，需要后端服务）
+  # Waline 配置（自部署的评论系统）
   waline:
-    serverURL: https://your-waline-server  # Waline 后端服务地址
+    serverURL: https://your-waline-server  # Waline 地址
     lang: zh-CN                            # 界面语言
-    emoji:                                 # 评论表情包列表
+    emoji:                                 # 表情包列表
       - https://unpkg.com/@waline/emojis@1.1.0/weibo
       - https://unpkg.com/@waline/emojis@1.1.0/bilibili
-    meta:                                  # 评论者可填写的信息字段
-      - nick                               # 昵称
-      - mail                               # 邮箱
-      - link                               # 个人网站
-    requiredMeta: []                       # 必填字段（空数组=全部可选）
-    reaction: false                        # 文章表情投票（😀👍👎等），true 启用后文章顶部会显示表情投票栏
-    pageview: false                        # 页面浏览量统计计数器，true 启用后会在页面显示阅读次数（本站已用 Umami 统计，无需重复开启）
+    meta:                                  # 访客信息字段
+      - nick
+      - mail
+      - link
+    requiredMeta: []                       # 必选字段
+    reaction: false                        # 开启文章表情互动投票
+    pageview: false                        # 开启阅读统计 (已用 Umami 的话建议关闭)

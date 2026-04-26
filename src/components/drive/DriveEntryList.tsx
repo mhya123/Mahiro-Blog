@@ -56,10 +56,10 @@ export function DriveEntryList({ controller }: DriveEntryListProps) {
                         return (
                             <div
                                 key={entry.path}
-                                className={`grid gap-3 rounded-[1.5rem] border p-4 transition md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center ${
+                                className={`grid gap-3 rounded-[1.5rem] border p-4 transition-all duration-300 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center ${
                                     active
                                         ? 'border-primary/40 bg-primary/10 shadow-lg shadow-primary/10'
-                                        : 'border-base-300/50 bg-base-200/30 hover:border-primary/25 hover:bg-base-200/50'
+                                        : 'border-base-300/50 bg-base-200/30 hover:-translate-y-1 hover:border-primary/30 hover:bg-base-100/80 hover:shadow-xl hover:shadow-primary/5 relative z-10'
                                 }`}
                             >
                                 <label className="flex items-center gap-3">

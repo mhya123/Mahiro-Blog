@@ -133,21 +133,26 @@ export default function WritePage({ categories = [], aiModels = [] }: WritePageP
     return (
         <>
             <Toaster
-                richColors
                 theme={toastTheme}
                 position="top-center"
-                offset={120}
+                offset={80}
                 visibleToasts={6}
                 expand={true}
+                style={{ zIndex: 999999 }}
                 toastOptions={{
-                    className: '!flex-row flex !items-center shadow-xl rounded-2xl border-2 border-primary/20 backdrop-blur-sm',
+                    classNames: {
+                        toast: '!flex-row flex !items-center shadow-xl !rounded-2xl !backdrop-blur-xl !bg-base-100/95',
+                        default: 'border border-base-300/50 !text-base-content',
+                        error: 'border !border-error/40 !text-error font-semibold',
+                        success: 'border !border-success/40 !text-success font-semibold',
+                        warning: 'border !border-warning/40 !text-warning font-semibold',
+                        info: 'border !border-info/40 !text-info font-semibold',
+                    },
                     style: {
                         fontSize: '1rem',
                         padding: '14px 20px',
-                        zIndex: '999999',
-                        borderRadius: '14px',
                     },
-                    duration: 5000,
+                    duration: 4000,
                     closeButton: false,
                 }}
             />

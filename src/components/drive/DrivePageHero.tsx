@@ -32,15 +32,17 @@ export function DrivePageHero({ controller }: DrivePageHeroProps) {
     const { status, currentPath, items, effectivePermissions } = controller
 
     return (
-        <section className="rounded-[2rem] border border-white/10 bg-base-100/90 p-5 shadow-2xl shadow-primary/5 backdrop-blur-xl md:p-7">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-base-100/90 p-5 shadow-[0_0_40px_-10px] shadow-primary/15 backdrop-blur-xl md:p-7">
+            {/* Subtle gradient background element for extra depth */}
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-3">
                     <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
                         <HardDrive className="h-4 w-4" />
                         站内网盘
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight text-base-content md:text-4xl">
+                        <h1 className="bg-gradient-to-r from-primary to-secondary bg-clip-text pb-1 text-3xl font-black tracking-tight text-transparent md:text-4xl">
                             Mahiro Drive
                         </h1>
                         <p className="mt-2 max-w-2xl text-sm leading-7 text-base-content/70 md:text-base">

@@ -1,4 +1,4 @@
-﻿---
+---
 import { Icon } from "astro-icon/components";
 import { SITE_LANGUAGE, SITE_TRANSLATION } from "@config";
 import { SITE_API_BASE_URL } from "@/consts";
@@ -592,19 +592,7 @@ const languages = [
       );
     }
 
-    function setPendingGoogleReload(language, sourceLanguage) {
-      try {
-        sessionStorage.setItem(
-          GOOGLE_PENDING_RELOAD_KEY,
-          JSON.stringify({
-            language,
-            sourceLanguage,
-            pathname: window.location.pathname,
-            timestamp: Date.now(),
-          }),
-        );
-      } catch {}
-    }
+
 
     function getPendingGoogleReload() {
       try {
@@ -1454,7 +1442,7 @@ const languages = [
       return `https://www.bing.com/translator?from=auto&to=${microsoftLanguage}`;
     }
 
-    async function handleGoogleTranslationFailure(widget, language, model, sourceLanguage, options = {}) {
+    async function handleGoogleTranslationFailure(_widget, _language, _model, _sourceLanguage, options = {}) {
       clearPendingGoogleReload();
       clearGoogleRuntimeState();
       removeGoogleScriptTag();

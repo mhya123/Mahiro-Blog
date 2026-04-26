@@ -1,0 +1,52 @@
+/* Color scheme configuration to prevent Chrome's auto dark theme */
+/* Color scheme configuration to prevent Chrome's auto dark theme */
+:root {
+  --custom-page-bg: oklch(var(--b2));
+  --banner-wave-bg: oklch(var(--b2));
+
+  /* Neumorphism - Adaptive to Theme */
+  --neu-base: oklch(var(--b1));
+  --neu-text: oklch(var(--bc));
+  --neu-accent: oklch(var(--p));
+
+  /* Adaptive Shadows using opacity */
+  --neu-border: oklch(var(--bc) / 0.1);
+  --neu-btn-text: oklch(var(--bc));
+  --neu-btn-bg: oklch(var(--b2));
+  /* Slightly different from base */
+  --neu-text-muted: oklch(var(--bc) / 0.6);
+
+  /* FORCE Neutral Shadows */
+  --shadow-neu-out: 8px 8px 16px 0 rgba(0, 0, 0, 0.05), -8px -8px 16px 0 rgba(255, 255, 255, 0.6) !important;
+  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0, 0, 0, 0.05), inset -8px -8px 16px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme-type="light"] {
+  color-scheme: light;
+  --shadow-neu-out: 8px 8px 16px 0 rgba(0, 0, 0, 0.05), -8px -8px 16px 0 rgba(255, 255, 255, 0.6) !important;
+  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0, 0, 0, 0.05), inset -8px -8px 16px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme-type="dark"] {
+  color-scheme: dark;
+  --neu-base: oklch(var(--b1));
+  --neu-text: oklch(var(--bc));
+  --neu-border: oklch(var(--bc) / 0.1);
+  --neu-btn-text: oklch(var(--bc));
+  --neu-btn-bg: oklch(var(--b2));
+  --neu-text-muted: oklch(var(--bc) / 0.5);
+  --neu-accent: oklch(var(--p));
+
+  /* Dark Shadows */
+  --shadow-neu-out: 8px 8px 16px 0 rgba(0, 0, 0, 0.4), -8px -8px 16px 0 rgba(255, 255, 255, 0.02) !important;
+  --shadow-neu-in: inset 8px 8px 16px 0 rgba(0, 0, 0, 0.4), inset -8px -8px 16px 0 rgba(255, 255, 255, 0.02) !important;
+}
+
+
+/* 强制统一所有主题的圆角设置，防止某些主题修改圆角 */
+:root,
+[data-theme] {
+  --rounded-box: 1rem !important;
+  --rounded-btn: 0.5rem !important;
+  --rounded-badge: 1.9rem !important;
+}
