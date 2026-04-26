@@ -1,8 +1,21 @@
+/**
+ * @file alist-operations.mjs
+ * @description AList 网盘业务操作层。
+ *
+ * 所有读操作（list / item / search）走 Redis 缓存，写操作（mkdir / rename / remove / move / copy / upload）
+ * 完成后自动清除受影响路径的缓存，保证数据一致性。
+ */
+
 import { PassThrough } from 'node:stream'
 import { formatBytes, normalizeEntry, normalizeFileType, sortEntries } from './alist-entries.mjs'
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from './alist-config.mjs'
 import { getParentPath, joinPath, normalizePath, sanitizeName } from './alist-paths.mjs'
 import { getSearchScore } from './alist-search.mjs'
+
+// ── 缓存 TTL（秒）──
+const LIST_CACHE_TTL = 60      // 目录列表 60 秒
+const ITEM_CACHE_TTL = 120     // 文件详情 120 秒
+const SEARCH_CACHE_TTL = 30    // 搜索结果 30 秒
 
 function assertPermission(permissions, permission) {
   if (permissions[permission] !== false) {
@@ -14,6 +27,21 @@ function assertPermission(permissions, permission) {
   throw error
 }
 
+/**
+ * 构建缓存 key
+ */
+function listCacheKey(path, page, perPage) {
+  return `alist:list:${path}:${page}:${perPage}`
+}
+
+function itemCacheKey(path) {
+  return `alist:item:${path}`
+}
+
+function searchCacheKey(parent, keywords) {
+  return `alist:search:${parent}:${keywords}`
+}
+
 export function createAListOperations({
   log,
   defaultRoot,
@@ -22,7 +50,38 @@ export function createAListOperations({
   getAccessToken,
   buildSignedRawUrl,
   resolveDirectUrl,
+  cache, // Redis 缓存实例
 }) {
+  /**
+   * 清除某个路径相关的所有读缓存
+   */
+  async function invalidatePath(path) {
+    if (!cache) return
+    const normalizedPath = normalizePath(path)
+    try {
+      await Promise.all([
+        cache.delByPrefix(`alist:list:${normalizedPath}`),
+        cache.del(itemCacheKey(normalizedPath)),
+        cache.delByPrefix('alist:search:'),
+      ])
+    } catch {
+      // 清缓存失败不阻塞业务
+    }
+  }
+
+  /**
+   * 清除路径本身和父目录的缓存（写操作是在某个目录下新增/修改条目）
+   */
+  async function invalidatePathAndParent(path) {
+    if (!cache) return
+    const normalizedPath = normalizePath(path)
+    const parentPath = getParentPath(normalizedPath) || '/'
+    await Promise.all([
+      invalidatePath(normalizedPath),
+      invalidatePath(parentPath),
+    ])
+  }
+
   async function getStatus(requestId, publicConfig) {
     if (!publicConfig.configured) {
       return {
@@ -53,6 +112,19 @@ export function createAListOperations({
   async function listDirectory(requestId, inputPath = defaultRoot, options = {}) {
     assertPermission(permissions, 'view')
     const path = normalizePath(inputPath)
+    const page = Number(options.page || DEFAULT_PAGE)
+    const perPage = Number(options.perPage || DEFAULT_PER_PAGE)
+    const refresh = Boolean(options.refresh)
+
+    // 读缓存（refresh=true 时跳过）
+    if (!refresh && cache) {
+      const cached = await cache.getJson(listCacheKey(path, page, perPage))
+      if (cached) {
+        log('INFO', 'Drive list cache hit', { requestId, path, page, perPage })
+        return cached
+      }
+    }
+
     const data = await requestUpstream({
       requestId,
       method: 'POST',
@@ -60,14 +132,14 @@ export function createAListOperations({
       body: {
         path,
         password: options.password || '',
-        page: Number(options.page || DEFAULT_PAGE),
-        per_page: Number(options.perPage || DEFAULT_PER_PAGE),
-        refresh: Boolean(options.refresh),
+        page,
+        per_page: perPage,
+        refresh,
       },
     })
 
     const content = Array.isArray(data?.content) ? data.content : []
-    return {
+    const result = {
       path,
       parentPath: getParentPath(path),
       total: Number(data?.total || content.length),
@@ -76,6 +148,13 @@ export function createAListOperations({
       provider: String(data?.provider || ''),
       items: sortEntries(content.map((item) => normalizeEntry(item, path))),
     }
+
+    // 写缓存
+    if (cache) {
+      await cache.setJson(listCacheKey(path, page, perPage), result, LIST_CACHE_TTL)
+    }
+
+    return result
   }
 
   async function listDirectoryEntriesAllPages(requestId, inputPath = defaultRoot) {
@@ -116,6 +195,16 @@ export function createAListOperations({
     const intent = options.intent === 'download' ? 'download' : 'view'
     assertPermission(permissions, intent)
     const path = normalizePath(inputPath)
+
+    // 读缓存
+    if (cache) {
+      const cached = await cache.getJson(itemCacheKey(path))
+      if (cached) {
+        log('INFO', 'Drive item cache hit', { requestId, path })
+        return cached
+      }
+    }
+
     const providedSign = String(options.sign || '').trim()
     const data = await requestUpstream({
       requestId,
@@ -130,7 +219,7 @@ export function createAListOperations({
     const upstreamSign = String(data?.sign || '')
     const sign = upstreamSign || providedSign
     const rawUrl = String(data?.raw_url || data?.rawUrl || '') || (sign ? buildSignedRawUrl(path, sign) : '')
-    return {
+    const result = {
       path,
       name: path === '/' ? '/' : path.split('/').filter(Boolean).pop() || path,
       rawUrl,
@@ -145,6 +234,13 @@ export function createAListOperations({
       isDir: Boolean(data?.is_dir),
       related: data,
     }
+
+    // 写缓存
+    if (cache) {
+      await cache.setJson(itemCacheKey(path), result, ITEM_CACHE_TTL)
+    }
+
+    return result
   }
 
   async function getLatestSign(requestId, inputPath, options = {}) {
@@ -231,6 +327,17 @@ export function createAListOperations({
 
     const currentPage = Math.max(1, Number(page || DEFAULT_PAGE))
     const pageSize = Math.max(1, Number(perPage || DEFAULT_PER_PAGE))
+
+    // 读搜索缓存（含分页参数的完整 key）
+    const cacheKey = `${searchCacheKey(normalizedParent, query)}:${currentPage}:${pageSize}`
+    if (cache) {
+      const cached = await cache.getJson(cacheKey)
+      if (cached) {
+        log('INFO', 'Drive search cache hit', { requestId, parent: normalizedParent, query })
+        return cached
+      }
+    }
+
     const entries = await listDirectoryEntriesAllPages(requestId, normalizedParent)
     const matchedEntries = entries
       .map((entry) => ({
@@ -255,12 +362,21 @@ export function createAListOperations({
 
     const startIndex = (currentPage - 1) * pageSize
     const endIndex = startIndex + pageSize
-    return {
+    const result = {
       parentPath: normalizedParent,
       total: matchedEntries.length,
       items: matchedEntries.slice(startIndex, endIndex).map((item) => item.entry),
     }
+
+    // 写搜索缓存
+    if (cache) {
+      await cache.setJson(cacheKey, result, SEARCH_CACHE_TTL)
+    }
+
+    return result
   }
+
+  // ── 写入操作：执行后清除相关缓存 ──
 
   async function makeDirectory(requestId, inputPath) {
     assertPermission(permissions, 'mkdir')
@@ -278,6 +394,8 @@ export function createAListOperations({
       path: '/api/fs/mkdir',
       body: { path },
     })
+
+    await invalidatePathAndParent(path)
 
     return {
       ok: true,
@@ -304,6 +422,8 @@ export function createAListOperations({
         name,
       },
     })
+
+    await invalidatePathAndParent(path)
 
     return {
       ok: true,
@@ -335,6 +455,8 @@ export function createAListOperations({
       },
     })
 
+    await invalidatePath(normalizedDir)
+
     return {
       ok: true,
       dir: normalizedDir,
@@ -365,6 +487,11 @@ export function createAListOperations({
       },
     })
 
+    await Promise.all([
+      invalidatePath(normalizePath(srcDir || '/')),
+      invalidatePath(normalizePath(dstDir || '/')),
+    ])
+
     return { ok: true }
   }
 
@@ -390,6 +517,8 @@ export function createAListOperations({
         names: normalizedNames,
       },
     })
+
+    await invalidatePath(normalizePath(dstDir || '/'))
 
     return { ok: true }
   }
@@ -426,6 +555,8 @@ export function createAListOperations({
       headers,
       responseType: 'json',
     })
+
+    await invalidatePath(targetPath)
 
     return {
       ok: true,

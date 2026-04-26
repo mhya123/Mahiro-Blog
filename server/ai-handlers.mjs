@@ -218,6 +218,10 @@ export function createAiHandlers({
   defaultTimeoutMs,
   defaultRetries,
 }) {
+  // ── AI 功能开关（环境变量控制，默认启用） ──
+  const summaryEnabled = (process.env.AI_SUMMARY_ENABLED || 'true') !== 'false'
+  const translateEnabled = (process.env.AI_TRANSLATE_ENABLED || 'true') !== 'false'
+
   function secureJson(res, status, aesKey, body, origin) {
     return json(res, status, driveCrypto.encryptResponse(aesKey, body), origin)
   }
@@ -315,6 +319,11 @@ export function createAiHandlers({
   }
 
   async function runSummaryPayload(requestId, payload) {
+    if (!summaryEnabled) {
+      log('INFO', 'Summary request rejected: AI summary is disabled', { requestId })
+      return { status: 403, body: { error: 'AI 摘要功能已禁用 / AI summary is disabled' } }
+    }
+
     const baseUrl = process.env.OPENAI_BASE_URL || defaultBaseUrl
     const apiKey = process.env.OPENAI_API_KEY
     const timeoutMs = Number(process.env.OPENAI_TIMEOUT_MS || defaultTimeoutMs)
@@ -400,6 +409,11 @@ export function createAiHandlers({
   }
 
   async function runTranslatePayload(requestId, payload) {
+    if (!translateEnabled) {
+      log('INFO', 'Translate request rejected: AI translation is disabled', { requestId })
+      return { status: 403, body: { error: 'AI 翻译功能已禁用 / AI translation is disabled' } }
+    }
+
     const baseUrl = process.env.AI_TRANSLATE_BASE_URL || defaultBaseUrl
     const apiKey = process.env.AI_TRANSLATE_API_KEY
     const timeoutMs = Number(process.env.AI_TRANSLATE_TIMEOUT_MS || defaultTimeoutMs)
@@ -571,6 +585,12 @@ export function createAiHandlers({
 
   async function handleSummary(req, res, origin) {
     const requestId = req.requestId
+
+    if (!summaryEnabled) {
+      log('INFO', 'Summary request rejected: AI summary is disabled', { requestId })
+      return json(res, 403, { error: 'AI 摘要功能已禁用 / AI summary is disabled' }, origin)
+    }
+
     const baseUrl = process.env.OPENAI_BASE_URL || defaultBaseUrl
     const apiKey = process.env.OPENAI_API_KEY
     const timeoutMs = Number(process.env.OPENAI_TIMEOUT_MS || defaultTimeoutMs)
@@ -663,6 +683,12 @@ export function createAiHandlers({
 
   async function handleTranslate(req, res, origin) {
     const requestId = req.requestId
+
+    if (!translateEnabled) {
+      log('INFO', 'Translate request rejected: AI translation is disabled', { requestId })
+      return json(res, 403, { error: 'AI 翻译功能已禁用 / AI translation is disabled' }, origin)
+    }
+
     const baseUrl = process.env.AI_TRANSLATE_BASE_URL || defaultBaseUrl
     const apiKey = process.env.AI_TRANSLATE_API_KEY
     const timeoutMs = Number(process.env.AI_TRANSLATE_TIMEOUT_MS || defaultTimeoutMs)

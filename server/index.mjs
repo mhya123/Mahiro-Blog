@@ -1,3 +1,10 @@
+/**
+ * @file index.mjs
+ * @description 后端服务入口。
+ *
+ * 初始化 Redis 缓存 → AList 网盘 → AI 服务 → HTTP 路由，启动监听。
+ */
+
 import { dirname, resolve } from 'node:path'
 import { createServer } from 'node:http'
 import { fileURLToPath } from 'node:url'
@@ -8,6 +15,7 @@ import { createDriveHandlers } from './drive-handlers.mjs'
 import { loadEnvFile } from './env-utils.mjs'
 import { createHttpUtils } from './http-utils.mjs'
 import { createLogger } from './logger.mjs'
+import { createRedisCache } from './redis.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 loadEnvFile(resolve(__dirname, '.env'))
@@ -33,9 +41,13 @@ const {
   readJsonBody,
 } = createHttpUtils({ allowedOrigins: ALLOWED_ORIGINS })
 
+// ── Redis 缓存 ──
+const cache = createRedisCache({ log })
+
 const alistService = createAListService({
   log,
   defaultTimeoutMs: DEFAULT_TIMEOUT_MS,
+  cache,
 })
 
 const driveCrypto = createDriveCrypto({
@@ -105,7 +117,10 @@ const server = createServer(async (req, res) => {
   }
 
   if (req.method === 'GET' && url.pathname === '/health') {
-    return json(res, 200, { ok: true }, origin)
+    return json(res, 200, {
+      ok: true,
+      redis: cache.getStats(),
+    }, origin)
   }
 
   if (req.method === 'GET' && url.pathname === '/api/drive/status') {
@@ -197,7 +212,11 @@ server.on('request', (req, res) => {
 })
 
 server.listen(PORT, () => {
-  log('INFO', 'Server started', { port: PORT, envFile: resolve(__dirname, '.env') })
+  log('INFO', 'Server started', {
+    port: PORT,
+    envFile: resolve(__dirname, '.env'),
+    redis: cache.getStats(),
+  })
 })
 
 process.on('unhandledRejection', (error) => {
@@ -210,4 +229,17 @@ process.on('uncaughtException', (error) => {
   log('ERROR', 'Uncaught exception', {
     error: error instanceof Error ? error.stack || error.message : String(error),
   })
+})
+
+// 优雅关闭
+process.on('SIGTERM', async () => {
+  log('INFO', 'SIGTERM received, shutting down...')
+  await cache.quit()
+  server.close(() => process.exit(0))
+})
+
+process.on('SIGINT', async () => {
+  log('INFO', 'SIGINT received, shutting down...')
+  await cache.quit()
+  server.close(() => process.exit(0))
 })

@@ -188,7 +188,21 @@ export async function decryptSecurePayload<T>(aesKey: CryptoKey, envelope: Secur
     return JSON.parse(new TextDecoder().decode(decrypted)) as T
 }
 
-export async function secureApiRequest<T>(path: string, payload: unknown, baseUrl = SITE_API_BASE_URL): Promise<T> {
+/**
+ * 清除指定 baseUrl 的公钥缓存，用于密钥轮换恢复
+ */
+function clearPublicKeyCache(baseUrl = SITE_API_BASE_URL) {
+    const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+    if (normalizedBaseUrl !== SITE_API_BASE_URL) {
+        publicConfigPromises.delete(normalizedBaseUrl)
+        importedPublicKeyPromises.delete(normalizedBaseUrl)
+    } else {
+        publicConfigPromise = null
+        importedPublicKeyPromise = null
+    }
+}
+
+async function secureApiRequestOnce<T>(path: string, payload: unknown, baseUrl: string): Promise<T> {
     const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
     const encrypted = await encryptSecurePayload(payload, normalizedBaseUrl)
     const response = await fetch(`${normalizedBaseUrl}${path}`, {
@@ -212,3 +226,33 @@ export async function secureApiRequest<T>(path: string, payload: unknown, baseUr
 
     return decrypted as T
 }
+
+/**
+ * 加密 API 请求。
+ * 当收到 500 错误或解密失败时，清除公钥缓存并自动重试一次（应对后端密钥轮换场景）。
+ */
+export async function secureApiRequest<T>(path: string, payload: unknown, baseUrl = SITE_API_BASE_URL): Promise<T> {
+    try {
+        return await secureApiRequestOnce<T>(path, payload, baseUrl)
+    } catch (firstError) {
+        const status = (firstError as Error & { status?: number }).status
+        const isDecryptionError = firstError instanceof Error && (
+            firstError.message.includes('decrypt')
+            || firstError.message.includes('Encrypted')
+            || firstError.message.includes('Invalid encrypted')
+        )
+
+        // 仅在 500 或解密失败时重试（可能是密钥不匹配）
+        if (status === 500 || isDecryptionError) {
+            clearPublicKeyCache(baseUrl)
+            try {
+                return await secureApiRequestOnce<T>(path, payload, baseUrl)
+            } catch {
+                // 重试也失败，抛原始错误
+            }
+        }
+
+        throw firstError
+    }
+}
+

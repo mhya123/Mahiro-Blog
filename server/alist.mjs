@@ -1,9 +1,14 @@
+/**
+ * @file alist.mjs
+ * @description AList 网盘服务工厂，组装上游通信层和业务操作层。
+ */
+
 import { buildAListPublicConfig, DEFAULT_TIMEOUT_MS, DEFAULT_TOKEN_TTL_MS, readAListConfigFromEnv } from './alist-config.mjs'
 import { createAListOperations } from './alist-operations.mjs'
 import { joinPath, normalizePath } from './alist-paths.mjs'
 import { createAListUpstream } from './alist-upstream.mjs'
 
-export function createAListService({ log, defaultTimeoutMs = DEFAULT_TIMEOUT_MS }) {
+export function createAListService({ log, defaultTimeoutMs = DEFAULT_TIMEOUT_MS, cache }) {
   const config = readAListConfigFromEnv(defaultTimeoutMs)
   const upstream = createAListUpstream({
     log,
@@ -14,6 +19,7 @@ export function createAListService({ log, defaultTimeoutMs = DEFAULT_TIMEOUT_MS 
     requestTimeoutMs: config.requestTimeoutMs,
     redirectCacheTtlMs: config.redirectCacheTtlMs,
     defaultTokenTtlMs: DEFAULT_TOKEN_TTL_MS,
+    cache,
   })
 
   const getPublicConfig = () => buildAListPublicConfig({
@@ -33,6 +39,7 @@ export function createAListService({ log, defaultTimeoutMs = DEFAULT_TIMEOUT_MS 
     getAccessToken: upstream.getAccessToken,
     buildSignedRawUrl: upstream.buildSignedRawUrl,
     resolveDirectUrl: upstream.resolveDirectUrl,
+    cache,
   })
 
   return {
