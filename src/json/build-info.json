@@ -1,10 +1,10 @@
 {
-  "commitSha": "6bde5da14e66824e9318aa1bf1f7f485cd18bbf5",
-  "commitShort": "6bde5da",
-  "commitMessage": "docs, refactor & perf: 深度完善全站视觉交互、SEO 架构与项目文档",
+  "commitSha": "4cc0a2fad1f6fa975c95cec360e7873500683586",
+  "commitShort": "4cc0a2f",
+  "commitMessage": "feat: 优化网盘预览动画、集成后端 Redis 缓存及新增 AI 功能开关",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-26T16:35:01+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/6bde5da14e66824e9318aa1bf1f7f485cd18bbf5",
-  "buildTime": "2026/4/26 16:35:41",
-  "totalCommits": 411
+  "commitDate": "2026-04-26T17:19:09+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/4cc0a2fad1f6fa975c95cec360e7873500683586",
+  "buildTime": "2026/4/26 17:19:38",
+  "totalCommits": 413
 }
