@@ -116,7 +116,7 @@ export default function WritePage({ categories = [], aiModels = [] }: WritePageP
         const handler = (e: BeforeUnloadEvent) => {
             if (!isDraftFormMeaningful(form)) return
             e.preventDefault()
-            ;(e as any).returnValue = ''
+                ; (e as any).returnValue = ''
         }
 
         window.addEventListener('beforeunload', handler)
