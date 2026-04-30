@@ -57,7 +57,7 @@ const driveCrypto = createDriveCrypto({
   enabled: (process.env.API_RSA_ENCRYPTION || process.env.DRIVE_RSA_ENCRYPTION) !== 'false',
 })
 
-const { handleSummary, handleSecureAi, handleTranslate } = createAiHandlers({
+const { handleSummary, handleSecureAi, handleTranslate, handleAiModels, handleTranslationModels } = createAiHandlers({
   log,
   json,
   readJsonBody,
@@ -113,6 +113,8 @@ const routes = {
   'POST:/api/ai/summary': handleSummary,
   'POST:/api/ai/secure': handleSecureAi,
   'POST:/api/ai/translate': handleTranslate,
+  'GET:/api/ai/translation-models': handleTranslationModels,
+  'GET:/api/ai/models': handleAiModels,
 }
 
 const server = createServer(async (req, res) => {
@@ -144,7 +146,18 @@ const server = createServer(async (req, res) => {
   const routeHandler = routes[routeKey]
 
   if (routeHandler) {
-    return routeHandler(req, res, origin, url)
+    try {
+      return await routeHandler(req, res, origin, url)
+    } catch (error) {
+      log('ERROR', t('route_handler_crashed'), {
+        ...requestMeta,
+        error: error instanceof Error ? error.stack || error.message : String(error),
+      })
+      if (!res.headersSent) {
+        return json(res, 500, { error: 'Internal server error' }, origin)
+      }
+      return
+    }
   }
 
   log('WARN', t('route_not_found'), requestMeta)

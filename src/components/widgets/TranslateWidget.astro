@@ -9,6 +9,7 @@ interface Props {
 }
 
 const { variant = "dropdown" } = Astro.props as Props;
+const browserApiBase = import.meta.env.DEV ? '/__mahiro_api' : SITE_API_BASE_URL
 const isEnabled = SITE_TRANSLATION.enable !== false;
 const models = (await getTranslationModels()).filter(
   (model) => !model.capabilities || model.capabilities.includes("text"),
@@ -315,7 +316,7 @@ const languages = [
   )
 }
 
-<script is:inline define:vars={{ SITE_API_BASE_URL }}>
+<script is:inline define:vars={{ SITE_API_BASE_URL: browserApiBase }}>
   (() => {
     if (window.__mahiroTranslateWidgetScriptLoaded) return;
     window.__mahiroTranslateWidgetScriptLoaded = true;
@@ -472,6 +473,14 @@ const languages = [
         body: JSON.stringify(encryptedPayload.envelope),
       });
       const responsePayload = await response.json().catch(() => ({}));
+
+      // 服务器返回了未加密的错误响应（解密失败等场景）
+      if (!responsePayload.encrypted) {
+        const serverError = responsePayload?.error || `HTTP ${response.status}`;
+        console.error('[AI Translate] Server error:', serverError);
+        throw new Error(serverError);
+      }
+
       const decrypted = await decryptSecurePayload(encryptedPayload.aesKey, responsePayload);
       if (!response.ok) {
         throw new Error(decrypted?.error || decrypted?.message || `HTTP ${response.status}`);

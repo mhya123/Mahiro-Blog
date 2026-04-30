@@ -18,6 +18,7 @@ const zh = {
   sigint_shutdown:                  '收到 SIGINT 信号，正在关闭...',
   unhandled_rejection:              '未处理的 Promise 异常',
   uncaught_exception:               '未捕获的异常',
+  route_handler_crashed:            '路由处理器崩溃，已返回 500',
 
   // ── Redis ──
   redis_fallback:                   'Redis 不可用，已切换至内存缓存',
@@ -87,9 +88,13 @@ const zh = {
   ai_translate_unsupported_model:   '翻译请求被拒绝：不支持的模型',
   ai_translate_no_text_capability:  '翻译请求被拒绝：模型不支持文本生成',
   ai_translate_wrong_lang_retry:    '翻译结果疑似语言错误，正在使用更强的提示词重试',
-  ai_translate_count_mismatch:      '翻译请求失败：返回项目数量不匹配',
+  ai_translate_json_parse_retry:    '翻译 JSON 解析失败，正在用严格提示词重试',
+  ai_translate_count_mismatch_retry:'翻译结果数量不匹配，正在用精确数量提示词重试',
+  ai_translate_count_mismatch:      '翻译结果数量不匹配，缺失项已用原文填充',
   ai_translate_generated:           'AI 翻译已完成',
   ai_encrypted_rejected:            'AI 加密请求被拒绝',
+  ai_summary_invalid_body:          '摘要请求被拒绝：JSON 格式无效',
+  ai_translate_invalid_body:        '翻译请求被拒绝：JSON 格式无效',
 }
 
 const en = {
@@ -103,6 +108,7 @@ const en = {
   sigint_shutdown:                  'SIGINT received, shutting down...',
   unhandled_rejection:              'Unhandled promise rejection',
   uncaught_exception:               'Uncaught exception',
+  route_handler_crashed:            'Route handler crashed, returned 500',
 
   // ── Redis ──
   redis_fallback:                   'Redis unavailable — using in-memory cache fallback',
@@ -172,9 +178,13 @@ const en = {
   ai_translate_unsupported_model:   'Translate request rejected: unsupported model',
   ai_translate_no_text_capability:  'Translate request rejected: model has no text capability',
   ai_translate_wrong_lang_retry:    'Translation looked like the wrong language, retrying with stronger prompt',
-  ai_translate_count_mismatch:      'Translate request failed: item count mismatch',
+  ai_translate_json_parse_retry:    'Translation JSON parse failed, retrying with strict prompt',
+  ai_translate_count_mismatch_retry:'Translation item count mismatch, retrying with exact count prompt',
+  ai_translate_count_mismatch:      'Translation item count mismatch, missing items padded with original text',
   ai_translate_generated:           'AI translation generated',
   ai_encrypted_rejected:            'AI encrypted request rejected',
+  ai_summary_invalid_body:          'Summary request rejected: invalid JSON body',
+  ai_translate_invalid_body:        'Translate request rejected: invalid JSON body',
 }
 
 const locales = { zh, en }

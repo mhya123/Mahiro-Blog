@@ -1,4 +1,5 @@
-import registry from '../../scripts/translation-models.json'
+import { SITE_API_BASE_URL } from '@/consts'
+import localAiRegistry from '../../scripts/ai-models.json'
 
 export type TranslationModelDefinition = {
   id: string
@@ -13,9 +14,19 @@ type TranslationModelRegistry = {
 }
 
 export async function loadTranslationModelRegistry(): Promise<TranslationModelRegistry> {
-  const parsed = registry as TranslationModelRegistry
-  return {
-    models: Array.isArray(parsed.models) ? parsed.models : [],
+  try {
+    const response = await fetch(`${SITE_API_BASE_URL}/api/ai/translation-models`, {
+      cache: 'no-store'
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch translation models: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return { models: Array.isArray(data.models) ? data.models : [] }
+  } catch {
+    return { models: Array.isArray(localAiRegistry.models) ? localAiRegistry.models : [] }
   }
 }
 

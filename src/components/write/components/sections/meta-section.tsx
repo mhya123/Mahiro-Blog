@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { SITE_LOCAL_API_BASE_URL, SITE_REMOTE_API_BASE_URL } from '@/consts'
+import { SITE_API_BASE_URL, SITE_LOCAL_API_BASE_URL } from '@/consts'
 import type { AiModelDefinition } from '@/lib/ai-models'
 import { secureApiRequest } from '@/lib/secure-api'
 import { useWriteStore } from '../../stores/write-store'
@@ -41,6 +41,26 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 		if (form.categories.length === 0) return false
 		return form.categories.length > 1 || (form.categories.length === 1 && !categories.includes(form.categories[0]))
 	})
+	const [remoteModels, setRemoteModels] = useState<AiModelDefinition[]>([])
+	const [isLoadingRemoteModels, setIsLoadingRemoteModels] = useState(false)
+
+	const channel = form.aiSummaryChannel || 'remote'
+
+	useEffect(() => {
+		if (channel !== 'remote') return
+		let cancelled = false
+		setIsLoadingRemoteModels(true)
+		fetch(`${SITE_API_BASE_URL}/api/ai/models`, { cache: 'no-store' })
+			.then((res) => (res.ok ? res.json() : Promise.reject(res)))
+			.then((data) => {
+				if (!cancelled) setRemoteModels(Array.isArray(data?.models) ? data.models : [])
+			})
+			.catch(() => { /* 远程获取失败，保持当前列表 */ })
+			.finally(() => { if (!cancelled) setIsLoadingRemoteModels(false) })
+		return () => { cancelled = true }
+	}, [channel])
+
+	const activeModels = channel === 'remote' ? remoteModels : aiModels
 
 	const categoryOptions = [
 		...categories.map((category) => ({ value: category, label: category })),
@@ -49,7 +69,7 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 
 	const aiModelOptions = [
 		{ value: '', label: '不启用 AI 摘要' },
-		...aiModels.map((model) => ({
+		...activeModels.map((model) => ({
 			value: model.id,
 			label: `${model.name} · ${model.brand}`
 		}))
@@ -95,7 +115,7 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 		try {
 			setIsGeneratingSummary(true)
 			setAiSummaryStatus('generating')
-			const apiBaseUrl = form.aiSummaryChannel === 'local' ? SITE_LOCAL_API_BASE_URL : SITE_REMOTE_API_BASE_URL
+			const apiBaseUrl = form.aiSummaryChannel === 'local' ? SITE_LOCAL_API_BASE_URL : SITE_API_BASE_URL
 			let lastError: unknown = null
 
 			for (let attempt = 1; attempt <= 2; attempt += 1) {
@@ -153,12 +173,19 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 					/>
 
 					<div className='text-xs font-medium text-base-content/70'>AI 摘要模型</div>
-					<CustomSelect
-						value={form.aiModel || ''}
-						onChange={value => updateForm({ aiModel: value })}
-						options={aiModelOptions}
-						placeholder='选择用于文章摘要的 AI 模型'
-					/>
+					{isLoadingRemoteModels ? (
+						<div className='flex items-center gap-2 text-xs text-base-content/50 py-2'>
+							<span className='loading loading-spinner loading-xs'></span>
+							正在从服务端加载模型列表...
+						</div>
+					) : (
+						<CustomSelect
+							value={form.aiModel || ''}
+							onChange={value => updateForm({ aiModel: value })}
+							options={aiModelOptions}
+							placeholder='选择用于文章摘要的 AI 模型'
+						/>
+					)}
 					<button
 						type='button'
 						className='btn btn-sm btn-outline btn-primary w-full'

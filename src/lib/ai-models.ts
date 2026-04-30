@@ -1,4 +1,5 @@
-import registry from '../../scripts/ai-models.json'
+import { SITE_API_BASE_URL } from '@/consts'
+import localRegistry from '../../scripts/ai-models.json'
 
 export type AiModelDefinition = {
   id: string
@@ -14,10 +15,19 @@ type AiModelRegistry = {
 }
 
 export async function loadAiModelRegistry(): Promise<AiModelRegistry> {
-  const parsed = registry as AiModelRegistry
-  return {
-    models: Array.isArray(parsed.models) ? parsed.models : [],
-  }
+  try {
+    const response = await fetch(`${SITE_API_BASE_URL}/api/ai/models`, { cache: 'no-store' })
+    if (response.ok) {
+      const data = await response.json()
+      return { models: Array.isArray(data.models) ? data.models : [] }
+    }
+  } catch { /* 服务端不可用，降级到本地 */ }
+
+  return loadLocalAiModels()
+}
+
+export function loadLocalAiModels(): AiModelRegistry {
+  return { models: Array.isArray(localRegistry.models) ? localRegistry.models : [] }
 }
 
 export async function getAiModels(): Promise<AiModelDefinition[]> {

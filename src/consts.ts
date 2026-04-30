@@ -5,12 +5,16 @@ export const CARD_SPACING = 36
 export const CARD_SPACING_SM = 24
 export const BLOG_SLUG_KEY = import.meta.env.BLOG_SLUG_KEY || ''
 export const SITE_REMOTE_API_BASE_URL = (import.meta.env.PUBLIC_SITE_API_BASE_URL || 'https://back.mahiro.work').replace(/\/+$/, '')
+
+// DEV + SSR 时 Node.js fetch 不支持相对 URL，直接走生产后端
+// DEV + 浏览器 时用相对路径通过 Vite proxy 避免 CORS
 export const SITE_LOCAL_API_BASE_URL = (
 	import.meta.env.DEV
-		? '/__mahiro_api'
+		? (import.meta.env.SSR ? SITE_REMOTE_API_BASE_URL : '/__mahiro_api')
 		: (import.meta.env.PUBLIC_LOCAL_SITE_API_BASE_URL || '')
 ).replace(/\/+$/, '')
-export const SITE_API_BASE_URL = (import.meta.env.DEV ? SITE_LOCAL_API_BASE_URL : SITE_REMOTE_API_BASE_URL).replace(/\/+$/, '')
+
+export const SITE_API_BASE_URL = SITE_LOCAL_API_BASE_URL || SITE_REMOTE_API_BASE_URL
 
 /**
  * GitHub 仓库配置

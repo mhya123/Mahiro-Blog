@@ -138,7 +138,7 @@ export default function WritePage({ categories = [], aiModels = [] }: WritePageP
                 position="top-center"
                 offset={80}
                 visibleToasts={6}
-                expand={true}
+                expand={false}
                 richColors
                 gap={10}
                 style={{ zIndex: 999999 }}

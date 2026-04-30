@@ -1,6 +1,23 @@
-import aiRegistry from '../../config/ai-models.json' with { type: 'json' }
-import translationRegistry from '../../config/translation-models.json' with { type: 'json' }
+import { readFileSync, watch } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { t } from '../core/locales.mjs'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+function createConfigLoader(filename) {
+  const filePath = resolve(__dirname, '../../config', filename)
+  let cache = JSON.parse(readFileSync(filePath, 'utf8'))
+
+  watch(filePath, () => {
+    try { cache = JSON.parse(readFileSync(filePath, 'utf8')) } catch { /* 解析失败时保留旧缓存 */ }
+  })
+
+  return () => cache
+}
+
+const getAiRegistry = createConfigLoader('ai-models.json')
+const getTranslationRegistry = createConfigLoader('translation-models.json')
 
 const MAX_SOURCE_CHARS = 24_000
 const MAX_ITEMS = 80
@@ -16,11 +33,11 @@ const SUMMARY_SYSTEM_PROMPT = [
 
 const TRANSLATE_SYSTEM_PROMPT = [
   'You are a professional website translator.',
-  'Translate each input string into the requested target language.',
-  'Preserve the original meaning, tone, and reading flow.',
+  'Translate each numbered item into the requested target language.',
+  'Preserve the original meaning, tone, formatting, and code.',
   'Do not add explanations, notes, markdown fences, or extra fields.',
-  'Return strict JSON only in the form {"translations":["..."]}.',
-  'The translations array must have exactly the same number of items and the same order as the input array.',
+  'Return the translations as a numbered list: 1. xxx, 2. xxx, etc.',
+  'Keep the exact same order and same number of items.',
 ].join('\n')
 
 const ENGLISH_STOPWORDS = new Set([
@@ -95,65 +112,61 @@ function getLanguageLabel(language) {
 }
 
 function buildTranslatePrompt(sourceLanguage, targetLanguage, items) {
-  return JSON.stringify({
-    sourceLanguage: {
-      code: sourceLanguage,
-      name: getLanguageLabel(sourceLanguage),
-    },
-    targetLanguage: {
-      code: targetLanguage,
-      name: getLanguageLabel(targetLanguage),
-    },
-    instructions: [
-      `Translate every string into ${getLanguageLabel(targetLanguage)}.`,
-      `The target language code is ${targetLanguage}. Do not translate into English unless the target language is English.`,
-      'Keep the same item order and preserve meaning, tone, and formatting.',
-      'Return JSON only.',
-    ],
-    items,
-  })
+  const numbered = items.map((item, i) => `${i + 1}. ${item}`).join('\n')
+  return [
+    `Source language: ${getLanguageLabel(sourceLanguage)}`,
+    `Target language: ${getLanguageLabel(targetLanguage)}`,
+    `Translate each numbered item below into ${getLanguageLabel(targetLanguage)}.`,
+    'Return the translations as a numbered list, keeping the same order.',
+    'Do not include the original items or any other text.',
+    '',
+    numbered,
+  ].join('\n')
 }
 
-function buildTranslateRetryPrompt(sourceLanguage, targetLanguage, items, previousTranslations) {
-  return JSON.stringify({
-    sourceLanguage: {
-      code: sourceLanguage,
-      name: getLanguageLabel(sourceLanguage),
-    },
-    targetLanguage: {
-      code: targetLanguage,
-      name: getLanguageLabel(targetLanguage),
-    },
-    instructions: [
-      `The previous translation attempt did not reliably produce ${getLanguageLabel(targetLanguage)}.`,
-      `Translate every original string into ${getLanguageLabel(targetLanguage)}.`,
-      `The target language code is ${targetLanguage}. Do not translate into English unless the target language is English.`,
-      'Use the original source items as the truth. Ignore wrong-language output from the previous attempt.',
-      'Keep the same item order and preserve meaning, tone, and formatting.',
-      'Return JSON only.',
-    ],
-    originalItems: items,
-    previousAttempt: previousTranslations,
-  })
+function buildTranslateRetryPrompt(sourceLanguage, targetLanguage, items) {
+  const numbered = items.map((item, i) => `${i + 1}. ${item}`).join('\n')
+  return [
+    `The previous attempt did not reliably produce ${getLanguageLabel(targetLanguage)}.`,
+    `Source language: ${getLanguageLabel(sourceLanguage)}`,
+    `Target language: ${getLanguageLabel(targetLanguage)} — do NOT translate into any other language.`,
+    'Translate each numbered item below.',
+    'Return only the translations as a numbered list.',
+    '',
+    numbered,
+  ].join('\n')
+}
+
+function buildTranslateCountRetryPrompt(sourceLanguage, targetLanguage, items, expectedCount) {
+  const numbered = items.map((item, i) => `${i + 1}. ${item}`).join('\n')
+  return [
+    `Source language: ${getLanguageLabel(sourceLanguage)}`,
+    `Target language: ${getLanguageLabel(targetLanguage)}`,
+    `CRITICAL: There are exactly ${expectedCount} numbered items below.`,
+    `You MUST return exactly ${expectedCount} translations, no more, no less.`,
+    'Translate each numbered item and return as a numbered list.',
+    'Count your translations carefully before responding.',
+    '',
+    numbered,
+  ].join('\n')
 }
 
 function parseTranslations(raw) {
   const cleaned = raw
     .replace(/\r\n/g, '\n')
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/i, '')
     .trim()
-
-  const match = cleaned.match(/\{[\s\S]*\}/)
-  const candidate = match ? match[0] : cleaned
-  const parsed = JSON.parse(candidate)
-
-  if (!Array.isArray(parsed?.translations)) {
-    throw new Error('Model response did not include a translations array')
+  const lines = cleaned.split('\n')
+  const results = []
+  for (const line of lines) {
+    const match = line.match(/^\s*\d+[\.\)、:]\s*(.+)/)
+    if (match) {
+      results.push(match[1].trim())
+    }
   }
-
-  return parsed.translations.map((item) => String(item ?? ''))
+  if (results.length > 0) return results
+  // 降级：模型可能用纯换行返回
+  const nonEmpty = cleaned.split('\n').map((s) => s.trim()).filter(Boolean)
+  return nonEmpty.length > 0 ? nonEmpty : [cleaned]
 }
 
 function containsExpectedScript(language, text) {
@@ -202,12 +215,12 @@ function shouldRetryTranslations(targetLanguage, translations) {
 
 function findAiModelById(id) {
   if (!id) return undefined
-  return (aiRegistry.models || []).find((model) => model.id === id)
+  return (getAiRegistry().models || []).find((model) => model.id === id)
 }
 
 function findTranslationModelById(id) {
   if (!id) return undefined
-  return (translationRegistry.models || []).find((model) => model.id === id)
+  return (getTranslationRegistry().models || []).find((model) => model.id === id)
 }
 
 export function createAiHandlers({
@@ -417,8 +430,8 @@ export function createAiHandlers({
 
     const baseUrl = process.env.AI_TRANSLATE_BASE_URL || defaultBaseUrl
     const apiKey = process.env.AI_TRANSLATE_API_KEY
-    const timeoutMs = Number(process.env.AI_TRANSLATE_TIMEOUT_MS || defaultTimeoutMs)
-    const retries = Number(process.env.AI_TRANSLATE_RETRIES || defaultRetries)
+    const timeoutMs = Math.min(Number(process.env.AI_TRANSLATE_TIMEOUT_MS || defaultTimeoutMs), 25_000)
+    const retries = Math.min(Number(process.env.AI_TRANSLATE_RETRIES || defaultRetries), 1)
 
     if (!apiKey) {
       log('ERROR', t('ai_translate_missing_key'), { requestId })
@@ -488,38 +501,60 @@ export function createAiHandlers({
           targetLanguage,
         })
 
-        const retryTranslations = await requestChatCompletion({
+        const retryRaw = await requestChatCompletion({
           requestId,
           route: '/api/ai/translate',
           baseUrl,
           apiKey,
           model: model.id,
           systemPrompt: TRANSLATE_SYSTEM_PROMPT,
-          userPrompt: buildTranslateRetryPrompt(
-            sourceLanguage,
-            targetLanguage,
-            items,
-            translations,
-          ),
+          userPrompt: buildTranslateRetryPrompt(sourceLanguage, targetLanguage, items),
           timeoutMs,
           retries,
           temperature: 0,
           maxTokens: 4000,
         })
 
-        translations = parseTranslations(retryTranslations)
+        translations = parseTranslations(retryRaw)
       }
 
       if (translations.length !== items.length) {
-        log('ERROR', t('ai_translate_count_mismatch'), {
+        log('WARN', t('ai_translate_count_mismatch_retry'), {
           requestId,
           aiModel: model.id,
           expected: items.length,
           actual: translations.length,
         })
-        return {
-          status: 502,
-          body: { error: `Model returned ${translations.length} items, expected ${items.length}` },
+
+        const previousTranslations = translations
+        const countRetryRaw = await requestChatCompletion({
+          requestId,
+          route: '/api/ai/translate',
+          baseUrl,
+          apiKey,
+          model: model.id,
+          systemPrompt: TRANSLATE_SYSTEM_PROMPT,
+          userPrompt: buildTranslateCountRetryPrompt(sourceLanguage, targetLanguage, items, items.length),
+          timeoutMs,
+          retries: 1,
+          temperature: 0,
+          maxTokens: 4000,
+        })
+        const countRetryTranslations = parseTranslations(countRetryRaw)
+        translations = countRetryTranslations.length >= previousTranslations.length
+          ? countRetryTranslations
+          : previousTranslations
+      }
+
+      if (translations.length !== items.length) {
+        log('WARN', t('ai_translate_count_mismatch'), {
+          requestId,
+          aiModel: model.id,
+          expected: items.length,
+          actual: translations.length,
+        })
+        for (let i = translations.length; i < items.length; i += 1) {
+          translations.push(items[i])
         }
       }
 
@@ -588,7 +623,7 @@ export function createAiHandlers({
     const requestId = req.requestId
 
     if (!summaryEnabled) {
-      log('INFO', 'Summary request rejected: AI summary is disabled', { requestId })
+      log('INFO', t('ai_summary_disabled'), { requestId })
       return json(res, 403, { error: 'AI 摘要功能已禁用 / AI summary is disabled' }, origin)
     }
 
@@ -598,7 +633,7 @@ export function createAiHandlers({
     const retries = Number(process.env.OPENAI_RETRIES || defaultRetries)
 
     if (!apiKey) {
-      log('ERROR', 'Summary request rejected: missing OPENAI_API_KEY', { requestId })
+      log('ERROR', t('ai_summary_missing_key'), { requestId })
       return json(res, 500, { error: 'Missing OPENAI_API_KEY' }, origin)
     }
 
@@ -607,7 +642,7 @@ export function createAiHandlers({
     try {
       payload = await readJsonBody(req)
     } catch (error) {
-      log('WARN', 'Summary request rejected: invalid JSON body', {
+      log('WARN', t('ai_summary_invalid_body'), {
         requestId,
         error: error instanceof Error ? error.message : String(error),
       })
@@ -619,26 +654,26 @@ export function createAiHandlers({
     const aiModel = String(payload.aiModel || '').trim()
 
     if (!title) {
-      log('WARN', 'Summary request rejected: missing title', { requestId })
+      log('WARN', t('ai_summary_missing_title'), { requestId })
       return json(res, 400, { error: 'Missing title' }, origin)
     }
     if (!content) {
-      log('WARN', 'Summary request rejected: missing content', { requestId })
+      log('WARN', t('ai_summary_missing_content'), { requestId })
       return json(res, 400, { error: 'Missing content' }, origin)
     }
     if (!aiModel) {
-      log('WARN', 'Summary request rejected: missing aiModel', { requestId })
+      log('WARN', t('ai_summary_missing_model'), { requestId })
       return json(res, 400, { error: 'Missing aiModel' }, origin)
     }
 
     const model = findAiModelById(aiModel)
     if (!model) {
-      log('WARN', 'Summary request rejected: unsupported model', { requestId, aiModel })
+      log('WARN', t('ai_summary_unsupported_model'), { requestId, aiModel })
       return json(res, 400, { error: `Unsupported aiModel: ${aiModel}` }, origin)
     }
 
     if (model.capabilities && !model.capabilities.includes('text')) {
-      log('WARN', 'Summary request rejected: model has no text capability', { requestId, aiModel })
+      log('WARN', t('ai_summary_no_text_capability'), { requestId, aiModel })
       return json(res, 400, { error: `Model ${aiModel} does not support text generation` }, origin)
     }
 
@@ -657,7 +692,7 @@ export function createAiHandlers({
         maxTokens: 220,
       })
 
-      log('INFO', 'Summary generated', {
+      log('INFO', t('ai_summary_generated'), {
         requestId,
         aiModel: model.id,
         titleLength: title.length,
@@ -670,7 +705,7 @@ export function createAiHandlers({
         modelName: model.name,
       }, origin)
     } catch (error) {
-      log('ERROR', 'Summary generation failed', {
+      log('ERROR', t('ai_summary_failed'), {
         requestId,
         aiModel: model.id,
         error: error instanceof Error ? error.message : String(error),
@@ -686,17 +721,17 @@ export function createAiHandlers({
     const requestId = req.requestId
 
     if (!translateEnabled) {
-      log('INFO', 'Translate request rejected: AI translation is disabled', { requestId })
+      log('INFO', t('ai_translate_disabled'), { requestId })
       return json(res, 403, { error: 'AI 翻译功能已禁用 / AI translation is disabled' }, origin)
     }
 
     const baseUrl = process.env.AI_TRANSLATE_BASE_URL || defaultBaseUrl
     const apiKey = process.env.AI_TRANSLATE_API_KEY
-    const timeoutMs = Number(process.env.AI_TRANSLATE_TIMEOUT_MS || defaultTimeoutMs)
-    const retries = Number(process.env.AI_TRANSLATE_RETRIES || defaultRetries)
+    const timeoutMs = Math.min(Number(process.env.AI_TRANSLATE_TIMEOUT_MS || defaultTimeoutMs), 25_000)
+    const retries = Math.min(Number(process.env.AI_TRANSLATE_RETRIES || defaultRetries), 1)
 
     if (!apiKey) {
-      log('ERROR', 'Translate request rejected: missing AI_TRANSLATE_API_KEY', { requestId })
+      log('ERROR', t('ai_translate_missing_key'), { requestId })
       return json(res, 500, { error: 'Missing AI_TRANSLATE_API_KEY' }, origin)
     }
 
@@ -705,7 +740,7 @@ export function createAiHandlers({
     try {
       payload = await readJsonBody(req)
     } catch (error) {
-      log('WARN', 'Translate request rejected: invalid JSON body', {
+      log('WARN', t('ai_translate_invalid_body'), {
         requestId,
         error: error instanceof Error ? error.message : String(error),
       })
@@ -718,36 +753,36 @@ export function createAiHandlers({
     const aiModel = String(payload.aiModel || '').trim()
 
     if (!targetLanguage) {
-      log('WARN', 'Translate request rejected: missing targetLanguage', { requestId })
+      log('WARN', t('ai_translate_missing_target'), { requestId })
       return json(res, 400, { error: 'Missing targetLanguage' }, origin)
     }
     if (!aiModel) {
-      log('WARN', 'Translate request rejected: missing aiModel', { requestId })
+      log('WARN', t('ai_translate_missing_model'), { requestId })
       return json(res, 400, { error: 'Missing aiModel' }, origin)
     }
     if (items.length === 0) {
-      log('WARN', 'Translate request rejected: missing items', { requestId })
+      log('WARN', t('ai_translate_missing_items'), { requestId })
       return json(res, 400, { error: 'Missing items' }, origin)
     }
     if (items.length > MAX_ITEMS) {
-      log('WARN', 'Translate request rejected: too many items', { requestId, items: items.length })
+      log('WARN', t('ai_translate_too_many_items'), { requestId, items: items.length })
       return json(res, 400, { error: `Too many items. Maximum is ${MAX_ITEMS}` }, origin)
     }
 
     const totalChars = items.reduce((sum, item) => sum + item.length, 0)
     if (totalChars > MAX_TOTAL_CHARS) {
-      log('WARN', 'Translate request rejected: input too large', { requestId, totalChars })
+      log('WARN', t('ai_translate_input_too_large'), { requestId, totalChars })
       return json(res, 400, { error: `Input too large. Maximum is ${MAX_TOTAL_CHARS} characters` }, origin)
     }
 
     const model = findTranslationModelById(aiModel)
     if (!model) {
-      log('WARN', 'Translate request rejected: unsupported model', { requestId, aiModel })
+      log('WARN', t('ai_translate_unsupported_model'), { requestId, aiModel })
       return json(res, 400, { error: `Unsupported aiModel: ${aiModel}` }, origin)
     }
 
     if (model.capabilities && !model.capabilities.includes('text')) {
-      log('WARN', 'Translate request rejected: model has no text capability', { requestId, aiModel })
+      log('WARN', t('ai_translate_no_text_capability'), { requestId, aiModel })
       return json(res, 400, { error: `Model ${aiModel} does not support text generation` }, origin)
     }
 
@@ -769,44 +804,67 @@ export function createAiHandlers({
       let translations = parseTranslations(rawTranslations)
 
       if (shouldRetryTranslations(targetLanguage, translations)) {
-        log('WARN', 'Translation looked like the wrong language, retrying with stronger prompt', {
+        log('WARN', t('ai_translate_wrong_lang_retry'), {
           requestId,
           aiModel: model.id,
           targetLanguage,
         })
 
-        const retryTranslations = await requestChatCompletion({
+        const retryRaw = await requestChatCompletion({
           requestId,
           route: '/api/ai/translate',
           baseUrl,
           apiKey,
           model: model.id,
           systemPrompt: TRANSLATE_SYSTEM_PROMPT,
-          userPrompt: buildTranslateRetryPrompt(
-            sourceLanguage,
-            targetLanguage,
-            items,
-            translations,
-          ),
+          userPrompt: buildTranslateRetryPrompt(sourceLanguage, targetLanguage, items),
           timeoutMs,
-          retries,
+          retries: 1,
           temperature: 0,
           maxTokens: 4000,
         })
 
-        translations = parseTranslations(retryTranslations)
+        translations = parseTranslations(retryRaw)
       }
 
       if (translations.length !== items.length) {
-        log('ERROR', t('ai_translate_count_mismatch'), {
+        log('WARN', t('ai_translate_count_mismatch_retry'), {
           requestId,
           aiModel: model.id,
           expected: items.length,
           actual: translations.length,
         })
-        return json(res, 502, {
-          error: `Model returned ${translations.length} items, expected ${items.length}`,
-        }, origin)
+
+        const previousTranslations = translations
+        const countRetryRaw = await requestChatCompletion({
+          requestId,
+          route: '/api/ai/translate',
+          baseUrl,
+          apiKey,
+          model: model.id,
+          systemPrompt: TRANSLATE_SYSTEM_PROMPT,
+          userPrompt: buildTranslateCountRetryPrompt(sourceLanguage, targetLanguage, items, items.length),
+          timeoutMs,
+          retries: 1,
+          temperature: 0,
+          maxTokens: 4000,
+        })
+        const countRetryTranslations = parseTranslations(countRetryRaw)
+        translations = countRetryTranslations.length >= previousTranslations.length
+          ? countRetryTranslations
+          : previousTranslations
+      }
+
+      if (translations.length !== items.length) {
+        log('WARN', t('ai_translate_count_mismatch'), {
+          requestId,
+          aiModel: model.id,
+          expected: items.length,
+          actual: translations.length,
+        })
+        for (let i = translations.length; i < items.length; i += 1) {
+          translations.push(items[i])
+        }
       }
 
       log('INFO', t('ai_translate_generated'), {
@@ -837,9 +895,19 @@ export function createAiHandlers({
     }
   }
 
+  async function handleAiModels(req, res, origin) {
+    return json(res, 200, getAiRegistry(), origin)
+  }
+
+  async function handleTranslationModels(req, res, origin) {
+    return json(res, 200, getTranslationRegistry(), origin)
+  }
+
   return {
     handleSummary,
     handleSecureAi,
     handleTranslate,
+    handleAiModels,
+    handleTranslationModels,
   }
 }

@@ -1,16 +1,16 @@
 {
   "models": [
     {
-      "id": "gpt-5.4-nano",
-      "name": "gpt-5.4-nano",
-      "brand": "OpenAI",
+      "id": "Qwen/Qwen2.5-7B-Instruct",
+      "name": "Qwen/Qwen2.5-7B-Instruct",
+      "brand": "阿里巴巴",
       "capabilities": ["text"],
       "supportsReasoning": true
     },
-    {
-      "id": "gpt-5.4-mini",
-      "name": "gpt-5.4-mini",
-      "brand": "OpenAI",
+     {
+      "id": "Qwen/Qwen3-8B",
+      "name": "Qwen/Qwen3-8B",
+      "brand": "阿里巴巴",
       "capabilities": ["text"],
       "supportsReasoning": true
     }
