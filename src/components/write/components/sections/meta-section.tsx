@@ -121,9 +121,16 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 			for (let attempt = 1; attempt <= 2; attempt += 1) {
 				try {
 					const payload = await requestSummary(apiBaseUrl)
-					updateForm({ summary: payload.summary })
+					const modelLabel = payload.modelName || payload.model || form.aiModel
+					const aiBlock = `> [!ai] ${modelLabel}\n> ${payload.summary}`
+					// 替换已有 [!ai] 块或插入到正文最前面
+					const existingIdx = form.md.indexOf('> [!ai]')
+					const nextMd = existingIdx !== -1
+						? form.md.replace(/^> \[!ai\].*(?:\n> .*)*/m, aiBlock)
+						: `${aiBlock}\n\n${form.md}`
+					updateForm({ md: nextMd, aiModel: payload.model || form.aiModel })
 					setAiSummaryStatus('ready')
-					toast.success(`摘要已由 ${payload.modelName || payload.model || form.aiModel} 生成`)
+					toast.success(`摘要已由 ${modelLabel} 生成，已写入正文 > [!ai] 块`)
 					return
 				} catch (error) {
 					lastError = error
@@ -152,8 +159,9 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 			<h2 className='text-sm font-bold text-primary'>元信息</h2>
 
 			<div className='mt-3 space-y-3'>
+				<div className='text-xs font-medium text-base-content/70'>文章描述（元信息）</div>
 				<textarea
-					placeholder='为这篇文章写一段简短摘要'
+					placeholder='为这篇文章写一段简短描述，用于 SEO 和文章列表展示'
 					rows={3}
 					className='textarea textarea-bordered w-full bg-base-100 focus:textarea-primary resize-none text-sm'
 					value={form.summary}
@@ -197,10 +205,10 @@ export function MetaSection({ delay = 0, categories = [], aiModels = [] }: MetaS
 								<span className='loading loading-spinner loading-xs'></span>
 								生成中...
 							</>
-						) : form.summary ? '重新生成摘要' : '生成摘要'}
+						) : form.md.includes('> [!ai]') ? '重新生成摘要' : '生成 AI 摘要'}
 					</button>
 					<p className='text-xs text-base-content/50'>
-						点击生成摘要后，请等待结果写入上方摘要框再保存文章。失败时会自动重试一次，仍失败则释放保存保护。
+						AI 摘要将写入正文最前面的 {} 块中。失败时会自动重试一次，仍失败则释放保存保护。
 					</p>
 				</div>
 

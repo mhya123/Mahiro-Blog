@@ -24,20 +24,21 @@ const MAX_ITEMS = 80
 const MAX_TOTAL_CHARS = 16_000
 
 const SUMMARY_SYSTEM_PROMPT = [
-  'You only generate concise article summaries.',
-  'Summarize the provided markdown faithfully.',
-  'Do not add extra background, warnings, or commentary.',
-  'Return only the summary body without title, bullets, code fences, or quotes.',
-  'Keep the summary concise and readable.',
+  '你只生成一句话的文章摘要。',
+  '用一句自然流畅的中文概括文章核心内容。',
+  '绝对不要返回多个句子、段落、列表或 Markdown 格式。',
+  '不要添加任何解释、评价、背景信息或格式标记。',
+  '只返回一句纯文本。',
 ].join('\n')
 
 const TRANSLATE_SYSTEM_PROMPT = [
-  'You are a professional website translator.',
-  'Translate each numbered item into the requested target language.',
-  'Preserve the original meaning, tone, formatting, and code.',
-  'Do not add explanations, notes, markdown fences, or extra fields.',
-  'Return the translations as a numbered list: 1. xxx, 2. xxx, etc.',
-  'Keep the exact same order and same number of items.',
+'您是一位专业的网站翻译人员。',
+'将每个编号的项目翻译成请求的目标语言。',
+'保留原文的含义、语气、格式和代码。',
+'不要添加解释、注释、Markdown 代码块或额外字段。',
+'以编号列表的形式返回翻译结果：1. xxx，2. xxx，等等。',
+'保持完全相同的顺序和项目数量。',
+'如果不确定目标语言，请尽力翻译成目标语言，但不要翻译成其他语言。',
 ].join('\n')
 
 const ENGLISH_STOPWORDS = new Set([
@@ -85,9 +86,7 @@ function buildSummaryPrompt(title, content) {
   const source = content.length > MAX_SOURCE_CHARS ? content.slice(0, MAX_SOURCE_CHARS) : content
   return [
     `Title: ${title}`,
-    'Return only the summary body.',
-    'Do not include labels like "Summary".',
-    'Here is the markdown article:',
+    '用一句话概括这篇文章的核心内容。只返回一句纯文本，不要任何格式。',
     source,
   ].join('\n\n')
 }
