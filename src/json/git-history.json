@@ -887,6 +887,13 @@
   ],
   "src/content/blog/mdx-all-components-showcase.mdx": [
     {
+      "sha": "ffcec9a1a907ad58502a67c71a006c9b8d2899e2",
+      "message": "feat: 更新 AI 摘要和翻译提示，支持中文输出并优化描述",
+      "authorName": "MhYa123",
+      "date": "2026-04-30T16:02:10+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/ffcec9a1a907ad58502a67c71a006c9b8d2899e2"
+    },
+    {
       "sha": "8828ded13fc9e7211f3cc83ef91b902198167211",
       "message": "feat(blog): update post \"MDX 全组件演示帖\"",
       "authorName": "mahiro-blog[bot]",
