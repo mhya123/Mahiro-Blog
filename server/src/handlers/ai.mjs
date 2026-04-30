@@ -24,11 +24,11 @@ const MAX_ITEMS = 80
 const MAX_TOTAL_CHARS = 16_000
 
 const SUMMARY_SYSTEM_PROMPT = [
-  '你只生成一句话的文章摘要。',
-  '用一句自然流畅的中文概括文章核心内容。',
-  '绝对不要返回多个句子、段落、列表或 Markdown 格式。',
+  '你是一个精炼文章的摘要助手',
+  '用一段自然流畅的中文概括文章核心内容。',
   '不要添加任何解释、评价、背景信息或格式标记。',
-  '只返回一句纯文本。',
+  '必须是纯文本，绝对禁止使用任何 Markdown 格式（包括但不限于加粗、斜体、列表、换行符）',
+  '简单但又包含重要信息，让读者能够理解文章的核心内容和价值。',
 ].join('\n')
 
 const TRANSLATE_SYSTEM_PROMPT = [
@@ -86,7 +86,7 @@ function buildSummaryPrompt(title, content) {
   const source = content.length > MAX_SOURCE_CHARS ? content.slice(0, MAX_SOURCE_CHARS) : content
   return [
     `Title: ${title}`,
-    '用一句话概括这篇文章的核心内容。只返回一句纯文本，不要任何格式。',
+    '用一句话概括这篇文章的核心内容,简单但又包含重要信息，让读者能够理解文章的核心内容和价值,必须是纯文本，绝对禁止使用任何 Markdown 格式（包括但不限于加粗、斜体、列表、换行符）',
     source,
   ].join('\n\n')
 }
