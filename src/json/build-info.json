@@ -1,10 +1,10 @@
 {
-  "commitSha": "cdd1b07beee777bee108577036d8d44fb3cedaa1",
-  "commitShort": "cdd1b07",
-  "commitMessage": "feat: 增强网盘深度日志可观测性 全面增强了网盘操作（列表、详情、搜索、新建、重命名、移动、删除、上传、解析）的错误日志。 在错误元数据中引入了 path、businessPath、keywords 等业务字段，确保排查“Object not found”等错误时能即刻定位到具体资源。 优化了 requestUpstream 的上游失败日志，支持从请求体中自动提取业务路径。 修复了因日志增强引入的变量作用域 Bug（ReferenceError），确保 catch 块能稳定访问业务变量。 统一规范了各处理器中业务变量的声明位置，提升了代码的健壮性和可维护性",
+  "commitSha": "0cbaad4c70a108d9140012384c7c0a70d5a9b8b5",
+  "commitShort": "0cbaad4",
+  "commitMessage": "feat: 更新 AI 模型和翻译模型的加载逻辑，支持从服务器获取模型并添加错误处理",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-30T11:07:12+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/cdd1b07beee777bee108577036d8d44fb3cedaa1",
-  "buildTime": "2026/4/30 11:07:46",
-  "totalCommits": 425
+  "commitDate": "2026-04-30T14:11:56+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/0cbaad4c70a108d9140012384c7c0a70d5a9b8b5",
+  "buildTime": "2026/4/30 14:12:36",
+  "totalCommits": 427
 }
