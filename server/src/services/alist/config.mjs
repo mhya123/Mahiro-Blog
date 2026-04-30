@@ -1,5 +1,5 @@
-import { parsePermissions } from './alist-permissions.mjs'
-import { normalizePath } from './alist-paths.mjs'
+import { parsePermissions } from './permissions.mjs'
+import { normalizePath } from './paths.mjs'
 
 export const DEFAULT_ALIST_BASE_URL = 'https://s.mahiro.work'
 export const DEFAULT_TIMEOUT_MS = 45_000

@@ -47,7 +47,7 @@ export default defineConfig({
           "/__mahiro_api": {
             target: backendApiTarget,
             changeOrigin: true,
-            secure: true,
+            secure: false,
             rewrite: (path) => path.replace(/^\/__mahiro_api/, ""),
           },
         },
@@ -57,7 +57,7 @@ export default defineConfig({
         "/__mahiro_api": {
           target: backendApiTarget,
           changeOrigin: true,
-          secure: true,
+          secure: false,
           rewrite: (path) => path.replace(/^\/__mahiro_api/, ""),
         },
       },

@@ -61,7 +61,7 @@ function encryptAesGcm(aesKey, payload) {
 }
 
 function resolveKeyPaths() {
-  const certDir = resolve(__dirname, process.env.API_RSA_CERT_DIR || 'certs')
+  const certDir = resolve(__dirname, '../../', process.env.API_RSA_CERT_DIR || 'certs')
   return {
     certDir,
     privateKeyPath: resolve(process.env.API_RSA_PRIVATE_KEY_PATH || `${certDir}/api-rsa-private.pem`),

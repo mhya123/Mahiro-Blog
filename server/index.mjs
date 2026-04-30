@@ -8,14 +8,14 @@
 import { dirname, resolve } from 'node:path'
 import { createServer } from 'node:http'
 import { fileURLToPath } from 'node:url'
-import { createAiHandlers } from './ai-handlers.mjs'
-import { createAListService } from './alist.mjs'
-import { createDriveCrypto } from './drive-crypto.mjs'
-import { createDriveHandlers } from './drive-handlers.mjs'
-import { loadEnvFile } from './env-utils.mjs'
-import { createHttpUtils } from './http-utils.mjs'
-import { createLogger } from './logger.mjs'
-import { createRedisCache } from './redis.mjs'
+import { createAiHandlers } from './src/handlers/ai.mjs'
+import { createAListService } from './src/services/alist/index.mjs'
+import { createDriveCrypto } from './src/handlers/crypto.mjs'
+import { createDriveHandlers } from './src/handlers/drive.mjs'
+import { loadEnvFile } from './src/core/env.mjs'
+import { createHttpUtils } from './src/core/http.mjs'
+import { createLogger } from './src/core/logger.mjs'
+import { createRedisCache } from './src/core/redis.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 loadEnvFile(resolve(__dirname, '.env'))
@@ -91,6 +91,27 @@ const {
   encodeContentDispositionFilename,
 })
 
+const routes = {
+  'GET:/health': (req, res, origin) => json(res, 200, { ok: true, redis: cache.getStats() }, origin),
+  'GET:/api/drive/status': handleDriveStatus,
+  'GET:/api/drive/crypto/public-key': handleDriveCryptoPublicKey,
+  'GET:/api/crypto/public-key': handleDriveCryptoPublicKey,
+  'POST:/api/drive/secure': handleDriveSecure,
+  'GET:/api/drive/list': handleDriveList,
+  'GET:/api/drive/item': handleDriveItem,
+  'GET:/api/drive/raw': handleDriveRaw,
+  'POST:/api/drive/search': handleDriveSearch,
+  'POST:/api/drive/mkdir': handleDriveMkdir,
+  'POST:/api/drive/rename': handleDriveRename,
+  'POST:/api/drive/remove': handleDriveRemove,
+  'POST:/api/drive/move': handleDriveMove,
+  'POST:/api/drive/copy': handleDriveCopy,
+  'POST:/api/drive/upload': handleDriveUpload,
+  'POST:/api/ai/summary': handleSummary,
+  'POST:/api/ai/secure': handleSecureAi,
+  'POST:/api/ai/translate': handleTranslate,
+}
+
 const server = createServer(async (req, res) => {
   req.requestId = createRequestId()
   const startedAt = Date.now()
@@ -116,79 +137,11 @@ const server = createServer(async (req, res) => {
     return
   }
 
-  if (req.method === 'GET' && url.pathname === '/health') {
-    return json(res, 200, {
-      ok: true,
-      redis: cache.getStats(),
-    }, origin)
-  }
+  const routeKey = `${req.method}:${url.pathname}`
+  const routeHandler = routes[routeKey]
 
-  if (req.method === 'GET' && url.pathname === '/api/drive/status') {
-    return handleDriveStatus(req, res, origin)
-  }
-
-  if (req.method === 'GET' && url.pathname === '/api/drive/crypto/public-key') {
-    return handleDriveCryptoPublicKey(req, res, origin)
-  }
-
-  if (req.method === 'GET' && url.pathname === '/api/crypto/public-key') {
-    return handleDriveCryptoPublicKey(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/drive/secure') {
-    return handleDriveSecure(req, res, origin)
-  }
-
-  if (req.method === 'GET' && url.pathname === '/api/drive/list') {
-    return handleDriveList(req, res, origin, url)
-  }
-
-  if (req.method === 'GET' && url.pathname === '/api/drive/item') {
-    return handleDriveItem(req, res, origin, url)
-  }
-
-  if (req.method === 'GET' && url.pathname === '/api/drive/raw') {
-    return handleDriveRaw(req, res, origin, url)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/drive/search') {
-    return handleDriveSearch(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/drive/mkdir') {
-    return handleDriveMkdir(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/drive/rename') {
-    return handleDriveRename(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/drive/remove') {
-    return handleDriveRemove(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/drive/move') {
-    return handleDriveMove(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/drive/copy') {
-    return handleDriveCopy(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/drive/upload') {
-    return handleDriveUpload(req, res, origin, url)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/ai/summary') {
-    return handleSummary(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/ai/secure') {
-    return handleSecureAi(req, res, origin)
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/ai/translate') {
-    return handleTranslate(req, res, origin)
+  if (routeHandler) {
+    return routeHandler(req, res, origin, url)
   }
 
   log('WARN', 'Request rejected: route not found', requestMeta)

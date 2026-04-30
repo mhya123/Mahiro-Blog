@@ -8,7 +8,7 @@
  * - 重定向链解析 + Redis 缓存
  */
 
-import { encodePathSegments, normalizePath } from './alist-paths.mjs'
+import { encodePathSegments, normalizePath } from './paths.mjs'
 
 // ── 重试相关常量 ──
 const RETRY_MAX_ATTEMPTS = 2

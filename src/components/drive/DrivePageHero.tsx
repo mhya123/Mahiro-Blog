@@ -84,12 +84,7 @@ export function DrivePageHero({ controller }: DrivePageHeroProps) {
                 {renderPermissionBadges(effectivePermissions)}
             </div>
 
-            {!status?.configured && (
-                <div className="mt-5 rounded-3xl border border-warning/20 bg-warning/10 p-4 text-sm leading-7 text-base-content/80">
-                    当前后端还没有配置 AList。请在 `server/.env` 中补充 `ALIST_BASE_URL`、`ALIST_USERNAME`
-                    和 `ALIST_PASSWORD`。
-                </div>
-            )}
+
 
             {status?.error && (
                 <div className="mt-5 rounded-3xl border border-error/20 bg-error/10 p-4 text-sm leading-7 text-base-content/80">

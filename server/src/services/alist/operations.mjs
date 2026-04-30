@@ -7,10 +7,10 @@
  */
 
 import { PassThrough } from 'node:stream'
-import { formatBytes, normalizeEntry, normalizeFileType, sortEntries } from './alist-entries.mjs'
-import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from './alist-config.mjs'
-import { getParentPath, joinPath, normalizePath, sanitizeName } from './alist-paths.mjs'
-import { getSearchScore } from './alist-search.mjs'
+import { formatBytes, normalizeEntry, normalizeFileType, sortEntries } from './entries.mjs'
+import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from './config.mjs'
+import { getParentPath, joinPath, normalizePath, sanitizeName } from './paths.mjs'
+import { getSearchScore } from './search.mjs'
 
 // ── 缓存 TTL（秒）──
 const LIST_CACHE_TTL = 60      // 目录列表 60 秒

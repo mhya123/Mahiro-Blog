@@ -1,5 +1,5 @@
-import aiRegistry from './ai-models.json' with { type: 'json' }
-import translationRegistry from './translation-models.json' with { type: 'json' }
+import aiRegistry from '../../config/ai-models.json' with { type: 'json' }
+import translationRegistry from '../../config/translation-models.json' with { type: 'json' }
 
 const MAX_SOURCE_CHARS = 24_000
 const MAX_ITEMS = 80

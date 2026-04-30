@@ -1,4 +1,4 @@
-import { getParentPath, joinPath, normalizePath } from './alist-paths.mjs'
+import { getParentPath, joinPath, normalizePath } from './paths.mjs'
 
 export function formatBytes(value) {
   const size = Number(value || 0)
