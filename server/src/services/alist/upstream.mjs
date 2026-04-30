@@ -396,7 +396,9 @@ export function createAListUpstream({
         log('ERROR', t('alist_upstream_failed'), {
           requestId,
           method,
-          path,
+          path, // AList API path
+          businessPath: body?.path || body?.dir || body?.srcDir || body?.parent || undefined,
+          keywords: body?.keywords || undefined,
           attempt,
           error: error instanceof Error ? error.message : String(error),
           status: classified.status,

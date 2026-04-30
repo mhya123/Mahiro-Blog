@@ -103,6 +103,7 @@ export function createDriveHandlers({
     } catch (error) {
       log('ERROR', t('drive_list_failed'), {
         requestId,
+        path: getQueryString(url, 'path', '/'),
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
       })
@@ -112,16 +113,17 @@ export function createDriveHandlers({
 
   async function handleDriveItem(req, res, origin, url) {
     const requestId = req.requestId
+    const path = getQueryString(url, 'path', '/')
+    const intent = getQueryString(url, 'intent', 'view')
+    const refresh = getQueryBoolean(url, 'refresh', false)
 
     try {
-      const path = getQueryString(url, 'path', '/')
-      const intent = getQueryString(url, 'intent', 'view')
-      const refresh = getQueryBoolean(url, 'refresh', false)
       const payload = await alistService.getResolvedItem(requestId, path, { intent, refresh })
       return json(res, 200, payload, origin)
     } catch (error) {
       log('ERROR', t('drive_item_failed'), {
         requestId,
+        path,
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
       })
@@ -133,10 +135,13 @@ export function createDriveHandlers({
     const requestId = req.requestId
 
     return withJsonBody(req, res, origin, async (payload) => {
+      const parent = String(payload.parent || '/')
+      const keywords = String(payload.keywords || '')
+
       try {
         const data = await alistService.search(requestId, {
-          parent: String(payload.parent || '/'),
-          keywords: String(payload.keywords || ''),
+          parent,
+          keywords,
           page: Number(payload.page || 1),
           perPage: Number(payload.perPage || 200),
         })
@@ -144,6 +149,8 @@ export function createDriveHandlers({
       } catch (error) {
         log('ERROR', t('drive_search_failed'), {
           requestId,
+          parent,
+          keywords,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
         })
@@ -156,12 +163,14 @@ export function createDriveHandlers({
     const requestId = req.requestId
 
     return withJsonBody(req, res, origin, async (payload) => {
+      const path = String(payload.path || '')
       try {
-        const data = await alistService.makeDirectory(requestId, String(payload.path || ''))
+        const data = await alistService.makeDirectory(requestId, path)
         return json(res, 200, data, origin)
       } catch (error) {
         log('ERROR', t('drive_mkdir_failed'), {
           requestId,
+          path,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
         })
@@ -174,16 +183,16 @@ export function createDriveHandlers({
     const requestId = req.requestId
 
     return withJsonBody(req, res, origin, async (payload) => {
+      const path = String(payload.path || '')
+      const newName = String(payload.name || '')
       try {
-        const data = await alistService.rename(
-          requestId,
-          String(payload.path || ''),
-          String(payload.name || ''),
-        )
+        const data = await alistService.rename(requestId, path, newName)
         return json(res, 200, data, origin)
       } catch (error) {
         log('ERROR', t('drive_rename_failed'), {
           requestId,
+          path,
+          newName,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
         })
@@ -196,16 +205,16 @@ export function createDriveHandlers({
     const requestId = req.requestId
 
     return withJsonBody(req, res, origin, async (payload) => {
+      const dir = String(payload.dir || '/')
+      const names = Array.isArray(payload.names) ? payload.names : []
       try {
-        const data = await alistService.remove(
-          requestId,
-          String(payload.dir || '/'),
-          Array.isArray(payload.names) ? payload.names : [],
-        )
+        const data = await alistService.remove(requestId, dir, names)
         return json(res, 200, data, origin)
       } catch (error) {
         log('ERROR', t('drive_remove_failed'), {
           requestId,
+          dir,
+          names,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
         })
@@ -218,17 +227,18 @@ export function createDriveHandlers({
     const requestId = req.requestId
 
     return withJsonBody(req, res, origin, async (payload) => {
+      const srcDir = String(payload.srcDir || '/')
+      const dstDir = String(payload.dstDir || '/')
+      const names = Array.isArray(payload.names) ? payload.names : []
       try {
-        const data = await alistService.move(
-          requestId,
-          String(payload.srcDir || '/'),
-          String(payload.dstDir || '/'),
-          Array.isArray(payload.names) ? payload.names : [],
-        )
+        const data = await alistService.move(requestId, srcDir, dstDir, names)
         return json(res, 200, data, origin)
       } catch (error) {
         log('ERROR', t('drive_move_failed'), {
           requestId,
+          srcDir,
+          dstDir,
+          names,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
         })
@@ -241,17 +251,18 @@ export function createDriveHandlers({
     const requestId = req.requestId
 
     return withJsonBody(req, res, origin, async (payload) => {
+      const srcDir = String(payload.srcDir || '/')
+      const dstDir = String(payload.dstDir || '/')
+      const names = Array.isArray(payload.names) ? payload.names : []
       try {
-        const data = await alistService.copy(
-          requestId,
-          String(payload.srcDir || '/'),
-          String(payload.dstDir || '/'),
-          Array.isArray(payload.names) ? payload.names : [],
-        )
+        const data = await alistService.copy(requestId, srcDir, dstDir, names)
         return json(res, 200, data, origin)
       } catch (error) {
         log('ERROR', t('drive_copy_failed'), {
           requestId,
+          srcDir,
+          dstDir,
+          names,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
         })
@@ -272,6 +283,7 @@ export function createDriveHandlers({
     } catch (error) {
       log('ERROR', t('drive_upload_failed'), {
         requestId,
+        path: getQueryString(url, 'path', '/'),
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
       })
@@ -281,9 +293,9 @@ export function createDriveHandlers({
 
   async function handleDriveRaw(req, res, origin, url) {
     const requestId = req.requestId
+    const path = getQueryString(url, 'path', '/')
 
     try {
-      const path = getQueryString(url, 'path', '/')
       const intent = getQueryString(url, 'intent', 'download')
       const item = await alistService.getResolvedItem(requestId, path, { intent })
       const rawUrl = item?.rawUrl || item?.resolvedUrl
@@ -351,6 +363,7 @@ export function createDriveHandlers({
     } catch (error) {
       log('ERROR', t('drive_raw_failed'), {
         requestId,
+        path: getQueryString(url, 'path', '/'),
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
       })
