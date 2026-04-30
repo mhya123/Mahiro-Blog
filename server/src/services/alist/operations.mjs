@@ -11,11 +11,12 @@ import { formatBytes, normalizeEntry, normalizeFileType, sortEntries } from './e
 import { DEFAULT_PAGE, DEFAULT_PER_PAGE } from './config.mjs'
 import { getParentPath, joinPath, normalizePath, sanitizeName } from './paths.mjs'
 import { getSearchScore } from './search.mjs'
+import { t } from '../../core/locales.mjs'
 
 // ── 缓存 TTL（秒）──
-const LIST_CACHE_TTL = 60      // 目录列表 60 秒
-const ITEM_CACHE_TTL = 120     // 文件详情 120 秒
-const SEARCH_CACHE_TTL = 30    // 搜索结果 30 秒
+const LIST_CACHE_TTL = Number(process.env.CACHE_TTL_LIST || 300)      // 目录列表默认 5 分钟
+const ITEM_CACHE_TTL = Number(process.env.CACHE_TTL_ITEM || 3600)     // 文件详情默认 1 小时
+const SEARCH_CACHE_TTL = Number(process.env.CACHE_TTL_SEARCH || 60)   // 搜索结果默认 1 分钟
 
 function assertPermission(permissions, permission) {
   if (permissions[permission] !== false) {
@@ -97,7 +98,7 @@ export function createAListOperations({
         connected: true,
       }
     } catch (error) {
-      log('ERROR', 'AList status check failed', {
+      log('ERROR', t('alist_status_failed'), {
         requestId,
         error: error instanceof Error ? error.message : String(error),
       })
@@ -120,7 +121,7 @@ export function createAListOperations({
     if (!refresh && cache) {
       const cached = await cache.getJson(listCacheKey(path, page, perPage))
       if (cached) {
-        log('INFO', 'Drive list cache hit', { requestId, path, page, perPage })
+        log('INFO', t('drive_list_cache_hit'), { requestId, path, page, perPage })
         return cached
       }
     }
@@ -195,12 +196,13 @@ export function createAListOperations({
     const intent = options.intent === 'download' ? 'download' : 'view'
     assertPermission(permissions, intent)
     const path = normalizePath(inputPath)
+    const refresh = Boolean(options.refresh)
 
     // 读缓存
-    if (cache) {
+    if (!refresh && cache) {
       const cached = await cache.getJson(itemCacheKey(path))
       if (cached) {
-        log('INFO', 'Drive item cache hit', { requestId, path })
+        log('INFO', t('drive_item_cache_hit'), { requestId, path })
         return cached
       }
     }
@@ -333,7 +335,7 @@ export function createAListOperations({
     if (cache) {
       const cached = await cache.getJson(cacheKey)
       if (cached) {
-        log('INFO', 'Drive search cache hit', { requestId, parent: normalizedParent, query })
+        log('INFO', t('drive_search_cache_hit'), { requestId, parent: normalizedParent, query })
         return cached
       }
     }

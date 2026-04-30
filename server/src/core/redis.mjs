@@ -7,6 +7,7 @@
  */
 
 import Redis from 'ioredis'
+import { t } from './locales.mjs'
 
 const DEFAULT_REDIS_URL = 'redis://127.0.0.1:6379'
 
@@ -19,7 +20,7 @@ function createMemoryFallback(log) {
   const store = new Map()
   const timers = new Map()
 
-  log('WARN', 'Redis unavailable — using in-memory cache fallback')
+  log('WARN', t('redis_fallback'))
 
   function cleanup(key) {
     const timer = timers.get(key)
@@ -105,7 +106,22 @@ function createMemoryFallback(log) {
  * @param {string} [options.prefix] - 缓存 key 前缀，默认 'mahiro:'
  * @returns {{ get, set, del, delByPrefix, getJson, setJson, quit, isRedis, isReady, getStats }}
  */
-export function createRedisCache({ log, url, prefix = 'mahiro:' } = {}) {
+export function createRedisCache({ log, url, prefix = 'mahiro:', enabled = true } = {}) {
+  if (!enabled) {
+    return {
+      isRedis: false,
+      isReady: true,
+      async get() { return null },
+      async set() { },
+      async del() { },
+      async delByPrefix() { },
+      async getJson() { return null },
+      async setJson() { },
+      async quit() { },
+      getStats() { return { backend: 'disabled', ready: true } },
+    }
+  }
+
   const redisUrl = url || process.env.REDIS_URL || DEFAULT_REDIS_URL
   const keyPrefix = prefix || process.env.REDIS_KEY_PREFIX || 'mahiro:'
 
@@ -124,7 +140,7 @@ export function createRedisCache({ log, url, prefix = 'mahiro:' } = {}) {
       retryStrategy(times) {
         // 重连退避策略：500ms → 1s → 2s → 最大 10s
         const delay = Math.min(times * 500, 10_000)
-        log('WARN', 'Redis reconnecting', { attempt: times, delayMs: delay })
+        log('WARN', t('redis_reconnecting'), { attempt: times, delayMs: delay })
         return delay
       },
       lazyConnect: false,
@@ -133,44 +149,51 @@ export function createRedisCache({ log, url, prefix = 'mahiro:' } = {}) {
     })
 
     client.on('connect', () => {
-      log('INFO', 'Redis connected', { url: redisUrl.replace(/\/\/.*@/, '//<credentials>@') })
+      log('INFO', t('redis_connected'), { url: redisUrl.replace(/\/\/.*@/, '//<credentials>@') })
     })
 
     client.on('ready', () => {
       ready = true
-      log('INFO', 'Redis ready')
+      log('INFO', t('redis_ready'))
     })
 
     client.on('error', (err) => {
-      log('ERROR', 'Redis error', { error: err.message })
+      log('ERROR', t('redis_error'), { error: err.message })
     })
 
     client.on('close', () => {
       ready = false
     })
   } catch (err) {
-    log('ERROR', 'Redis initialization failed, falling back to memory', { error: err.message })
+    log('ERROR', t('redis_init_failed'), { error: err.message })
     fallback = createMemoryFallback(log)
   }
 
   /**
    * 获取底层有效实例（Redis 或降级内存）
+   * 如果 Redis 已就绪，优先使用 Redis（即使之前降级过内存）
    * 如果 Redis 连接断开，自动降级到内存缓存
    */
   function getBackend() {
-    if (fallback) return fallback
-    if (!client || !ready) {
-      if (!fallback) {
-        fallback = createMemoryFallback(log)
+    // Redis 已就绪 → 切回 Redis（清除临时降级）
+    if (client && ready) {
+      if (fallback) {
+        log('INFO', t('redis_ready'))
+        fallback.quit().catch(() => {})
+        fallback = null
       }
-      return fallback
+      return null
     }
-    return null // 使用 Redis
+    // Redis 不可用 → 使用/创建内存降级
+    if (!fallback) {
+      fallback = createMemoryFallback(log)
+    }
+    return fallback
   }
 
   const cache = {
     get isRedis() {
-      return !getBackend()
+      return ready && !fallback
     },
 
     get isReady() {
@@ -183,7 +206,7 @@ export function createRedisCache({ log, url, prefix = 'mahiro:' } = {}) {
       try {
         return await client.get(prefixKey(key))
       } catch (err) {
-        log('WARN', 'Redis GET failed', { key, error: err.message })
+        log('WARN', t('redis_get_failed'), { key, error: err.message })
         return null
       }
     },
@@ -199,7 +222,7 @@ export function createRedisCache({ log, url, prefix = 'mahiro:' } = {}) {
           await client.set(pk, value)
         }
       } catch (err) {
-        log('WARN', 'Redis SET failed', { key, error: err.message })
+        log('WARN', t('redis_set_failed'), { key, error: err.message })
       }
     },
 
@@ -209,7 +232,7 @@ export function createRedisCache({ log, url, prefix = 'mahiro:' } = {}) {
       try {
         await client.del(prefixKey(key))
       } catch (err) {
-        log('WARN', 'Redis DEL failed', { key, error: err.message })
+        log('WARN', t('redis_del_failed'), { key, error: err.message })
       }
     },
 
@@ -227,7 +250,7 @@ export function createRedisCache({ log, url, prefix = 'mahiro:' } = {}) {
           }
         } while (cursor !== '0')
       } catch (err) {
-        log('WARN', 'Redis SCAN+DEL failed', { keyPattern, error: err.message })
+        log('WARN', t('redis_scan_del_failed'), { keyPattern, error: err.message })
       }
     },
 
@@ -258,9 +281,13 @@ export function createRedisCache({ log, url, prefix = 'mahiro:' } = {}) {
     },
 
     getStats() {
-      const backend = getBackend()
-      if (backend) return backend.getStats()
-      return { backend: 'redis', ready, url: redisUrl.replace(/\/\/.*@/, '//<credentials>@') }
+      if (ready) {
+        return { backend: 'redis', ready: true, url: redisUrl.replace(/\/\/.*@/, '//<credentials>@') }
+      }
+      if (fallback) {
+        return fallback.getStats()
+      }
+      return { backend: 'redis', ready: false, url: redisUrl.replace(/\/\/.*@/, '//<credentials>@') }
     },
   }
 

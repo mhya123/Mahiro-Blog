@@ -1,5 +1,6 @@
 import aiRegistry from '../../config/ai-models.json' with { type: 'json' }
 import translationRegistry from '../../config/translation-models.json' with { type: 'json' }
+import { t } from '../core/locales.mjs'
 
 const MAX_SOURCE_CHARS = 24_000
 const MAX_ITEMS = 80
@@ -246,7 +247,7 @@ export function createAiHandlers({
       const timer = setTimeout(() => controller.abort(), timeoutMs)
 
       try {
-        log('INFO', 'Upstream request started', {
+        log('INFO', t('ai_upstream_started'), {
           requestId,
           route,
           attempt,
@@ -288,7 +289,7 @@ export function createAiHandlers({
           throw new Error('No model content returned')
         }
 
-        log('INFO', 'Upstream request completed', {
+        log('INFO', t('ai_upstream_completed'), {
           requestId,
           route,
           attempt,
@@ -299,7 +300,7 @@ export function createAiHandlers({
         return content
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error)
-        log(attempt >= retries ? 'ERROR' : 'WARN', 'Upstream request failed', {
+        log(attempt >= retries ? 'ERROR' : 'WARN', t('ai_upstream_failed'), {
           requestId,
           route,
           attempt,
@@ -320,7 +321,7 @@ export function createAiHandlers({
 
   async function runSummaryPayload(requestId, payload) {
     if (!summaryEnabled) {
-      log('INFO', 'Summary request rejected: AI summary is disabled', { requestId })
+      log('INFO', t('ai_summary_disabled'), { requestId })
       return { status: 403, body: { error: 'AI 摘要功能已禁用 / AI summary is disabled' } }
     }
 
@@ -330,7 +331,7 @@ export function createAiHandlers({
     const retries = Number(process.env.OPENAI_RETRIES || defaultRetries)
 
     if (!apiKey) {
-      log('ERROR', 'Summary request rejected: missing OPENAI_API_KEY', { requestId })
+      log('ERROR', t('ai_summary_missing_key'), { requestId })
       return { status: 500, body: { error: 'Missing OPENAI_API_KEY' } }
     }
 
@@ -339,26 +340,26 @@ export function createAiHandlers({
     const aiModel = String(payload.aiModel || '').trim()
 
     if (!title) {
-      log('WARN', 'Summary request rejected: missing title', { requestId })
+      log('WARN', t('ai_summary_missing_title'), { requestId })
       return { status: 400, body: { error: 'Missing title' } }
     }
     if (!content) {
-      log('WARN', 'Summary request rejected: missing content', { requestId })
+      log('WARN', t('ai_summary_missing_content'), { requestId })
       return { status: 400, body: { error: 'Missing content' } }
     }
     if (!aiModel) {
-      log('WARN', 'Summary request rejected: missing aiModel', { requestId })
+      log('WARN', t('ai_summary_missing_model'), { requestId })
       return { status: 400, body: { error: 'Missing aiModel' } }
     }
 
     const model = findAiModelById(aiModel)
     if (!model) {
-      log('WARN', 'Summary request rejected: unsupported model', { requestId, aiModel })
+      log('WARN', t('ai_summary_unsupported_model'), { requestId, aiModel })
       return { status: 400, body: { error: `Unsupported aiModel: ${aiModel}` } }
     }
 
     if (model.capabilities && !model.capabilities.includes('text')) {
-      log('WARN', 'Summary request rejected: model has no text capability', { requestId, aiModel })
+      log('WARN', t('ai_summary_no_text_capability'), { requestId, aiModel })
       return { status: 400, body: { error: `Model ${aiModel} does not support text generation` } }
     }
 
@@ -377,7 +378,7 @@ export function createAiHandlers({
         maxTokens: 220,
       })
 
-      log('INFO', 'Summary generated', {
+      log('INFO', t('ai_summary_generated'), {
         requestId,
         aiModel: model.id,
         titleLength: title.length,
@@ -393,7 +394,7 @@ export function createAiHandlers({
         },
       }
     } catch (error) {
-      log('ERROR', 'Summary generation failed', {
+      log('ERROR', t('ai_summary_failed'), {
         requestId,
         aiModel: model.id,
         error: error instanceof Error ? error.message : String(error),
@@ -410,7 +411,7 @@ export function createAiHandlers({
 
   async function runTranslatePayload(requestId, payload) {
     if (!translateEnabled) {
-      log('INFO', 'Translate request rejected: AI translation is disabled', { requestId })
+      log('INFO', t('ai_translate_disabled'), { requestId })
       return { status: 403, body: { error: 'AI 翻译功能已禁用 / AI translation is disabled' } }
     }
 
@@ -420,7 +421,7 @@ export function createAiHandlers({
     const retries = Number(process.env.AI_TRANSLATE_RETRIES || defaultRetries)
 
     if (!apiKey) {
-      log('ERROR', 'Translate request rejected: missing AI_TRANSLATE_API_KEY', { requestId })
+      log('ERROR', t('ai_translate_missing_key'), { requestId })
       return { status: 500, body: { error: 'Missing AI_TRANSLATE_API_KEY' } }
     }
 
@@ -430,36 +431,36 @@ export function createAiHandlers({
     const aiModel = String(payload.aiModel || '').trim()
 
     if (!targetLanguage) {
-      log('WARN', 'Translate request rejected: missing targetLanguage', { requestId })
+      log('WARN', t('ai_translate_missing_target'), { requestId })
       return { status: 400, body: { error: 'Missing targetLanguage' } }
     }
     if (!aiModel) {
-      log('WARN', 'Translate request rejected: missing aiModel', { requestId })
+      log('WARN', t('ai_translate_missing_model'), { requestId })
       return { status: 400, body: { error: 'Missing aiModel' } }
     }
     if (items.length === 0) {
-      log('WARN', 'Translate request rejected: missing items', { requestId })
+      log('WARN', t('ai_translate_missing_items'), { requestId })
       return { status: 400, body: { error: 'Missing items' } }
     }
     if (items.length > MAX_ITEMS) {
-      log('WARN', 'Translate request rejected: too many items', { requestId, items: items.length })
+      log('WARN', t('ai_translate_too_many_items'), { requestId, items: items.length })
       return { status: 400, body: { error: `Too many items. Maximum is ${MAX_ITEMS}` } }
     }
 
     const totalChars = items.reduce((sum, item) => sum + item.length, 0)
     if (totalChars > MAX_TOTAL_CHARS) {
-      log('WARN', 'Translate request rejected: input too large', { requestId, totalChars })
+      log('WARN', t('ai_translate_input_too_large'), { requestId, totalChars })
       return { status: 400, body: { error: `Input too large. Maximum is ${MAX_TOTAL_CHARS} characters` } }
     }
 
     const model = findTranslationModelById(aiModel)
     if (!model) {
-      log('WARN', 'Translate request rejected: unsupported model', { requestId, aiModel })
+      log('WARN', t('ai_translate_unsupported_model'), { requestId, aiModel })
       return { status: 400, body: { error: `Unsupported aiModel: ${aiModel}` } }
     }
 
     if (model.capabilities && !model.capabilities.includes('text')) {
-      log('WARN', 'Translate request rejected: model has no text capability', { requestId, aiModel })
+      log('WARN', t('ai_translate_no_text_capability'), { requestId, aiModel })
       return { status: 400, body: { error: `Model ${aiModel} does not support text generation` } }
     }
 
@@ -481,7 +482,7 @@ export function createAiHandlers({
       let translations = parseTranslations(rawTranslations)
 
       if (shouldRetryTranslations(targetLanguage, translations)) {
-        log('WARN', 'Translation looked like the wrong language, retrying with stronger prompt', {
+        log('WARN', t('ai_translate_wrong_lang_retry'), {
           requestId,
           aiModel: model.id,
           targetLanguage,
@@ -510,7 +511,7 @@ export function createAiHandlers({
       }
 
       if (translations.length !== items.length) {
-        log('ERROR', 'Translate request failed: item count mismatch', {
+        log('ERROR', t('ai_translate_count_mismatch'), {
           requestId,
           aiModel: model.id,
           expected: items.length,
@@ -522,7 +523,7 @@ export function createAiHandlers({
         }
       }
 
-      log('INFO', 'Translation generated', {
+      log('INFO', t('ai_translate_generated'), {
         requestId,
         aiModel: model.id,
         items: items.length,
@@ -539,7 +540,7 @@ export function createAiHandlers({
         },
       }
     } catch (error) {
-      log('ERROR', 'Translation generation failed', {
+      log('ERROR', t('ai_translate_failed'), {
         requestId,
         aiModel: model.id,
         items: items.length,
@@ -563,7 +564,7 @@ export function createAiHandlers({
       const envelope = await readJsonBody(req)
       secureRequest = driveCrypto.decryptEnvelope(envelope)
     } catch (error) {
-      log('WARN', 'AI encrypted request rejected', {
+      log('WARN', t('ai_encrypted_rejected'), {
         requestId: req.requestId,
         error: error instanceof Error ? error.message : String(error),
       })
@@ -797,7 +798,7 @@ export function createAiHandlers({
       }
 
       if (translations.length !== items.length) {
-        log('ERROR', 'Translate request failed: item count mismatch', {
+        log('ERROR', t('ai_translate_count_mismatch'), {
           requestId,
           aiModel: model.id,
           expected: items.length,
@@ -808,7 +809,7 @@ export function createAiHandlers({
         }, origin)
       }
 
-      log('INFO', 'Translation generated', {
+      log('INFO', t('ai_translate_generated'), {
         requestId,
         aiModel: model.id,
         items: items.length,
@@ -822,7 +823,7 @@ export function createAiHandlers({
         modelName: model.name,
       }, origin)
     } catch (error) {
-      log('ERROR', 'Translation generation failed', {
+      log('ERROR', t('ai_translate_failed'), {
         requestId,
         aiModel: model.id,
         items: items.length,

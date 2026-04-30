@@ -14,7 +14,7 @@ import { createDriveCrypto } from './src/handlers/crypto.mjs'
 import { createDriveHandlers } from './src/handlers/drive.mjs'
 import { loadEnvFile } from './src/core/env.mjs'
 import { createHttpUtils } from './src/core/http.mjs'
-import { createLogger } from './src/core/logger.mjs'
+import { createLogger, t } from './src/core/logger.mjs'
 import { createRedisCache } from './src/core/redis.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -42,7 +42,10 @@ const {
 } = createHttpUtils({ allowedOrigins: ALLOWED_ORIGINS })
 
 // ── Redis 缓存 ──
-const cache = createRedisCache({ log })
+const cache = createRedisCache({
+  log,
+  enabled: process.env.CACHE_ENABLED !== 'false',
+})
 
 const alistService = createAListService({
   log,
@@ -124,12 +127,12 @@ const server = createServer(async (req, res) => {
     ip: getClientIp(req),
   }
 
-  log('INFO', 'Incoming request', requestMeta)
+  log('INFO', t('incoming_request'), requestMeta)
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204, buildCorsHeaders(origin))
     res.end()
-    log('INFO', 'Request completed', {
+    log('INFO', t('request_completed'), {
       ...requestMeta,
       status: 204,
       durationMs: Date.now() - startedAt,
@@ -144,7 +147,7 @@ const server = createServer(async (req, res) => {
     return routeHandler(req, res, origin, url)
   }
 
-  log('WARN', 'Request rejected: route not found', requestMeta)
+  log('WARN', t('route_not_found'), requestMeta)
   return json(res, 404, { error: 'Not found' }, origin)
 })
 
@@ -154,7 +157,7 @@ server.on('request', (req, res) => {
 
   res.on('finish', () => {
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`)
-    log('INFO', 'Request completed', {
+    log('INFO', t('request_completed'), {
       requestId,
       method: req.method,
       path: url.pathname,
@@ -165,7 +168,7 @@ server.on('request', (req, res) => {
 })
 
 server.listen(PORT, () => {
-  log('INFO', 'Server started', {
+  log('INFO', t('server_started'), {
     port: PORT,
     envFile: resolve(__dirname, '.env'),
     redis: cache.getStats(),
@@ -173,26 +176,26 @@ server.listen(PORT, () => {
 })
 
 process.on('unhandledRejection', (error) => {
-  log('ERROR', 'Unhandled promise rejection', {
+  log('ERROR', t('unhandled_rejection'), {
     error: error instanceof Error ? error.stack || error.message : String(error),
   })
 })
 
 process.on('uncaughtException', (error) => {
-  log('ERROR', 'Uncaught exception', {
+  log('ERROR', t('uncaught_exception'), {
     error: error instanceof Error ? error.stack || error.message : String(error),
   })
 })
 
 // 优雅关闭
 process.on('SIGTERM', async () => {
-  log('INFO', 'SIGTERM received, shutting down...')
+  log('INFO', t('sigterm_shutdown'))
   await cache.quit()
   server.close(() => process.exit(0))
 })
 
 process.on('SIGINT', async () => {
-  log('INFO', 'SIGINT received, shutting down...')
+  log('INFO', t('sigint_shutdown'))
   await cache.quit()
   server.close(() => process.exit(0))
 })

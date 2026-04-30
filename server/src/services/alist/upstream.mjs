@@ -9,6 +9,7 @@
  */
 
 import { encodePathSegments, normalizePath } from './paths.mjs'
+import { t } from '../../core/locales.mjs'
 
 // ── 重试相关常量 ──
 const RETRY_MAX_ATTEMPTS = 2
@@ -213,7 +214,7 @@ export function createAListUpstream({
 
         break
       } catch (error) {
-        log('WARN', 'Drive direct URL resolve failed, falling back to signed URL', {
+        log('WARN', t('alist_redirect_failed'), {
           requestId,
           url: currentUrl,
           error: error instanceof Error ? error.message : String(error),
@@ -331,14 +332,14 @@ export function createAListUpstream({
 
         // 重试成功时记录日志
         if (attempt > 1) {
-          log('INFO', 'AList upstream request succeeded on retry', {
+          log('INFO', t('alist_upstream_retry_success'), {
             requestId,
             method,
             path,
             attempt,
           })
         } else {
-          log('INFO', 'AList upstream request completed', {
+          log('INFO', t('alist_upstream_completed'), {
             requestId,
             method,
             path,
@@ -352,7 +353,7 @@ export function createAListUpstream({
         // 401 鉴权失败 → 清除 Token 后重试一次
         const authFailed = error?.status === 401 || error?.upstreamCode === 401
         if (auth && retryOnAuthFailure && authFailed && !staticToken) {
-          log('WARN', 'AList auth failed, refreshing token and retrying', {
+          log('WARN', t('alist_auth_refreshing'), {
             requestId,
             method,
             path,
@@ -377,7 +378,7 @@ export function createAListUpstream({
         const classified = classifyUpstreamError(error)
         if (attempt < maxAttempts && classified.retryable) {
           const delayMs = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1)
-          log('WARN', 'AList upstream request failed, retrying', {
+          log('WARN', t('alist_upstream_retrying'), {
             requestId,
             method,
             path,
@@ -392,7 +393,7 @@ export function createAListUpstream({
         }
 
         // 不可重试或重试次数用尽
-        log('ERROR', 'AList upstream request failed', {
+        log('ERROR', t('alist_upstream_failed'), {
           requestId,
           method,
           path,
@@ -433,7 +434,7 @@ export function createAListUpstream({
       if (cached) {
         tokenState.value = cached
         tokenState.expiresAt = Date.now() + defaultTokenTtlMs
-        log('INFO', 'AList token restored from Redis cache', { requestId })
+        log('INFO', t('alist_token_restored'), { requestId })
         return cached
       }
     }
@@ -470,7 +471,7 @@ export function createAListUpstream({
       await cache.set(TOKEN_CACHE_KEY, token, TOKEN_CACHE_TTL)
     }
 
-    log('INFO', 'AList login succeeded', { requestId, username })
+    log('INFO', t('alist_login_succeeded'), { requestId, username })
 
     return token
   }

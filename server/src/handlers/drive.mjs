@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream'
+import { t } from '../core/locales.mjs'
 
 function buildDriveErrorPayload(error, fallbackMessage = 'Drive request failed') {
   return {
@@ -42,7 +43,7 @@ export function createDriveHandlers({
       const status = await alistService.getStatus(requestId)
       return json(res, 200, status, origin)
     } catch (error) {
-      log('ERROR', 'Drive status failed', {
+      log('ERROR', t('drive_status_failed'), {
         requestId,
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
@@ -58,7 +59,7 @@ export function createDriveHandlers({
       const envelope = await readJsonBody(req)
       secureRequest = driveCrypto.decryptEnvelope(envelope)
     } catch (error) {
-      log('WARN', 'Drive encrypted request rejected', {
+      log('WARN', t('drive_encrypted_rejected'), {
         requestId: req.requestId,
         error: error instanceof Error ? error.message : String(error),
       })
@@ -69,7 +70,7 @@ export function createDriveHandlers({
       const data = await task(secureRequest.payload || {})
       return secureJson(res, 200, secureRequest.aesKey, data, origin)
     } catch (error) {
-      log('ERROR', 'Drive secure action failed', {
+      log('ERROR', t('drive_secure_action_failed'), {
         requestId: req.requestId,
         action: secureRequest.payload?.action,
         error: error instanceof Error ? error.message : String(error),
@@ -100,7 +101,7 @@ export function createDriveHandlers({
       )
       return json(res, 200, payload, origin)
     } catch (error) {
-      log('ERROR', 'Drive list failed', {
+      log('ERROR', t('drive_list_failed'), {
         requestId,
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
@@ -115,10 +116,11 @@ export function createDriveHandlers({
     try {
       const path = getQueryString(url, 'path', '/')
       const intent = getQueryString(url, 'intent', 'view')
-      const payload = await alistService.getResolvedItem(requestId, path, { intent })
+      const refresh = getQueryBoolean(url, 'refresh', false)
+      const payload = await alistService.getResolvedItem(requestId, path, { intent, refresh })
       return json(res, 200, payload, origin)
     } catch (error) {
-      log('ERROR', 'Drive item failed', {
+      log('ERROR', t('drive_item_failed'), {
         requestId,
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
@@ -140,7 +142,7 @@ export function createDriveHandlers({
         })
         return json(res, 200, data, origin)
       } catch (error) {
-        log('ERROR', 'Drive search failed', {
+        log('ERROR', t('drive_search_failed'), {
           requestId,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
@@ -158,7 +160,7 @@ export function createDriveHandlers({
         const data = await alistService.makeDirectory(requestId, String(payload.path || ''))
         return json(res, 200, data, origin)
       } catch (error) {
-        log('ERROR', 'Drive mkdir failed', {
+        log('ERROR', t('drive_mkdir_failed'), {
           requestId,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
@@ -180,7 +182,7 @@ export function createDriveHandlers({
         )
         return json(res, 200, data, origin)
       } catch (error) {
-        log('ERROR', 'Drive rename failed', {
+        log('ERROR', t('drive_rename_failed'), {
           requestId,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
@@ -202,7 +204,7 @@ export function createDriveHandlers({
         )
         return json(res, 200, data, origin)
       } catch (error) {
-        log('ERROR', 'Drive remove failed', {
+        log('ERROR', t('drive_remove_failed'), {
           requestId,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
@@ -225,7 +227,7 @@ export function createDriveHandlers({
         )
         return json(res, 200, data, origin)
       } catch (error) {
-        log('ERROR', 'Drive move failed', {
+        log('ERROR', t('drive_move_failed'), {
           requestId,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
@@ -248,7 +250,7 @@ export function createDriveHandlers({
         )
         return json(res, 200, data, origin)
       } catch (error) {
-        log('ERROR', 'Drive copy failed', {
+        log('ERROR', t('drive_copy_failed'), {
           requestId,
           error: error instanceof Error ? error.message : String(error),
           status: error?.status,
@@ -268,7 +270,7 @@ export function createDriveHandlers({
       })
       return json(res, 200, data, origin)
     } catch (error) {
-      log('ERROR', 'Drive upload failed', {
+      log('ERROR', t('drive_upload_failed'), {
         requestId,
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
@@ -347,7 +349,7 @@ export function createDriveHandlers({
         stream.pipe(res)
       })
     } catch (error) {
-      log('ERROR', 'Drive raw redirect failed', {
+      log('ERROR', t('drive_raw_failed'), {
         requestId,
         error: error instanceof Error ? error.message : String(error),
         status: error?.status,
