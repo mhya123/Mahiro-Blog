@@ -95,6 +95,9 @@ const zh = {
   ai_encrypted_rejected:            'AI 加密请求被拒绝',
   ai_summary_invalid_body:          '摘要请求被拒绝：JSON 格式无效',
   ai_translate_invalid_body:        '翻译请求被拒绝：JSON 格式无效',
+
+  // ── 速率限制 ──
+  rate_limit_exceeded:              '速率限制已触发，请求被拒绝',
 }
 
 const en = {
@@ -185,6 +188,9 @@ const en = {
   ai_encrypted_rejected:            'AI encrypted request rejected',
   ai_summary_invalid_body:          'Summary request rejected: invalid JSON body',
   ai_translate_invalid_body:        'Translate request rejected: invalid JSON body',
+
+  // ── Rate limiting ──
+  rate_limit_exceeded:              'Rate limit exceeded, request rejected',
 }
 
 const locales = { zh, en }

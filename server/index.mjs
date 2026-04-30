@@ -14,7 +14,9 @@ import { createDriveCrypto } from './src/handlers/crypto.mjs'
 import { createDriveHandlers } from './src/handlers/drive.mjs'
 import { loadEnvFile } from './src/core/env.mjs'
 import { createHttpUtils } from './src/core/http.mjs'
+import { createFileLogger } from './src/core/log-file.mjs'
 import { createLogger, t } from './src/core/logger.mjs'
+import { createRateLimiter } from './src/core/rate-limiter.mjs'
 import { createRedisCache } from './src/core/redis.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -29,7 +31,21 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
   .map((item) => item.trim())
   .filter(Boolean)
 
-const { log, createRequestId, getClientIp } = createLogger()
+const rateLimiter = createRateLimiter()
+
+// AI 端点额外限制（与全局限制叠加）
+rateLimiter.addRule('/api/ai/', {
+  max: Number(process.env.RATE_LIMIT_AI_MAX || 10),
+})
+
+const { log: consoleLog, createRequestId, getClientIp } = createLogger()
+const fileLogger = createFileLogger()
+fileLogger.cleanup()
+
+const log = (level, message, meta) => {
+  fileLogger.write(level, message, meta)
+  consoleLog(level, message, meta)
+}
 const {
   buildCorsHeaders,
   json,
@@ -140,6 +156,21 @@ const server = createServer(async (req, res) => {
       durationMs: Date.now() - startedAt,
     })
     return
+  }
+
+  const limitResult = rateLimiter.check(requestMeta.ip, url.pathname)
+  if (!limitResult.allowed) {
+    const headers = {
+      'Retry-After': String(limitResult.retryAfter),
+      'X-RateLimit-Remaining': '0',
+      'X-RateLimit-Reset': String(Math.ceil(limitResult.reset / 1000)),
+    }
+    log('WARN', t('rate_limit_exceeded'), {
+      ...requestMeta,
+      retryAfter: limitResult.retryAfter,
+      reset: limitResult.reset,
+    })
+    return json(res, 429, { error: t('rate_limit_exceeded'), retryAfter: limitResult.retryAfter }, origin, headers)
   }
 
   const routeKey = `${req.method}:${url.pathname}`

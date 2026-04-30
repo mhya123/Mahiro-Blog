@@ -1,3 +1,4 @@
+import { getClientIp } from './client-ip.mjs'
 import { t, getLogLang } from './locales.mjs'
 
 function now() {
@@ -76,14 +77,6 @@ export function createLogger({ logPrefix = 'server' } = {}) {
 
   function createRequestId() {
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
-  }
-
-  function getClientIp(req) {
-    const forwarded = req.headers['x-forwarded-for']
-    if (typeof forwarded === 'string' && forwarded.trim()) {
-      return forwarded.split(',')[0].trim()
-    }
-    return req.socket?.remoteAddress || 'unknown'
   }
 
   return {

@@ -21,10 +21,11 @@ export function createHttpUtils({ allowedOrigins = ['*'] } = {}) {
     }
   }
 
-  function json(res, status, body, origin = '*') {
+  function json(res, status, body, origin = '*', extraHeaders = {}) {
     res.writeHead(status, {
       'Content-Type': 'application/json; charset=utf-8',
       ...buildCorsHeaders(origin),
+      ...extraHeaders,
     })
     res.end(JSON.stringify(body))
   }
