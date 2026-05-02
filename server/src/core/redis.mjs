@@ -136,12 +136,10 @@ export function createRedisCache({ log, url, prefix = 'mahiro:', enabled = true 
   // 尝试连接 Redis
   try {
     client = new Redis(redisUrl, {
-      maxRetriesPerRequest: 2,
+      maxRetriesPerRequest: 1,
       retryStrategy(times) {
-        // 重连退避策略：500ms → 1s → 2s → 最大 10s
-        const delay = Math.min(times * 500, 10_000)
-        log('WARN', t('redis_reconnecting'), { attempt: times, delayMs: delay })
-        return delay
+        log('WARN', '无法连接到 Redis，放弃重连并降级为纯内存缓存。')
+        return null // 连不上直接不启用，不进行无限重连
       },
       lazyConnect: false,
       enableReadyCheck: true,

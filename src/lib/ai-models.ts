@@ -1,4 +1,5 @@
 import { SITE_API_BASE_URL } from '@/consts'
+import { secureApiRequest } from './secure-api'
 import localRegistry from '../../scripts/ai-models.json'
 
 export type AiModelDefinition = {
@@ -16,11 +17,8 @@ type AiModelRegistry = {
 
 export async function loadAiModelRegistry(): Promise<AiModelRegistry> {
   try {
-    const response = await fetch(`${SITE_API_BASE_URL}/api/ai/models`, { cache: 'no-store' })
-    if (response.ok) {
-      const data = await response.json()
-      return { models: Array.isArray(data.models) ? data.models : [] }
-    }
+    const data = await secureApiRequest<AiModelRegistry>('/api/ai/models', {})
+    return { models: Array.isArray(data.models) ? data.models : [] }
   } catch { /* 服务端不可用，降级到本地 */ }
 
   return loadLocalAiModels()

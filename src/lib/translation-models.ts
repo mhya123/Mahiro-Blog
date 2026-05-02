@@ -1,4 +1,5 @@
 import { SITE_API_BASE_URL } from '@/consts'
+import { secureApiRequest } from './secure-api'
 import localAiRegistry from '../../scripts/ai-models.json'
 
 export type TranslationModelDefinition = {
@@ -15,15 +16,7 @@ type TranslationModelRegistry = {
 
 export async function loadTranslationModelRegistry(): Promise<TranslationModelRegistry> {
   try {
-    const response = await fetch(`${SITE_API_BASE_URL}/api/ai/translation-models`, {
-      cache: 'no-store'
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch translation models: ${response.status}`)
-    }
-
-    const data = await response.json()
+    const data = await secureApiRequest<TranslationModelRegistry>('/api/ai/translation-models', {})
     return { models: Array.isArray(data.models) ? data.models : [] }
   } catch {
     return { models: Array.isArray(localAiRegistry.models) ? localAiRegistry.models : [] }

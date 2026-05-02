@@ -129,8 +129,8 @@ const routes = {
   'POST:/api/ai/summary': handleSummary,
   'POST:/api/ai/secure': handleSecureAi,
   'POST:/api/ai/translate': handleTranslate,
-  'GET:/api/ai/translation-models': handleTranslationModels,
-  'GET:/api/ai/models': handleAiModels,
+  'POST:/api/ai/translation-models': handleTranslationModels,
+  'POST:/api/ai/models': handleAiModels,
 }
 
 const server = createServer(async (req, res) => {
