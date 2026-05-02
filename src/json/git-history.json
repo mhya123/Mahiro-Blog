@@ -818,6 +818,36 @@
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
     }
   ],
+  "src/content/blog/mahiro-secondary-dev-workflow-automation.md": [
+    {
+      "sha": "302c9a3c0f72291af1365945841157ca7155b3d0",
+      "message": "优化文档内容，提升可读性和准确性，调整多个博客文章的描述和结构",
+      "authorName": "MhYa123",
+      "date": "2026-04-22T21:06:49+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/302c9a3c0f72291af1365945841157ca7155b3d0"
+    },
+    {
+      "sha": "926796d525bd09538b27ac9ee587c423e90f2caf",
+      "message": "更新多篇博文中的 AI 模型引用并优化内容描述",
+      "authorName": "MhYa123",
+      "date": "2026-04-22T15:17:51+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/926796d525bd09538b27ac9ee587c423e90f2caf"
+    },
+    {
+      "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
+      "message": "新增功能：为博客文章添加随机封面缓存脚本",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T11:12:14+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/37cea7e64eed5768aa44c4f11df640388ca241c4"
+    },
+    {
+      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
+      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
+      "authorName": "MhYa123",
+      "date": "2026-04-07T10:30:38+08:00",
+      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
+    }
+  ],
   "src/content/blog/mahiro-theme-and-navbar-customization.md": [
     {
       "sha": "302c9a3c0f72291af1365945841157ca7155b3d0",
@@ -839,36 +869,6 @@
       "authorName": "MhYa123",
       "date": "2026-04-07T11:58:56+08:00",
       "url": "https://github.com/mhya123/Mahiro-Blog/commit/3fe7e455b83ab91e4b5ed2dba591723835645349"
-    },
-    {
-      "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",
-      "message": "新增功能：为博客文章添加随机封面缓存脚本",
-      "authorName": "MhYa123",
-      "date": "2026-04-07T11:12:14+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/37cea7e64eed5768aa44c4f11df640388ca241c4"
-    },
-    {
-      "sha": "b383b96e8c23bfb980ee50451b28779b01b5c5ef",
-      "message": "功能：为 Mahiro-Blog 添加全面的初学者教程，涵盖音乐播放器配置、导航 JSON 数据管理、Pagefind 搜索实现、二次开发实践以及主题自定义",
-      "authorName": "MhYa123",
-      "date": "2026-04-07T10:30:38+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/b383b96e8c23bfb980ee50451b28779b01b5c5ef"
-    }
-  ],
-  "src/content/blog/mahiro-secondary-dev-workflow-automation.md": [
-    {
-      "sha": "302c9a3c0f72291af1365945841157ca7155b3d0",
-      "message": "优化文档内容，提升可读性和准确性，调整多个博客文章的描述和结构",
-      "authorName": "MhYa123",
-      "date": "2026-04-22T21:06:49+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/302c9a3c0f72291af1365945841157ca7155b3d0"
-    },
-    {
-      "sha": "926796d525bd09538b27ac9ee587c423e90f2caf",
-      "message": "更新多篇博文中的 AI 模型引用并优化内容描述",
-      "authorName": "MhYa123",
-      "date": "2026-04-22T15:17:51+08:00",
-      "url": "https://github.com/mhya123/Mahiro-Blog/commit/926796d525bd09538b27ac9ee587c423e90f2caf"
     },
     {
       "sha": "37cea7e64eed5768aa44c4f11df640388ca241c4",

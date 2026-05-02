@@ -1,10 +1,10 @@
 {
-  "commitSha": "71b5609abec55d5cd9c7ae3f3c3a08e713daf890",
-  "commitShort": "71b5609",
-  "commitMessage": "Merge branch 'main' of https://github.com/mhya123/Mahiro-Blog",
+  "commitSha": "fc44c82df90b80a486b705a50227135a9fd09770",
+  "commitShort": "fc44c82",
+  "commitMessage": "重构 AI 模型和翻译处理程序，使其使用安全的 API 请求",
   "commitAuthor": "MhYa123",
-  "commitDate": "2026-04-30T16:56:46+08:00",
-  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/71b5609abec55d5cd9c7ae3f3c3a08e713daf890",
-  "buildTime": "2026/4/30 16:57:29",
-  "totalCommits": 437
+  "commitDate": "2026-05-02T19:17:50+08:00",
+  "commitUrl": "https://github.com/mhya123/Mahiro-Blog/commit/fc44c82df90b80a486b705a50227135a9fd09770",
+  "buildTime": "2026/5/2 19:18:31",
+  "totalCommits": 439
 }
