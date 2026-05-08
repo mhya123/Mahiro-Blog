@@ -179,7 +179,18 @@ code {
 }
 
 html,
-body,
+body {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: oklch(var(--bc) / 0.28) transparent;
@@ -256,4 +267,4 @@ body,
     background-clip: padding-box;
   }
 }
-
+
